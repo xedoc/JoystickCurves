@@ -31,7 +31,7 @@
             this.numericUpDown1 = new System.Windows.Forms.NumericUpDown();
             this.label1 = new System.Windows.Forms.Label();
             this.button1 = new System.Windows.Forms.Button();
-            this.curve1 = new WTJoystickCurves.Curve();
+            this.curve1 = new WTJoystickCurves.BezierCurve();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDown1)).BeginInit();
             this.SuspendLayout();
             // 
@@ -73,27 +73,16 @@
             // 
             // curve1
             // 
+            this.curve1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.curve1.BackColor = System.Drawing.Color.White;
-            this.curve1.LeftOffset = 0;
-            this.curve1.Location = new System.Drawing.Point(26, 41);
+            this.curve1.HorizontalLines = 5;
+            this.curve1.Location = new System.Drawing.Point(12, 41);
             this.curve1.Name = "curve1";
-            this.curve1.Points = new System.Drawing.Point[] {
-        new System.Drawing.Point(0, 0),
-        new System.Drawing.Point(0, 0),
-        new System.Drawing.Point(0, 0),
-        new System.Drawing.Point(0, 0),
-        new System.Drawing.Point(0, 0),
-        new System.Drawing.Point(0, 0),
-        new System.Drawing.Point(0, 0),
-        new System.Drawing.Point(0, 0),
-        new System.Drawing.Point(0, 0),
-        new System.Drawing.Point(0, 0)};
-            this.curve1.Size = new System.Drawing.Size(403, 113);
+            this.curve1.Padding = new System.Windows.Forms.Padding(10);
+            this.curve1.PointCount = 3;
+            this.curve1.Size = new System.Drawing.Size(432, 138);
             this.curve1.TabIndex = 3;
-            this.curve1.TopOffset = 0;
-            this.curve1.XStep = 0;
-            this.curve1.YPoints = null;
-            this.curve1.YScale = 100;
             // 
             // MainForm
             // 
@@ -118,7 +107,7 @@
         private System.Windows.Forms.NumericUpDown numericUpDown1;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Button button1;
-        private WTJoystickCurves.Curve curve1;
+        private WTJoystickCurves.BezierCurve curve1;
     }
 }
 

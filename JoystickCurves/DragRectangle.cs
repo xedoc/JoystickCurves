@@ -7,13 +7,19 @@ using System.Drawing;
 
 namespace WTJoystickCurves
 {
+    public enum DragPointType
+    {
+        NormalPoint,
+        ControlPoint
+    }
     class DragRectangle: Panel
     {
         private Point _Offset;
+        private DragPointType _pointType;
         public DragRectangle()
         {
-            Width = 6;
-            Height = 6;
+            Width = 8;
+            Height = 8;
             _Offset = Point.Empty;
             BackColor = Color.Red;
             this.MouseDown += new MouseEventHandler(DragRectangle_MouseDown);
@@ -31,6 +37,28 @@ namespace WTJoystickCurves
         {
             get;
             set;
+        }
+        public int MaxX
+        {
+            get;
+            set;
+        }
+        public int MinX
+        {
+            get;
+            set;
+        }
+        public DragPointType PointType
+        {
+            get { return _pointType; }
+            set
+            {
+                _pointType = value;
+                if (_pointType == DragPointType.ControlPoint)
+                {
+                    BackColor = Color.DarkGray;
+                }
+            }
         }
         void DragRectangle_MouseLeave(object sender, EventArgs e)
         {
@@ -50,19 +78,19 @@ namespace WTJoystickCurves
                 Point newlocation = this.Location;
 
                 var newY = newlocation.Y + e.Y - _Offset.Y;
+                var newX = newlocation.X + e.X - _Offset.X;
 
-                if (newY >= MinY && newY <= MaxY)
-                {
-                    this.Location = new Point(this.Location.X, newY);
-                }
-                else if( newY > MaxY )
-                {
-                    this.Location = new Point(this.Location.X, MaxY);
-                }
+                if (newY > MaxY)
+                    newY = MaxY;
                 else if (newY < MinY)
-                {
-                    this.Location = new Point(this.Location.X, MinY);
-                }
+                    newY = MinY;
+
+                if (newX > MaxX)
+                    newX = MaxX;
+                else if (newX < MinX)
+                    newX = MinX;
+
+                this.Location = new Point(newX, newY);
             }
         }
 
@@ -81,6 +109,5 @@ namespace WTJoystickCurves
             get;
             set;
         }
-
     }
 }
