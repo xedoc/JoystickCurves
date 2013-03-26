@@ -49,6 +49,12 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Curve.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="DragRectangle.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="Events.cs" />
     <Compile Include="MainForm.cs">
       <SubType>Form</SubType>
