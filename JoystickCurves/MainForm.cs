@@ -19,6 +19,7 @@ namespace JoystickCurves
 
         private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
         {
+            /*
             if (vjoy == null)
                 return;
 
@@ -26,8 +27,40 @@ namespace JoystickCurves
                 return;
 
             vjoy.Reset();
+             */
         }
 
+        private void tabAddNew_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void tabAddNew_MouseClick(object sender, MouseEventArgs e)
+        {
+
+        }
+
+        private void MainForm_Shown(object sender, EventArgs e)
+        {
+            aimReticle1.X = aimReticle1.X + 10;
+            aimReticle1.X = aimReticle1.X - 10;
+        }
+
+        private void tabAxis_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            var tab = sender as TabControl;
+            if (tab.SelectedTab.Name == "tabAddNew")
+            {
+                var newTabPage = new TabPage("Axis " + tab.TabCount);
+                newTabPage.Controls.Add(new AxisEditor() { Location = new Point(tab.TabPages[0].Controls[0].Location.X, tab.TabPages[0].Controls[0].Location.Y),Size = tab.TabPages[0].Controls[0].Size });
+
+                tabAxis.TabPages.Insert(tabAxis.TabPages.Count - 1, newTabPage);
+
+                tabAxis.SelectedTab = newTabPage;
+                Invalidate();
+            }
+        }
+        /*
         private void button1_Click(object sender, EventArgs e)
         {
             try
@@ -44,6 +77,7 @@ namespace JoystickCurves
                 return;
             }
             MessageBox.Show("Values are set check control panel");
-        }       
+        }
+         */
     }
 }
