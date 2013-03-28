@@ -10,7 +10,6 @@ namespace JoystickCurves
     {
         private Point[] _drawPoints;
         private PointF[] _rawPoints;
-        private int _precision;
         public CurvePoints( int width, int height )
         {
             if (width <= 0 ) throw new Exception("Zero width isn't allowed!");
@@ -18,8 +17,6 @@ namespace JoystickCurves
 
             DrawWidth = width;
             DrawHeight = height;
-
-            _precision = 0xFFFF;
         }
         public int DrawWidth
         {

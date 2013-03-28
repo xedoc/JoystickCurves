@@ -12,7 +12,7 @@ namespace JoystickCurves
         private vJoy _joystick;
         private UInt32 _deviceid;
         
-        private Axis _axis;
+        private VirtualAxis _axis;
         private MultiControlState<bool> _buttons;
         private MultiControlState<int> _continuousPovs;
         private MultiControlState<int> _discretePovs;
@@ -23,7 +23,6 @@ namespace JoystickCurves
         public VirtualJoystick(uint id)
         {
             _joystick = new vJoy();
-
             if (!Enabled)
                 throw new Exception("VJoy isn't enabled! Check driver installation!");
 
@@ -54,11 +53,11 @@ namespace JoystickCurves
             _joystick.ResetVJD(_deviceid);
 
         }
-        public Axis Axis
+        public VirtualAxis Axis
         {
             get {
                 if (_axis == null)
-                    _axis = new Axis();
+                    _axis = new VirtualAxis();
 
                 _axis.X = CreateAxisControlState(HID_USAGES.HID_USAGE_X);
                 _axis.Y = CreateAxisControlState(HID_USAGES.HID_USAGE_Y);

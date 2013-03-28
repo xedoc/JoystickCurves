@@ -12,7 +12,7 @@ namespace JoystickCurves
             get;
             set;
         }
-        public AxisSettings AxisSettings
+        public AxisBinding AxisSettings
         {
             get;
             set;

@@ -9,21 +9,109 @@ using System.Windows.Forms;
 
 namespace JoystickCurves
 {
+    public enum Reticle
+    {
+        Cross,
+        VerticalLine
+    }
     public partial class JoystickTester : Panel
     {
+        public const int RETICLE_SIZE = 20;
         public JoystickTester()
         {
             InitializeComponent();
-            this.HandleCreated += new EventHandler(JoystickTester_HandleCreated);
+            Init();
+        }
+
+        public JoystickTester(IContainer container)
+        {
+            container.Add(this);
+
+            InitializeComponent();
+            Init();
+        }
+
+        private void Init()
+        {
+           this.HandleCreated += new EventHandler(JoystickTester_HandleCreated);
+           this.SetStyle(ControlStyles.AllPaintingInWmPaint | ControlStyles.UserPaint | ControlStyles.DoubleBuffer, true);
+           Invalidate();
         }
 
         void JoystickTester_HandleCreated(object sender, EventArgs e)
         {
             Paint += new PaintEventHandler(JoystickTester_Paint);
-            Invalidate();
+            PhysicalAxisPitch = new Axis(-1, 1);
+            PhysicalAxisRoll = new Axis(-1, 1);
+            PhysicalAxisRudder = new Axis(-1, 1);
         }
 
+        public Rectangle HandleBounds
+        {
+            get;
+            set;
+        }
+        public Rectangle RudderBounds
+        {
+            get;
+            set;
+        }
+        public Point PhysicalRudderLocation
+        {
+            get;
+            set;
+        }
+        public Point PhysicalHandleLocation
+        {
+            get;
+            set;
+        }
+        public Point VirtualRudderLocation
+        {
+            get;
+            set;
+        }
+        public Point VirtualHandleLocation
+        {
+            get;
+            set;
+        }
+        public Axis PhysicalAxisRoll
+        {
+            set {
 
+                int newX = HandleBounds.X + (int)Utils.PTop(HandleBounds.Width, value.Value - value.Min, value.Max - value.Min);
+                if (newX != PhysicalHandleLocation.X)
+                {
+                    PhysicalHandleLocation = new Point(newX, PhysicalHandleLocation.Y);
+                    Invalidate();
+                }
+            }
+        }
+        public Axis PhysicalAxisPitch
+        {
+            set
+            {
+                int newY = HandleBounds.Y + (int)Utils.PTop(HandleBounds.Height, value.Value - value.Min, value.Max - value.Min);
+                if (newY != PhysicalHandleLocation.Y)
+                {
+                    PhysicalHandleLocation = new Point(PhysicalHandleLocation.X, newY);
+                    Invalidate();
+                }
+            }
+        }
+
+        public Axis PhysicalAxisRudder
+        {
+            set {
+                int newX = RudderBounds.X + (int)Utils.PTop(RudderBounds.Width, value.Value - value.Min, value.Max - value.Min);
+                if (newX != PhysicalRudderLocation.X)
+                {
+                    PhysicalRudderLocation = new Point(newX, RudderBounds.Y);
+                    Invalidate();
+                }
+            }
+        }
         void JoystickTester_Paint(object sender, PaintEventArgs e)
         {
             var dashValues = new Single[] { 1, 1};
@@ -58,6 +146,8 @@ namespace JoystickCurves
             var bottomRight = new Point(smallestSide + Margin.Left, smallestSide + Margin.Top);
             var rightMiddle = new Point(smallestSide + Margin.Left, smallestSide / 2 + Margin.Top);
             var center = new Point(smallestSide/2 + Margin.Left, smallestSide/2 + Margin.Top);
+
+            HandleBounds = new Rectangle(topLeft.X - RETICLE_SIZE/2, topLeft.Y -RETICLE_SIZE/2, smallestSide,smallestSide);
             gridPen.DashPattern = dashValues;
 
             //Diagonal
@@ -72,18 +162,37 @@ namespace JoystickCurves
             e.Graphics.DrawLine(gridPen, rightMiddle, new Point(center.X + 10, center.Y));
 
             //Yaw
-            //gridPen.DashStyle = System.Drawing.Drawing2D.DashStyle.Solid;
-            e.Graphics.DrawLine(gridPen, new Point(Margin.Left, Size.Height - 20), new Point(smallestSide + Margin.Left, Size.Height - 20));
+            
+            var pointLeftRudder = new Point(Margin.Left, Size.Height - 20);
+            var pointRightRudder = new Point(smallestSide + Margin.Left, Size.Height - 20);
+            var rudderWidth = pointRightRudder.X - pointLeftRudder.X;
+            e.Graphics.DrawLine(gridPen, pointLeftRudder, pointRightRudder);
 
+            RudderBounds = new Rectangle(pointLeftRudder.X - RETICLE_SIZE/2, pointLeftRudder.Y - RETICLE_SIZE/2, rudderWidth, RETICLE_SIZE);
 
+            DrawReticle(e.Graphics, Reticle.Cross, PhysicalHandleLocation);
+            DrawReticle(e.Graphics, Reticle.VerticalLine, PhysicalRudderLocation);
         }
-
-        public JoystickTester(IContainer container)
+        public void DrawReticle(Graphics g, Reticle ReticleAppearance, Point loc)
         {
-            container.Add(this);
+            var pen = new Pen(Color.FromArgb(0, 255, 0));
+            pen.Width = 3;
+            var top = new Point(loc.X + RETICLE_SIZE/2, loc.Y);
+            var bottom = new Point(loc.X + RETICLE_SIZE / 2, loc.Y + RETICLE_SIZE);
+            var left = new Point(loc.X, loc.Y + RETICLE_SIZE / 2);
+            var right = new Point(loc.X + RETICLE_SIZE, loc.Y + RETICLE_SIZE/ 2);
 
-            InitializeComponent();
-            this.HandleCreated += new EventHandler(JoystickTester_HandleCreated);
+            if (ReticleAppearance == Reticle.Cross)
+            {
+                g.DrawLine(pen, top, bottom);
+                g.DrawLine(pen, left, right);
+            }
+            else if (ReticleAppearance == Reticle.VerticalLine)
+            {
+                g.DrawLine(pen, top, bottom);
+            }
         }
+
+
     }
 }

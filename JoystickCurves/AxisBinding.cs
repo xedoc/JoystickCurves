@@ -6,7 +6,7 @@ using System.Drawing;
 
 namespace JoystickCurves
 {
-    class AxisSettings
+    class AxisBinding
     {
         public GameController SourceDevice
         {
@@ -18,12 +18,12 @@ namespace JoystickCurves
             get;
             set;
         }
-        public Axis SourceAxis
+        public VirtualAxis SourceAxis
         {
             get;
             set;
         }
-        public Axis DestinationAxis
+        public VirtualAxis DestinationAxis
         {
             get;
             set;

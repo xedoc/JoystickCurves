@@ -6,43 +6,20 @@ using Microsoft.DirectX.DirectInput;
 
 namespace JoystickCurves
 {
-    
-    public class Axis
+    public class Button
     {
         private JoystickOffset _joystickOffset;
         private string _name;
-        public Axis(int min, int max)
-        {
-            if (min == max)
-                throw new Exception("Minimum and maximum value of axies should not be equal!");
-
-            Min = min;
-            Max = max;
-        }
         public int Value
-        {
-            get;
-            set;
-        }
-        public int PercentValue
-        {
-            get { return (100 / (Max - Min)) * Value; }
-            set { Value = value * 100 / (Max - Min); }
-        }
-        public int Max
-        {
-            get;
-            set;
-        }
-        public int Min
         {
             get;
             set;
         }
         public string Name
         {
-            get{ return _name; }
-            set{
+            get { return _name; }
+            set
+            {
                 JoystickOffset result;
                 Enum.TryParse<JoystickOffset>(value, out result);
                 if ((int)result == 0)
@@ -62,7 +39,7 @@ namespace JoystickCurves
             {
                 _name = value.ToString();
                 _joystickOffset = value;
-            }        
+            }
         }
     }
 }

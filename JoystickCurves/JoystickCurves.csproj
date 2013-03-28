@@ -55,20 +55,17 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AimReticle.cs">
-      <SubType>Component</SubType>
-    </Compile>
-    <Compile Include="AimReticle.Designer.cs">
-      <DependentUpon>AimReticle.cs</DependentUpon>
-    </Compile>
     <Compile Include="Axis.cs" />
+    <Compile Include="Button.cs" />
+    <Compile Include="Utils.cs" />
+    <Compile Include="VirtualAxis.cs" />
     <Compile Include="AxisEditor.cs">
       <SubType>UserControl</SubType>
     </Compile>
     <Compile Include="AxisEditor.Designer.cs">
       <DependentUpon>AxisEditor.cs</DependentUpon>
     </Compile>
-    <Compile Include="AxisSettings.cs" />
+    <Compile Include="AxisBinding.cs" />
     <Compile Include="BezierCurve.cs">
       <SubType>Component</SubType>
     </Compile>

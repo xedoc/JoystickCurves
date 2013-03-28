@@ -16,59 +16,30 @@ namespace JoystickCurves
     {
 
         public event EventHandler<EventArgs> OnAcquire;
-        public event EventHandler<CustomEventArgs<int>> OnXChange;
-        public event EventHandler<CustomEventArgs<int>> OnYChange;
-        public event EventHandler<CustomEventArgs<int>> OnZChange;
+        public event EventHandler<CustomEventArgs<Axis>> OnAxisChange;
+        public event EventHandler<CustomEventArgs<Button>> OnButtonChange;
+        private const int POLL_INTERVAL = 50;
+        private const int AXIS_RANGE = 32767;
+        private JoystickOffset[] JoystickAxes = new JoystickOffset[] { JoystickOffset.X, 
+                                                     JoystickOffset.Y, 
+                                                     JoystickOffset.Z, 
+                                                     JoystickOffset.RX, 
+                                                     JoystickOffset.RY, 
+                                                     JoystickOffset.RZ, 
+                                                     JoystickOffset.Slider0, 
+                                                     JoystickOffset.Slider1 };
 
-        public event EventHandler<CustomEventArgs<int>> OnButtonDown;
-        public event EventHandler<CustomEventArgs<int>> OnButtonUp;
-        private const int POLL_INTERVAL = 30;
         private Timer _pollTimer;
-        private byte[] _buttonState;
         private Device _device;
-
-        public GameController( string name, string productname, Guid productguid, Guid instanceguid, GameControllerType type )
+        private DeviceInstance _devInstance;
+        public GameController( DeviceInstance dev, GameControllerType type )
         {
-            Name = name;
-            ProductName = productname;
-            ProductGuid = productguid;
-            InstanceGuid = instanceguid;
+            _devInstance = dev;
             Type = type;
             Acquired = false;
             
             _pollTimer = new Timer(new TimerCallback(poll_Tick), null, Timeout.Infinite, Timeout.Infinite);
             OnAcquire += new EventHandler<EventArgs>(GameController_OnAcquire);
-            OnButtonUp += new EventHandler<CustomEventArgs<int>>(GameController_OnButtonUp);
-            OnButtonDown += new EventHandler<CustomEventArgs<int>>(GameController_OnButtonDown);
-            OnXChange += new EventHandler<CustomEventArgs<int>>(GameController_OnXChange);
-            OnYChange += new EventHandler<CustomEventArgs<int>>(GameController_OnYChange);
-            OnZChange += new EventHandler<CustomEventArgs<int>>(GameController_OnZChange);
-        }
-
-        void GameController_OnZChange(object sender, CustomEventArgs<int> e)
-        {
-           
-        }
-
-        void GameController_OnYChange(object sender, CustomEventArgs<int> e)
-        {
-            
-        }
-
-        void GameController_OnXChange(object sender, CustomEventArgs<int> e)
-        {   
-      
-        }
-
-        void GameController_OnButtonDown(object sender, CustomEventArgs<int> e)
-        {
-            Debug.Print(String.Format("down {0}", e.Data));
-        }
-
-        void GameController_OnButtonUp(object sender, CustomEventArgs<int> e)
-        {
-            Debug.Print(String.Format("up {0}", e.Data));
-            
         }
         public bool Acquired
         {
@@ -77,67 +48,80 @@ namespace JoystickCurves
         }
         private void poll_Tick(object o)
         {
-            _device.Poll();
-            //Microsoft.DirectX.DirectInput.JoystickOffset
-            
-            ReadButtonsState();      
-    
-        }
-        private void ReadAxisState()
-        {
-            
-        }
-        private void ReadButtonsState()
-        {
-            var prevButtonState = _buttonState;
+            _pollTimer.Change(Timeout.Infinite, Timeout.Infinite);
 
-            _buttonState = _device.CurrentJoystickState.GetButtons();
-            if (prevButtonState == null)
+            _device.Poll();
+
+            var queue = _device.GetBufferedData();
+            if (queue == null)
             {
-                prevButtonState = _buttonState;
+                _pollTimer.Change(POLL_INTERVAL, POLL_INTERVAL);
                 return;
             }
-            for (var i = 0; i < _buttonState.Length; i++)
+            foreach (BufferedData data in queue)
             {
-                if (_buttonState[i] != prevButtonState[i])
+                CustomEventArgs<int> param = new CustomEventArgs<int>(data.Data);
+                JoystickOffset dataType = (JoystickOffset)data.Offset;
+
+                if (JoystickAxes.Contains(dataType))
                 {
-                    if (_buttonState[i] != 0)
+                    Axis axis = new Axis(MinAxisValue, MaxAxisValue) {
+                        Value = data.Data,
+                        DirectInputID = dataType
+                    };
+                    if (OnAxisChange != null) 
+                        OnAxisChange(_device, new CustomEventArgs<Axis>(axis));
+                }
+                else if (dataType >= JoystickOffset.Button0 && dataType <= JoystickOffset.Button128)
+                {
+                    Button button = new Button()
                     {
-                        if (OnButtonDown != null)
-                            OnButtonDown(this, new CustomEventArgs<int>( i));
-                    }
-                    else
-                    {
-                        if (OnButtonUp != null)
-                            OnButtonUp(this, new CustomEventArgs<int>( i ));
-                    }
+                        Value = data.Data,
+                        DirectInputID = dataType
+                    };
+                    if (OnButtonChange != null)
+                        OnButtonChange(_device, new CustomEventArgs<Button>(button));
                 }
             }
+            _pollTimer.Change(POLL_INTERVAL, POLL_INTERVAL);                
         }
         void GameController_OnAcquire(object sender, EventArgs e)
         {
             Acquired = true;
         }
-        public string Name
+        public int Index
         {
             get;
             set;
         }
-
+        public string Name
+        {
+            get {
+                    if (Index > 0)
+                        return String.Format("{0} #{1}", _devInstance.InstanceName, Index);
+                    else
+                        return _devInstance.InstanceName;
+            }
+        }
+        public int MinAxisValue
+        {
+            get { return -AXIS_RANGE; }
+        }
+        public int MaxAxisValue
+        {
+            get { return AXIS_RANGE; }
+        }
         public string ProductName
         {
-            get;
-            set;
+            get { return _devInstance.ProductName; }
         }
         public Guid ProductGuid
         {
-            get;
-            set;
+            get { return _devInstance.ProductGuid; }
         }
-        public Guid InstanceGuid
+        public Guid Guid
         {
-            get;
-            set;
+            get { return _devInstance.InstanceGuid; }
         }
   
         public GameControllerType Type
@@ -145,16 +129,36 @@ namespace JoystickCurves
             get;
             set;
         }
-
+        public int NumberAxes
+        {
+            get { return _device.Caps.NumberAxes; }
+        }
+        public int NumberButtons
+        {
+            get { return _device.Caps.NumberButtons; }
+        }
+        public int NumberPOVs
+        {
+            get { return _device.Caps.NumberPointOfViews;}
+        }
         public void Acquire()
         {
-            _device = new Device(InstanceGuid);
+            _device = new Device(Guid);
             _device.SetDataFormat(DeviceDataFormat.Joystick);
-            _device.Properties.BufferSize = 16;
+            _device.Properties.BufferSize = 32;
+            _device.SetCooperativeLevel(Process.GetCurrentProcess().MainWindowHandle, 
+                CooperativeLevelFlags.NonExclusive | CooperativeLevelFlags.Background);
+
+            foreach (DeviceObjectInstance d in _device.Objects)
+            {
+                if ((d.ObjectId & (int)DeviceObjectTypeFlags.Axis) != 0)
+                    _device.Properties.SetRange(ParameterHow.ById, d.ObjectId, new InputRange(MinAxisValue, MaxAxisValue));
+            }
             _device.Acquire();
 
            
-            _pollTimer.Change(POLL_INTERVAL, POLL_INTERVAL);         
+            _pollTimer.Change(POLL_INTERVAL, POLL_INTERVAL);
+            
             if (OnAcquire != null)
                 OnAcquire(this, EventArgs.Empty);
         }

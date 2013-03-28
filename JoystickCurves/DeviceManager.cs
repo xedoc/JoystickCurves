@@ -13,9 +13,7 @@ namespace JoystickCurves
     {
         public event EventHandler<EventArgs> OnDeviceList;
         private DeviceList _gameControllers;
-        private String[] virtualTags = new String[] { "vjoy" };
-        
-
+        private String[] virtualTags = new String[] { "vjoy" };      
 
         public DeviceManager()
         {
@@ -33,25 +31,17 @@ namespace JoystickCurves
 
             foreach (DeviceInstance dev in _gameControllers)
             {
-                var gc = new GameController(
-                    dev.InstanceName,
-                    dev.ProductName,
-                    dev.ProductGuid,
-                    dev.InstanceGuid,
-                    GetDeviceType(dev.ProductName)
-                );
-                gc.OnAcquire += new EventHandler<EventArgs>(gc_OnAcquire);
-                gc.Acquire();
-                Devices.Add(gc);
-
+                var gameController = new GameController(dev, GetDeviceType(dev.ProductName));
+                Devices.Add(gameController);
+                Devices.Where(d => d.Name.StartsWith(gameController.Name) && d.Index == 0).ToList().ForEach(
+                        d => d.Index = Devices.Max(dm => dm.Index)+1
+                    );           
             }
-        }
 
-        void gc_OnAcquire(object sender, EventArgs e)
-        {
             if (OnDeviceList != null)
                 OnDeviceList(this, EventArgs.Empty);
         }
+
         private GameControllerType GetDeviceType( string name )
         {
             return virtualTags.Where(vt => name.ToLower().Contains(vt)).Count() > 0 ? GameControllerType.Virtual : GameControllerType.Physical;
