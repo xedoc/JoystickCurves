@@ -78,6 +78,8 @@ namespace JoystickCurves
         private void poll_Tick(object o)
         {
             _device.Poll();
+            //Microsoft.DirectX.DirectInput.JoystickOffset
+            
             ReadButtonsState();      
     
         }
