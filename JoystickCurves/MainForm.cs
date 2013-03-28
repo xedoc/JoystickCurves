@@ -12,6 +12,7 @@ namespace JoystickCurves
     public partial class MainForm : Form
     {
         private VirtualJoystick vjoy;
+        private DeviceManager deviceManager;
         public MainForm()
         {
             InitializeComponent();
@@ -42,8 +43,7 @@ namespace JoystickCurves
 
         private void MainForm_Shown(object sender, EventArgs e)
         {
-            aimReticle1.X = aimReticle1.X + 10;
-            aimReticle1.X = aimReticle1.X - 10;
+            deviceManager = new DeviceManager();
         }
 
         private void tabAxis_SelectedIndexChanged(object sender, EventArgs e)
@@ -59,6 +59,12 @@ namespace JoystickCurves
                 tabAxis.SelectedTab = newTabPage;
                 Invalidate();
             }
+        }
+
+        private void MainForm_Load(object sender, EventArgs e)
+        {
+
+
         }
         /*
         private void button1_Click(object sender, EventArgs e)

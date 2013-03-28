@@ -97,9 +97,9 @@
             // 
             // axisEditor1
             // 
-            this.axisEditor1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
+            this.axisEditor1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+                        | System.Windows.Forms.AnchorStyles.Left)
+                        | System.Windows.Forms.AnchorStyles.Right)));
             this.axisEditor1.Location = new System.Drawing.Point(2, 6);
             this.axisEditor1.Name = "axisEditor1";
             this.axisEditor1.Size = new System.Drawing.Size(593, 421);
@@ -249,7 +249,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(938, 500);
+            this.ClientSize = new System.Drawing.Size(930, 489);
             this.Controls.Add(this.checkBox1);
             this.Controls.Add(this.joystickTester1);
             this.Controls.Add(this.button1);
@@ -262,6 +262,7 @@
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Joystick Curves";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.MainForm_FormClosing);
+            this.Load += new System.EventHandler(this.MainForm_Load);
             this.Shown += new System.EventHandler(this.MainForm_Shown);
             this.tabAxis.ResumeLayout(false);
             this.tabPage1.ResumeLayout(false);
