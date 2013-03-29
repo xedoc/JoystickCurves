@@ -6,19 +6,19 @@ using System.Drawing;
 
 namespace JoystickCurves
 {
-    class AxisBinding
+    public class AxisBinding
     {
         public GameController SourceDevice
         {
             get;
             set;
         }
-        public GameController DestinationDevice
+        public VirtualJoystick DestinationDevice
         {
             get;
             set;
         }
-        public VirtualAxis SourceAxis
+        public Axis SourceAxis
         {
             get;
             set;
@@ -27,7 +27,13 @@ namespace JoystickCurves
         {
             get;
             set;
-        }      
+        }
+
+        public CurvePoints CurvePoints
+        {
+            get;
+            set;
+        }
         
 
     }

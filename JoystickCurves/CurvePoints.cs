@@ -6,7 +6,7 @@ using System.Drawing;
 
 namespace JoystickCurves
 {
-    class CurvePoints
+    public class CurvePoints
     {
         private Point[] _drawPoints;
         private PointF[] _rawPoints;

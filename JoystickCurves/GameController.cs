@@ -141,6 +141,12 @@ namespace JoystickCurves
         {
             get { return _device.Caps.NumberPointOfViews;}
         }
+        public void Unacquire()
+        {
+            _pollTimer.Change(Timeout.Infinite, Timeout.Infinite);
+            _device.Unacquire();
+        }
+
         public void Acquire()
         {
             _device = new Device(Guid);

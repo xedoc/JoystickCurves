@@ -17,6 +17,7 @@ namespace JoystickCurves
         private VirtualJoystick vjoy;
         private DeviceManager deviceManager;
         private BindingSource testBSource;
+        ProfileManager pm;
         public MainForm()
         {
             InitializeComponent();
@@ -30,7 +31,12 @@ namespace JoystickCurves
             if (!vjoy.Enabled)
                 return;
 
-            vjoy.Reset();             
+            vjoy.Reset();
+
+            foreach (var d in deviceManager.Devices)
+                d.Unacquire();
+
+
         }
 
         private void MainForm_Shown(object sender, EventArgs e)
@@ -44,7 +50,6 @@ namespace JoystickCurves
                 MessageBox.Show("Error: " + ex.Message);
                 return;
             }
-
             deviceManager = new DeviceManager();
             deviceManager.OnDeviceList += new EventHandler<EventArgs>(deviceManager_OnDeviceList);
 

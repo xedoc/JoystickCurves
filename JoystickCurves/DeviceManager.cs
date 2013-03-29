@@ -33,7 +33,7 @@ namespace JoystickCurves
             {
                 var gameController = new GameController(dev, GetDeviceType(dev.ProductName));
                 Devices.Add(gameController);
-                Devices.Where(d => d.Name.StartsWith(gameController.Name) && d.Index == 0).ToList().ForEach(
+                Devices.Where(d => d.Name.StartsWith(gameController.Name) && d.Index == 0 && d != gameController).ToList().ForEach(
                         d => d.Index = Devices.Max(dm => dm.Index)+1
                     );           
             }

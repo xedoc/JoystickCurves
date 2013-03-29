@@ -22,5 +22,40 @@ namespace JoystickCurves.Properties {
                 return defaultInstance;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string currentProfile {
+            get {
+                return ((string)(this["currentProfile"]));
+            }
+            set {
+                this["currentProfile"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string Setting {
+            get {
+                return ((string)(this["Setting"]));
+            }
+            set {
+                this["Setting"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        public global::JoystickCurves.ProfileManager Profiles {
+            get {
+                return ((global::JoystickCurves.ProfileManager)(this["Profiles"]));
+            }
+            set {
+                this["Profiles"] = value;
+            }
+        }
     }
 }
