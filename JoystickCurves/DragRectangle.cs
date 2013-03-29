@@ -5,7 +5,7 @@ using System.Text;
 using System.Windows.Forms;
 using System.Drawing;
 
-namespace WTJoystickCurves
+namespace JoystickCurves
 {
     public enum DragPointType
     {
@@ -18,8 +18,8 @@ namespace WTJoystickCurves
         private DragPointType _pointType;
         public DragRectangle()
         {
-            Width = 8;
-            Height = 8;
+            Width = 9;
+            Height = 9;
             _Offset = Point.Empty;
             BackColor = Color.Red;
             this.MouseDown += new MouseEventHandler(DragRectangle_MouseDown);

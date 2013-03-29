@@ -72,6 +72,7 @@
   <ItemGroup>
     <Compile Include="Axis.cs" />
     <Compile Include="Button.cs" />
+    <Compile Include="DirectInputWrap.cs" />
     <Compile Include="Settings.cs" />
     <Compile Include="Utils.cs" />
     <Compile Include="VirtualAxis.cs" />

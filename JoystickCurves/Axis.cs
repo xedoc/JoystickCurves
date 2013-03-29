@@ -10,7 +10,15 @@ namespace JoystickCurves
     public class Axis
     {
         private JoystickOffset _joystickOffset;
+
+        private const string UNKNOWN = "Unknown";
         private string _name;
+        public Axis()
+        {
+            Min = -1;
+            Max = 1;
+            Value = 0;
+        }
         public Axis(int min, int max)
         {
             if (min == max)
@@ -18,6 +26,7 @@ namespace JoystickCurves
 
             Min = min;
             Max = max;
+            Value = 0;
         }
         public int Value
         {
@@ -46,7 +55,7 @@ namespace JoystickCurves
                 JoystickOffset result;
                 Enum.TryParse<JoystickOffset>(value, out result);
                 if ((int)result == 0)
-                    _name = "Unknown";
+                    _name = UNKNOWN;
                 else
                 {
                     DirectInputID = result;
@@ -63,6 +72,14 @@ namespace JoystickCurves
                 _name = value.ToString();
                 _joystickOffset = value;
             }        
+        }
+        public static implicit operator String(Axis ax)
+        {
+            return ax == null ? String.Empty : ax.Name;
+        }
+        public static implicit operator Axis(String name)
+        {
+            return new Axis() { Name = name };
         }
     }
 }

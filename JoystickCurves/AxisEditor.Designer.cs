@@ -39,7 +39,7 @@
             this.label4 = new System.Windows.Forms.Label();
             this.comboDestAxis = new System.Windows.Forms.ComboBox();
             this.groupBox3 = new System.Windows.Forms.GroupBox();
-            this.curveResponse = new WTJoystickCurves.BezierCurve();
+            this.curveResponse = new JoystickCurves.BezierCurve();
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
             this.groupBox3.SuspendLayout();
@@ -204,6 +204,6 @@
         private System.Windows.Forms.Label label4;
         private System.Windows.Forms.ComboBox comboDestAxis;
         private System.Windows.Forms.GroupBox groupBox3;
-        private WTJoystickCurves.BezierCurve curveResponse;
+        private JoystickCurves.BezierCurve curveResponse;
     }
 }

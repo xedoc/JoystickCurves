@@ -3,33 +3,47 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Drawing;
-
+using System.Xml;
+using System.Xml.Serialization;
 namespace JoystickCurves
 {
     public class CurvePoints
     {
-        private Point[] _drawPoints;
-        private PointF[] _rawPoints;
+        private List<Point> _drawPoints;
+        private List<PointF> _rawPoints;
+        public CurvePoints()
+        {
+            DrawWidth = 1;
+            DrawHeight = 1;
+            _rawPoints = new List<PointF>();
+            _drawPoints = new List<Point>();
+            
+        }
         public CurvePoints( int width, int height )
         {
             if (width <= 0 ) throw new Exception("Zero width isn't allowed!");
             if (height <= 0) throw new Exception("Zero height isn't allowed!");
 
+            _rawPoints = new List<PointF>();
+            _drawPoints = new List<Point>();
+
             DrawWidth = width;
             DrawHeight = height;
         }
+        [XmlAttribute]
         public int DrawWidth
         {
             get;
             set;
         }
+        [XmlAttribute]
         public int DrawHeight
         {
             get;
             set;
         }
-
-        public Point[] DrawPoints
+        [XmlElement]
+        public List<Point> DrawPoints
         {
             get
             {
@@ -39,24 +53,23 @@ namespace JoystickCurves
             {
                 if (value == null)
                     throw new Exception("Null drawpoints!");
-                if (value.Length == 0)
+                if (value.Count == 0)
                     throw new Exception("Empty drawpoints!");
-                
-                _rawPoints = new PointF[value.Length];
 
-                for (var i = 0; i < value.Length; i++)
+                _rawPoints.Clear();
+
+                for (var i = 0; i < value.Count; i++)
                 {
-                    Point p = value[i];
-                    
-                    PointF pf = new PointF((float)p.X / (float)DrawWidth, (float)p.Y / (float)DrawHeight);
-                    _rawPoints[i] = pf;
-                }   
-
+                    Point p = value[i];                    
+                    PointF pf = new PointF(Utils.PTop(1,p.X,DrawWidth), Utils.PTop(1,p.Y,DrawHeight));
+                    _rawPoints.Add(pf);
+                }
+                _drawPoints = value;
             }
 
         }
-
-        public PointF[] RawPoints
+        [XmlIgnore]
+        public List<PointF> RawPoints
         {
             get
             {
@@ -66,17 +79,18 @@ namespace JoystickCurves
             {
                 if (value == null)
                     throw new Exception("Null rawpoints!");
-                if (value.Length == 0)
+                if (value.Count == 0)
                     throw new Exception("Empty rawpoints!");
-                
-                _drawPoints = new Point[value.Length];
 
-                for( var i = 0; i < value.Length; i ++)
+                _drawPoints.Clear();
+
+                for( var i = 0; i < value.Count; i ++)
                 {
                     PointF pf = value[i];
-                    Point p = new Point( (int)(pf.X * (float)DrawWidth), (int)(pf.Y * (float)DrawHeight) );
-                    _drawPoints[i] = p;                    
-                }              
+                    Point p = new Point((int)Utils.PTop(DrawWidth,pf.X,1), (int)Utils.PTop(DrawHeight,pf.Y, DrawHeight));
+                    _drawPoints.Add( p );                    
+                }
+                _rawPoints = value;
             }
         }
 

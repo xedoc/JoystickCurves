@@ -4,6 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Reflection;
 using System.Windows.Forms;
+using System.Xml.Serialization;
+using System.Xml;
+using System.IO;
 
 namespace JoystickCurves
 {
@@ -32,6 +35,42 @@ namespace JoystickCurves
         {
             return topleft * bottomright / topright;
         }
+
+        delegate void SetComboDataSourceCB(ComboBox cbox, BindingSource source, string displayMember, string valueMember);
+        public static void SetComboDataSource(ComboBox cbox, BindingSource source = null, string displayMember = "", string valueMember = "")
+        {
+
+            if (cbox.Parent.InvokeRequired)
+            {
+                SetComboDataSourceCB dlgt = new SetComboDataSourceCB(SetComboDataSource);
+                cbox.Parent.Invoke(dlgt, new object[] { cbox, source, displayMember, valueMember });
+            }
+            else
+            {
+                cbox.DataSource = null;
+                if (source != null)
+                {
+                    cbox.DataSource = source.DataSource;
+
+                    if (!String.IsNullOrEmpty(displayMember))
+                        cbox.DisplayMember = displayMember;
+                    
+                    if (!String.IsNullOrEmpty(valueMember))
+                        cbox.ValueMember = valueMember;
+                }
+
+            }
+        }
+        public class XmlSerializableBase<T> where T : XmlSerializableBase<T>
+        {
+            static XmlSerializer serializer = new XmlSerializer(typeof(T));
+            public static T Deserialize(XmlReader from) { return (T)serializer.Deserialize(from); }
+            public void SerializeTo(Stream s) { serializer.Serialize(s, this); }
+            public void SerializeTo(TextWriter w) { serializer.Serialize(w, this); }
+            public void SerializeTo(XmlWriter xw) { serializer.Serialize(xw, this); }
+            public void SerializeTo(StringWriter sw) { serializer.Serialize(sw, this); }
+        }
+
     }
 
 }

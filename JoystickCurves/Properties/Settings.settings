@@ -2,13 +2,10 @@
 <SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="JoystickCurves.Properties" GeneratedClassName="Settings">
   <Profiles />
   <Settings>
-    <Setting Name="currentProfile" Type="System.String" Scope="User">
-      <Value Profile="(Default)" />
-    </Setting>
-    <Setting Name="Setting" Type="System.String" Scope="User">
-      <Value Profile="(Default)" />
-    </Setting>
     <Setting Name="Profiles" Type="JoystickCurves.ProfileManager" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="CurrentProfile" Type="JoystickCurves.Profile" Scope="User">
       <Value Profile="(Default)" />
     </Setting>
   </Settings>

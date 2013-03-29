@@ -10,7 +10,8 @@ namespace JoystickCurves
     public enum GameControllerType
     {
         Virtual,
-        Physical
+        Physical,
+        NotSet
     }
     public class GameController
     {
@@ -32,6 +33,13 @@ namespace JoystickCurves
         private Timer _pollTimer;
         private Device _device;
         private DeviceInstance _devInstance;
+        private string _name;
+        public GameController(String name)
+        {
+            Name = name;
+            Type = GameControllerType.NotSet;
+            Acquired = false;
+        }
         public GameController( DeviceInstance dev, GameControllerType type )
         {
             _devInstance = dev;
@@ -40,6 +48,15 @@ namespace JoystickCurves
             
             _pollTimer = new Timer(new TimerCallback(poll_Tick), null, Timeout.Infinite, Timeout.Infinite);
             OnAcquire += new EventHandler<EventArgs>(GameController_OnAcquire);
+        }
+        public static implicit operator String(GameController gc)
+        {
+            return gc == null ? String.Empty : gc.Name;
+        }
+
+        public override string ToString()
+        {
+            return Name;
         }
         public bool Acquired
         {
@@ -85,7 +102,7 @@ namespace JoystickCurves
             }
             _pollTimer.Change(POLL_INTERVAL, POLL_INTERVAL);                
         }
-        void GameController_OnAcquire(object sender, EventArgs e)
+        private void GameController_OnAcquire(object sender, EventArgs e)
         {
             Acquired = true;
         }
@@ -96,11 +113,19 @@ namespace JoystickCurves
         }
         public string Name
         {
-            get {
-                    if (Index > 0)
-                        return String.Format("{0} #{1}", _devInstance.InstanceName, Index);
-                    else
-                        return _devInstance.InstanceName;
+            get
+            {
+                if (Type == GameControllerType.NotSet)
+                    return _name;
+
+                if (Index > 0)
+                    return String.Format("{0} #{1}", _devInstance.InstanceName, Index);
+                else
+                    return _devInstance.InstanceName;
+            }
+            set
+            {
+                _name = value;
             }
         }
         public int MinAxisValue

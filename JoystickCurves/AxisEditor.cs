@@ -11,59 +11,94 @@ namespace JoystickCurves
 {
     public partial class AxisEditor : UserControl
     {
-        private BindingSource _virtualBSource, _physicalBSource;
+        private const string NOTSET = "Not set";
+        private const string GC_DISPMEMBER = "Name";
+        private const string GC_VALMEMBER = "Name";
+        private const string AXIS_DISPMEMBER = "Name";
+        private const string AXIS_VALMEMBER = "Name";
+
+        private CurvePoints _points;
+        private GameController _destController, _sourceController;
+        private Axis _sourceAxis, _destAxis;
+        private BindingSource _destContrBSource, _sourceContrBSource, _destAxisBSource, _sourceAxisBSource;
         public AxisEditor()
         {
             InitializeComponent();
 
         }
 
-        public List<GameController> VirtualControllers
+        public GameController SelectedSourceController
+        {
+            get;
+            set;
+        }
+        public GameController SelectedDestinationController
+        {
+            get;
+            set;
+        }
+        public List<String> SourceControllers
         {
             set
             {
-                if (_virtualBSource == null)
+                value.Insert(0, new GameController(NOTSET));
+                if (_destContrBSource == null)
                 {
-                    _virtualBSource = new BindingSource();
-                    _virtualBSource.DataSource = value;
-                }
-                SetDataSource(comboDestDevice, null);
-                SetDataSource(comboDestDevice, _virtualBSource, "Name", "Name");
+                    _destContrBSource = new BindingSource();
+                    _destContrBSource.DataSource = value;
+                }                
+                Utils.SetComboDataSource(comboDestDevice, _destContrBSource);
             }
         }
-        public List<GameController> PhysicalControllers
+        public List<String> DestinationControllers
         {
             set
             {
-                if (_physicalBSource == null)
+                value.Insert(0, new GameController(NOTSET));
+                if (_sourceContrBSource == null)
                 {
-                    _physicalBSource = new BindingSource();
-                    _physicalBSource.DataSource = value;
+                    _sourceContrBSource = new BindingSource();
+                    _sourceContrBSource.DataSource = value;
                 }
-                SetDataSource(comboSourceDevice, null);
-                SetDataSource(comboSourceDevice, _physicalBSource, "Name", "Name");
+                Utils.SetComboDataSource(comboSourceDevice, _sourceContrBSource);
             }
         }
 
-        delegate void SetComboDataSource(ComboBox cbox, BindingSource source, string displayMember, string valueMember);
-        public void SetDataSource(ComboBox cbox, BindingSource source, string displayMember = "", string valueMember = "")
+        public List<String> SourceAxis
         {
-            if (this.InvokeRequired)
+            set
             {
-                SetComboDataSource dlgt = new SetComboDataSource(SetDataSource);
-                Invoke(dlgt, new object[] { cbox, source, displayMember, valueMember });
+                if (value == null)
+                    return;
+                if (_sourceAxisBSource == null)
+                {
+                    _sourceAxisBSource = new BindingSource();
+                    _sourceAxisBSource.DataSource = value;
+                }
+                Utils.SetComboDataSource(comboSourceAxis, _sourceAxisBSource);
             }
-            else
+
+        }
+        public List<String> DestinationAxis
+        {
+            set
             {
-                if (source == null)
-                    cbox.DataSource = null;
-                else
-                    cbox.DataSource = source.DataSource;
-
-                cbox.DisplayMember = displayMember;
-                cbox.ValueMember = valueMember;
-
+                if (value == null)
+                    return;
+                if (_destAxisBSource == null)
+                {
+                    _destAxisBSource = new BindingSource();
+                    _destAxisBSource.DataSource = value;
+                }
+                Utils.SetComboDataSource(comboDestAxis, _destAxisBSource);
             }
         }
+        public CurvePoints Curve
+        {
+            get { return _points; }
+            set { _points = value; } 
+        }
+
+
     }
 }

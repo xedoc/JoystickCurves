@@ -17,6 +17,12 @@ namespace JoystickCurves
     public partial class JoystickTester : Panel
     {
         public const int RETICLE_SIZE = 20;
+        private Point _physicalRudderLocation;
+        private Point _physicalHandleLocation;
+        private Point _virtualRudderLocation;
+        private Point _virtualHandleLocation;
+
+
         public JoystickTester()
         {
             InitializeComponent();
@@ -41,9 +47,14 @@ namespace JoystickCurves
         void JoystickTester_HandleCreated(object sender, EventArgs e)
         {
             Paint += new PaintEventHandler(JoystickTester_Paint);
-            PhysicalAxisPitch = new Axis(-1, 1);
-            PhysicalAxisRoll = new Axis(-1, 1);
-            PhysicalAxisRudder = new Axis(-1, 1);
+            PhysicalAxisPitch = new Axis();
+            PhysicalAxisRoll = new Axis();
+            PhysicalAxisRudder = new Axis();
+
+            VirtualAxisPitch = new Axis();
+            VirtualAxisRoll = new Axis();
+            VirtualAxisRudder = new Axis();
+            Invalidate();
         }
 
         public Rectangle HandleBounds
@@ -58,59 +69,118 @@ namespace JoystickCurves
         }
         public Point PhysicalRudderLocation
         {
-            get;
-            set;
+            get { return _physicalRudderLocation; }
+            set {
+                if (!_physicalRudderLocation.Equals(value))
+                {
+                    _physicalRudderLocation = value;
+                    Invalidate();
+                }
+            }
         }
         public Point PhysicalHandleLocation
         {
-            get;
-            set;
+            get { return _physicalHandleLocation; }
+            set
+            {
+                if (!_physicalHandleLocation.Equals(value))
+                {
+                    _physicalHandleLocation = value;
+                    Invalidate();
+                }
+            }
         }
         public Point VirtualRudderLocation
         {
-            get;
-            set;
+            get { return _virtualRudderLocation; }
+            set
+            {
+                if (!_virtualRudderLocation.Equals(value))
+                {
+                    _virtualRudderLocation = value;
+                    Invalidate();
+                }
+            }
+
         }
         public Point VirtualHandleLocation
         {
-            get;
-            set;
+            get { return _virtualHandleLocation; }
+            set
+            {
+                if (!_virtualHandleLocation.Equals(value))
+                {
+                    _virtualHandleLocation = value;
+                    Invalidate();
+                }
+            }
+
         }
         public Axis PhysicalAxisRoll
         {
             set {
-
-                int newX = HandleBounds.X + (int)Utils.PTop(HandleBounds.Width, value.Value - value.Min, value.Max - value.Min);
-                if (newX != PhysicalHandleLocation.X)
-                {
-                    PhysicalHandleLocation = new Point(newX, PhysicalHandleLocation.Y);
-                    Invalidate();
-                }
+                PhysicalHandleLocation = new Point(
+                    HandleBounds.X + CoordByAxisValue(value, PhysicalHandleLocation.X, HandleBounds.Width), 
+                    PhysicalHandleLocation.Y);
             }
         }
         public Axis PhysicalAxisPitch
         {
             set
             {
-                int newY = HandleBounds.Y + (int)Utils.PTop(HandleBounds.Height, value.Value - value.Min, value.Max - value.Min);
-                if (newY != PhysicalHandleLocation.Y)
-                {
-                    PhysicalHandleLocation = new Point(PhysicalHandleLocation.X, newY);
-                    Invalidate();
-                }
+                PhysicalHandleLocation = new Point(
+                    PhysicalHandleLocation.X, 
+                    HandleBounds.Y + CoordByAxisValue(value, PhysicalHandleLocation.Y, HandleBounds.Height)
+                    );
             }
         }
 
         public Axis PhysicalAxisRudder
         {
             set {
-                int newX = RudderBounds.X + (int)Utils.PTop(RudderBounds.Width, value.Value - value.Min, value.Max - value.Min);
-                if (newX != PhysicalRudderLocation.X)
-                {
-                    PhysicalRudderLocation = new Point(newX, RudderBounds.Y);
-                    Invalidate();
-                }
+                PhysicalRudderLocation = new Point(
+                    RudderBounds.X + CoordByAxisValue(value, PhysicalRudderLocation.X, RudderBounds.Width), 
+                    RudderBounds.Y
+                    );
             }
+        }
+        public Axis VirtualAxisRoll
+        {
+            set
+            {
+                VirtualHandleLocation = new Point(
+                    HandleBounds.X + CoordByAxisValue(value, VirtualHandleLocation.X, HandleBounds.Width), 
+                    VirtualHandleLocation.Y
+                    );
+            }
+        }
+        public Axis VirtualAxisPitch
+        {
+            set
+            {
+                VirtualHandleLocation = new Point(
+                    VirtualHandleLocation.X, 
+                    HandleBounds.Y + CoordByAxisValue(value, VirtualHandleLocation.Y, HandleBounds.Height)
+                    );
+            }
+        }
+
+        public Axis VirtualAxisRudder
+        {
+            set
+            {
+                VirtualRudderLocation = new Point( 
+                    RudderBounds.X + CoordByAxisValue(value, VirtualRudderLocation.X, RudderBounds.Width), 
+                    RudderBounds.Y
+                    );
+            }
+        }
+
+        private int CoordByAxisValue(Axis value, int coord, int bound)
+        {
+            int newCoord = (int)Utils.PTop(bound, value.Value - value.Min, value.Max - value.Min);
+            Debug.Print(value.Value.ToString() + " " + coord.ToString() + " " + newCoord);
+            return newCoord;
         }
         void JoystickTester_Paint(object sender, PaintEventArgs e)
         {
@@ -147,7 +217,6 @@ namespace JoystickCurves
             var rightMiddle = new Point(smallestSide + Margin.Left, smallestSide / 2 + Margin.Top);
             var center = new Point(smallestSide/2 + Margin.Left, smallestSide/2 + Margin.Top);
 
-            HandleBounds = new Rectangle(topLeft.X - RETICLE_SIZE/2, topLeft.Y -RETICLE_SIZE/2, smallestSide,smallestSide);
             gridPen.DashPattern = dashValues;
 
             //Diagonal
@@ -168,14 +237,21 @@ namespace JoystickCurves
             var rudderWidth = pointRightRudder.X - pointLeftRudder.X;
             e.Graphics.DrawLine(gridPen, pointLeftRudder, pointRightRudder);
 
-            RudderBounds = new Rectangle(pointLeftRudder.X - RETICLE_SIZE/2, pointLeftRudder.Y - RETICLE_SIZE/2, rudderWidth, RETICLE_SIZE);
+            HandleBounds = new Rectangle(topLeft.X - RETICLE_SIZE / 2, topLeft.Y - RETICLE_SIZE / 2, smallestSide, smallestSide);
+            RudderBounds = new Rectangle(pointLeftRudder.X - RETICLE_SIZE / 2, pointLeftRudder.Y - RETICLE_SIZE / 2, rudderWidth, RETICLE_SIZE);
 
-            DrawReticle(e.Graphics, Reticle.Cross, PhysicalHandleLocation);
-            DrawReticle(e.Graphics, Reticle.VerticalLine, PhysicalRudderLocation);
+
+
+            var pen = new Pen(Color.FromArgb(0, 150, 0));
+            DrawReticle(e.Graphics, Reticle.VerticalLine, PhysicalRudderLocation, pen);
+            DrawReticle(e.Graphics, Reticle.Cross, PhysicalHandleLocation, pen);
+
+            pen = new Pen(Color.FromArgb(0, 255, 0));
+            DrawReticle(e.Graphics, Reticle.VerticalLine, VirtualRudderLocation, pen);
+            DrawReticle(e.Graphics, Reticle.Cross, VirtualHandleLocation, pen);
         }
-        public void DrawReticle(Graphics g, Reticle ReticleAppearance, Point loc)
+        public void DrawReticle(Graphics g, Reticle ReticleAppearance, Point loc, Pen pen)
         {
-            var pen = new Pen(Color.FromArgb(0, 255, 0));
             pen.Width = 3;
             var top = new Point(loc.X + RETICLE_SIZE/2, loc.Y);
             var bottom = new Point(loc.X + RETICLE_SIZE / 2, loc.Y + RETICLE_SIZE);

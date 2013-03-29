@@ -5,25 +5,31 @@ using System.Text;
 using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Configuration;
+using System.Xml.Serialization;
+using System.Collections.Generic;
+using System.Collections;
 namespace JoystickCurves
 {
-    [Serializable()]
-    public class ProfileManager
+    [Serializable]
+    public class ProfileManager : Utils.XmlSerializableBase<ProfileManager>
     {
         public ProfileManager()
         {
-            
+            Profiles = new List<Profile>();
+
         }
+        [XmlAttribute]
         public String Title
         {
             get;
             set;
         }
-
+        [XmlElement]
         public List<Profile> Profiles
         {
             get;
             set;
         }
+
     }
 }
