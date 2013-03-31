@@ -48,9 +48,7 @@ namespace JoystickCurves
     {
         public ProfileTab()
         {
-            CurvePoints = new CurvePoints();
-            CurvePoints.RawPoints.Add(new System.Drawing.PointF(1.0f, 1.0f));
-            CurvePoints.DrawPoints.Add(new System.Drawing.Point(1, 1));
+
         }
         [XmlAttribute]
         public String TabTitle
@@ -78,7 +76,7 @@ namespace JoystickCurves
             get;set;
         }
         [XmlElement]
-        public CurvePoints CurvePoints
+        public BezierCurvePoints CurvePoints
         {
             get;set;
         }

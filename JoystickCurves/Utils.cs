@@ -15,6 +15,7 @@ namespace JoystickCurves
         public delegate void SetPropCallback(Control ctrl, string propName, object value);
         public static void SetProperty<TControl, TValue>(this TControl ctrl, string propName, TValue value) where TControl : Control
         {
+
             if (ctrl.InvokeRequired)
             {
                 var d = new SetPropCallback(SetProperty);
@@ -25,6 +26,24 @@ namespace JoystickCurves
                 Type t = ctrl.GetType();
                 t.InvokeMember(propName, BindingFlags.Instance | BindingFlags.SetProperty | BindingFlags.Public, null, ctrl, new object[] { value });
             }
+
+        }
+        public delegate object GetPropCallback(Control ctrl, string propName);
+        public static object GetProperty<TControl>(this TControl ctrl, string propName) where TControl : Control
+        {
+
+            if (ctrl.InvokeRequired)
+            {
+                var d = new GetPropCallback(GetProperty);
+                ctrl.Invoke(d, new object[] { ctrl, propName });
+                return null;
+            }
+            else
+            {
+                Type t = ctrl.GetType();
+                return t.InvokeMember(propName, BindingFlags.Instance | BindingFlags.GetProperty | BindingFlags.Public, null, ctrl, null);
+            }
+
         }
 
         public static float PTop(float bottomleft, float topright, float bottomright)
@@ -61,16 +80,16 @@ namespace JoystickCurves
 
             }
         }
-        public class XmlSerializableBase<T> where T : XmlSerializableBase<T>
-        {
-            static XmlSerializer serializer = new XmlSerializer(typeof(T));
-            public static T Deserialize(XmlReader from) { return (T)serializer.Deserialize(from); }
-            public void SerializeTo(Stream s) { serializer.Serialize(s, this); }
-            public void SerializeTo(TextWriter w) { serializer.Serialize(w, this); }
-            public void SerializeTo(XmlWriter xw) { serializer.Serialize(xw, this); }
-            public void SerializeTo(StringWriter sw) { serializer.Serialize(sw, this); }
-        }
 
+    }
+    public class XmlSerializableBase<T> where T : XmlSerializableBase<T>
+    {
+        static XmlSerializer serializer = new XmlSerializer(typeof(T));
+        public static T Deserialize(XmlReader from) { return (T)serializer.Deserialize(from); }
+        public void SerializeTo(Stream s) { serializer.Serialize(s, this); }
+        public void SerializeTo(TextWriter w) { serializer.Serialize(w, this); }
+        public void SerializeTo(XmlWriter xw) { serializer.Serialize(xw, this); }
+        public void SerializeTo(StringWriter sw) { serializer.Serialize(sw, this); }
     }
 
 }

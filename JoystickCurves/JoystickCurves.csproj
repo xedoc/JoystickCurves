@@ -82,11 +82,10 @@
     <Compile Include="AxisEditor.Designer.cs">
       <DependentUpon>AxisEditor.cs</DependentUpon>
     </Compile>
-    <Compile Include="AxisBinding.cs" />
     <Compile Include="BezierCurve.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="CurvePoints.cs" />
+    <Compile Include="BezierCurvePoints.cs" />
     <Compile Include="DeviceManager.cs" />
     <Compile Include="DragRectangle.cs">
       <SubType>Component</SubType>
@@ -105,7 +104,6 @@
     <Compile Include="MainForm.Designer.cs">
       <DependentUpon>MainForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="PhysicalJoystick.cs" />
     <Compile Include="Profile.cs" />
     <Compile Include="ProfileManager.cs" />
     <Compile Include="Program.cs" />

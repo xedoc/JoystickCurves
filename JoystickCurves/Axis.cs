@@ -18,7 +18,7 @@ namespace JoystickCurves
             Min = -1;
             Max = 1;
             Value = 0;
-        }
+        }        
         public Axis(int min, int max)
         {
             if (min == max)
@@ -27,6 +27,11 @@ namespace JoystickCurves
             Min = min;
             Max = max;
             Value = 0;
+        }
+        public string DeviceName
+        {
+            get;
+            set;
         }
         public int Value
         {

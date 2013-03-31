@@ -11,7 +11,7 @@ using System.Collections;
 namespace JoystickCurves
 {
     [Serializable]
-    public class ProfileManager : Utils.XmlSerializableBase<ProfileManager>
+    public class ProfileManager : XmlSerializableBase<ProfileManager>
     {
         public ProfileManager()
         {

@@ -117,4 +117,36 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="curvePoints1.DrawPoints" mimetype="application/x-microsoft.net.object.binary.base64">
+    <value>
+        AAEAAAD/////AQAAAAAAAAAMAgAAAFFTeXN0ZW0uRHJhd2luZywgVmVyc2lvbj00LjAuMC4wLCBDdWx0
+        dXJlPW5ldXRyYWwsIFB1YmxpY0tleVRva2VuPWIwM2Y1ZjdmMTFkNTBhM2EEAQAAAIwBU3lzdGVtLkNv
+        bGxlY3Rpb25zLkdlbmVyaWMuTGlzdGAxW1tTeXN0ZW0uRHJhd2luZy5Qb2ludCwgU3lzdGVtLkRyYXdp
+        bmcsIFZlcnNpb249NC4wLjAuMCwgQ3VsdHVyZT1uZXV0cmFsLCBQdWJsaWNLZXlUb2tlbj1iMDNmNWY3
+        ZjExZDUwYTNhXV0DAAAABl9pdGVtcwVfc2l6ZQhfdmVyc2lvbgQAABZTeXN0ZW0uRHJhd2luZy5Qb2lu
+        dFtdAgAAAAgICQMAAAANAAAAJQEAAAcDAAAAAAEAAAAQAAAABBRTeXN0ZW0uRHJhd2luZy5Qb2ludAIA
+        AAAF/P///xRTeXN0ZW0uRHJhd2luZy5Qb2ludAIAAAABeAF5AAAICAIAAAD2f///fH///wH7/////P//
+        /wGA///rf///Afr////8////AIAAAOt///8B+f////z////2f///fH///wH4/////P///wGA///rf///
+        Aff////8////AIAAAOt///8B9v////z////2f///fH///wH1/////P///wGA///rf///AfT////8////
+        AIAAAOt///8B8/////z////2f///fH///wHy/////P///wGA///rf///AfH////8////AIAAAOt///8B
+        8P////z////2f///fH///wHv/////P///wAAAAAAAAAAAe7////8////AAAAAAAAAAAB7f////z///8A
+        AAAAAAAAAAs=
+</value>
+  </data>
+  <data name="curvePoints1.RawPoints" mimetype="application/x-microsoft.net.object.binary.base64">
+    <value>
+        AAEAAAD/////AQAAAAAAAAAMAgAAAFFTeXN0ZW0uRHJhd2luZywgVmVyc2lvbj00LjAuMC4wLCBDdWx0
+        dXJlPW5ldXRyYWwsIFB1YmxpY0tleVRva2VuPWIwM2Y1ZjdmMTFkNTBhM2EEAQAAAI0BU3lzdGVtLkNv
+        bGxlY3Rpb25zLkdlbmVyaWMuTGlzdGAxW1tTeXN0ZW0uRHJhd2luZy5Qb2ludEYsIFN5c3RlbS5EcmF3
+        aW5nLCBWZXJzaW9uPTQuMC4wLjAsIEN1bHR1cmU9bmV1dHJhbCwgUHVibGljS2V5VG9rZW49YjAzZjVm
+        N2YxMWQ1MGEzYV1dAwAAAAZfaXRlbXMFX3NpemUIX3ZlcnNpb24EAAAXU3lzdGVtLkRyYXdpbmcuUG9p
+        bnRGW10CAAAACAgJAwAAAA0AAAAOAAAABwMAAAAAAQAAABAAAAAEFVN5c3RlbS5EcmF3aW5nLlBvaW50
+        RgIAAAAF/P///xVTeXN0ZW0uRHJhd2luZy5Qb2ludEYCAAAAAXgBeQAACwsCAAAAAADA/wAAwP8B+///
+        //z///8AAMD/AADA/wH6/////P///wAAwP8AAMD/Afn////8////AADA/wAAwP8B+P////z///8AAMD/
+        AADA/wH3/////P///wAAwP8AAMD/Afb////8////AADA/wAAwP8B9f////z///8AAMD/AADA/wH0////
+        /P///wAAwP8AAMD/AfP////8////AADA/wAAwP8B8v////z///8AAMD/AADA/wHx/////P///wAAwP8A
+        AMD/AfD////8////AADA/wAAwP8B7/////z///8AAAAAAAAAAAHu/////P///wAAAAAAAAAAAe3////8
+        ////AAAAAAAAAAAL
+</value>
+  </data>
 </root>

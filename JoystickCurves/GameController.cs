@@ -53,7 +53,6 @@ namespace JoystickCurves
         {
             return gc == null ? String.Empty : gc.Name;
         }
-
         public override string ToString()
         {
             return Name;
@@ -67,7 +66,7 @@ namespace JoystickCurves
         {
             _pollTimer.Change(Timeout.Infinite, Timeout.Infinite);
 
-            _device.Poll();
+            //_device.Poll();
 
             var queue = _device.GetBufferedData();
             if (queue == null)
@@ -84,7 +83,9 @@ namespace JoystickCurves
                 {
                     Axis axis = new Axis(MinAxisValue, MaxAxisValue) {
                         Value = data.Data,
-                        DirectInputID = dataType
+                        DirectInputID = dataType,
+                        DeviceName = Name
+
                     };
                     if (OnAxisChange != null) 
                         OnAxisChange(_device, new CustomEventArgs<Axis>(axis));
@@ -169,6 +170,7 @@ namespace JoystickCurves
         public void Unacquire()
         {
             _pollTimer.Change(Timeout.Infinite, Timeout.Infinite);
+            Thread.Sleep(100);
             _device.Unacquire();
         }
 
@@ -176,7 +178,7 @@ namespace JoystickCurves
         {
             _device = new Device(Guid);
             _device.SetDataFormat(DeviceDataFormat.Joystick);
-            _device.Properties.BufferSize = 32;
+            _device.Properties.BufferSize = 16;
             _device.SetCooperativeLevel(Process.GetCurrentProcess().MainWindowHandle, 
                 CooperativeLevelFlags.NonExclusive | CooperativeLevelFlags.Background);
 

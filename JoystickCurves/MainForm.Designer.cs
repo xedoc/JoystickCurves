@@ -34,8 +34,7 @@
             this.label2 = new System.Windows.Forms.Label();
             this.tabAxis = new System.Windows.Forms.TabControl();
             this.contextMenuTabPage = new System.Windows.Forms.ContextMenuStrip(this.components);
-            this.toolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
-            this.tabPage1 = new System.Windows.Forms.TabPage();
+            this.deleteAxis = new System.Windows.Forms.ToolStripMenuItem();
             this.tabAddNew = new System.Windows.Forms.TabPage();
             this.imageList = new System.Windows.Forms.ImageList(this.components);
             this.buttonHotKey = new System.Windows.Forms.Button();
@@ -57,10 +56,8 @@
             this.label6 = new System.Windows.Forms.Label();
             this.label10 = new System.Windows.Forms.Label();
             this.label5 = new System.Windows.Forms.Label();
-            this.axisEditor = new JoystickCurves.AxisEditor();
             this.tabAxis.SuspendLayout();
             this.contextMenuTabPage.SuspendLayout();
-            this.tabPage1.SuspendLayout();
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
             this.joystickTester.SuspendLayout();
@@ -91,7 +88,6 @@
             // tabAxis
             // 
             this.tabAxis.ContextMenuStrip = this.contextMenuTabPage;
-            this.tabAxis.Controls.Add(this.tabPage1);
             this.tabAxis.Controls.Add(this.tabAddNew);
             this.tabAxis.ImageList = this.imageList;
             this.tabAxis.Location = new System.Drawing.Point(12, 31);
@@ -104,26 +100,16 @@
             // contextMenuTabPage
             // 
             this.contextMenuTabPage.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.toolStripMenuItem1});
+            this.deleteAxis});
             this.contextMenuTabPage.Name = "contextMenuTabPage";
-            this.contextMenuTabPage.Size = new System.Drawing.Size(158, 26);
+            this.contextMenuTabPage.Size = new System.Drawing.Size(153, 48);
+            this.contextMenuTabPage.ItemClicked += new System.Windows.Forms.ToolStripItemClickedEventHandler(this.contextMenuTabPage_ItemClicked);
             // 
-            // toolStripMenuItem1
+            // deleteAxis
             // 
-            this.toolStripMenuItem1.Name = "toolStripMenuItem1";
-            this.toolStripMenuItem1.Size = new System.Drawing.Size(157, 22);
-            this.toolStripMenuItem1.Text = "Delete Axis State";
-            // 
-            // tabPage1
-            // 
-            this.tabPage1.Controls.Add(this.axisEditor);
-            this.tabPage1.Location = new System.Drawing.Point(4, 23);
-            this.tabPage1.Name = "tabPage1";
-            this.tabPage1.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage1.Size = new System.Drawing.Size(599, 430);
-            this.tabPage1.TabIndex = 0;
-            this.tabPage1.Text = "Axis 1";
-            this.tabPage1.UseVisualStyleBackColor = true;
+            this.deleteAxis.Name = "deleteAxis";
+            this.deleteAxis.Size = new System.Drawing.Size(152, 22);
+            this.deleteAxis.Text = "Delete axis";
             // 
             // tabAddNew
             // 
@@ -346,21 +332,6 @@
             this.label5.Text = "0%";
             this.label5.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
-            // axisEditor
-            // 
-            this.axisEditor.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.axisEditor.Curve = null;
-            this.axisEditor.DestinationAxis = null;
-            this.axisEditor.Location = new System.Drawing.Point(2, 6);
-            this.axisEditor.Name = "axisEditor";
-            this.axisEditor.SelectedDestinationController = null;
-            this.axisEditor.SelectedSourceController = null;
-            this.axisEditor.Size = new System.Drawing.Size(593, 421);
-            this.axisEditor.SourceAxis = null;
-            this.axisEditor.TabIndex = 0;
-            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -371,8 +342,8 @@
             this.Controls.Add(this.checkHoldActivate);
             this.Controls.Add(this.joystickTester);
             this.Controls.Add(this.buttonHotKey);
-            this.Controls.Add(this.tabAxis);
             this.Controls.Add(this.label2);
+            this.Controls.Add(this.tabAxis);
             this.Controls.Add(this.comboProfiles);
             this.DoubleBuffered = true;
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
@@ -384,7 +355,6 @@
             this.Shown += new System.EventHandler(this.MainForm_Shown);
             this.tabAxis.ResumeLayout(false);
             this.contextMenuTabPage.ResumeLayout(false);
-            this.tabPage1.ResumeLayout(false);
             this.groupBox1.ResumeLayout(false);
             this.groupBox1.PerformLayout();
             this.groupBox2.ResumeLayout(false);
@@ -401,8 +371,6 @@
         private System.Windows.Forms.ComboBox comboProfiles;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.TabControl tabAxis;
-        private System.Windows.Forms.TabPage tabPage1;
-        private AxisEditor axisEditor;
         private System.Windows.Forms.TabPage tabAddNew;
         private System.Windows.Forms.ImageList imageList;
         private System.Windows.Forms.Button buttonHotKey;
@@ -415,7 +383,7 @@
         private System.Windows.Forms.Label label5;
         private System.Windows.Forms.CheckBox checkHoldActivate;
         private System.Windows.Forms.ContextMenuStrip contextMenuTabPage;
-        private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem1;
+        private System.Windows.Forms.ToolStripMenuItem deleteAxis;
         private System.Windows.Forms.ComboBox comboPhysPitch;
         private System.Windows.Forms.Label label7;
         private System.Windows.Forms.GroupBox groupBox1;

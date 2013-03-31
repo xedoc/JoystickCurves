@@ -32,6 +32,10 @@ namespace JoystickCurves
         {
             _joystick.ResetVJD(_deviceid);
         }
+        public vJoy Joystick
+        {
+            get { return _joystick; }
+        }
         public void Acquire(uint id)
         {
             var status = _joystick.GetVJDStatus(id);

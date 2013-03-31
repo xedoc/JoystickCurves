@@ -179,7 +179,6 @@ namespace JoystickCurves
         private int CoordByAxisValue(Axis value, int coord, int bound)
         {
             int newCoord = (int)Utils.PTop(bound, value.Value - value.Min, value.Max - value.Min);
-            Debug.Print(value.Value.ToString() + " " + coord.ToString() + " " + newCoord);
             return newCoord;
         }
         void JoystickTester_Paint(object sender, PaintEventArgs e)

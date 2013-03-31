@@ -28,12 +28,13 @@
         /// </summary>
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(AxisEditor));
             this.comboSourceAxis = new System.Windows.Forms.ComboBox();
             this.label1 = new System.Windows.Forms.Label();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
-            this.groupBox2 = new System.Windows.Forms.GroupBox();
-            this.comboSourceDevice = new System.Windows.Forms.ComboBox();
             this.label3 = new System.Windows.Forms.Label();
+            this.comboSourceDevice = new System.Windows.Forms.ComboBox();
+            this.groupBox2 = new System.Windows.Forms.GroupBox();
             this.label2 = new System.Windows.Forms.Label();
             this.comboDestDevice = new System.Windows.Forms.ComboBox();
             this.label4 = new System.Windows.Forms.Label();
@@ -52,6 +53,7 @@
             this.comboSourceAxis.Name = "comboSourceAxis";
             this.comboSourceAxis.Size = new System.Drawing.Size(221, 21);
             this.comboSourceAxis.TabIndex = 1;
+            this.comboSourceAxis.SelectionChangeCommitted += new System.EventHandler(this.Change);
             // 
             // label1
             // 
@@ -75,10 +77,28 @@
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Source (Physical device)";
             // 
+            // label3
+            // 
+            this.label3.AutoSize = true;
+            this.label3.Location = new System.Drawing.Point(6, 18);
+            this.label3.Name = "label3";
+            this.label3.Size = new System.Drawing.Size(44, 13);
+            this.label3.TabIndex = 4;
+            this.label3.Text = "Device:";
+            // 
+            // comboSourceDevice
+            // 
+            this.comboSourceDevice.FormattingEnabled = true;
+            this.comboSourceDevice.Location = new System.Drawing.Point(56, 15);
+            this.comboSourceDevice.Name = "comboSourceDevice";
+            this.comboSourceDevice.Size = new System.Drawing.Size(221, 21);
+            this.comboSourceDevice.TabIndex = 3;
+            this.comboSourceDevice.SelectionChangeCommitted += new System.EventHandler(this.Change);
+            // 
             // groupBox2
             // 
-            this.groupBox2.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
+            this.groupBox2.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
+                        | System.Windows.Forms.AnchorStyles.Right)));
             this.groupBox2.Controls.Add(this.label2);
             this.groupBox2.Controls.Add(this.comboDestDevice);
             this.groupBox2.Controls.Add(this.label4);
@@ -89,24 +109,6 @@
             this.groupBox2.TabIndex = 5;
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "Destination (Virtual joystick)";
-
-            // 
-            // comboSourceDevice
-            // 
-            this.comboSourceDevice.FormattingEnabled = true;
-            this.comboSourceDevice.Location = new System.Drawing.Point(56, 15);
-            this.comboSourceDevice.Name = "comboSourceDevice";
-            this.comboSourceDevice.Size = new System.Drawing.Size(221, 21);
-            this.comboSourceDevice.TabIndex = 3;
-            // 
-            // label3
-            // 
-            this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(6, 18);
-            this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(44, 13);
-            this.label3.TabIndex = 4;
-            this.label3.Text = "Device:";
             // 
             // label2
             // 
@@ -119,13 +121,14 @@
             // 
             // comboDestDevice
             // 
-            this.comboDestDevice.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
+            this.comboDestDevice.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
+                        | System.Windows.Forms.AnchorStyles.Right)));
             this.comboDestDevice.FormattingEnabled = true;
             this.comboDestDevice.Location = new System.Drawing.Point(75, 15);
             this.comboDestDevice.Name = "comboDestDevice";
             this.comboDestDevice.Size = new System.Drawing.Size(219, 21);
             this.comboDestDevice.TabIndex = 7;
+            this.comboDestDevice.SelectionChangeCommitted += new System.EventHandler(this.Change);
             // 
             // label4
             // 
@@ -138,19 +141,20 @@
             // 
             // comboDestAxis
             // 
-            this.comboDestAxis.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
+            this.comboDestAxis.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
+                        | System.Windows.Forms.AnchorStyles.Right)));
             this.comboDestAxis.FormattingEnabled = true;
             this.comboDestAxis.Location = new System.Drawing.Point(75, 41);
             this.comboDestAxis.Name = "comboDestAxis";
             this.comboDestAxis.Size = new System.Drawing.Size(219, 21);
             this.comboDestAxis.TabIndex = 5;
+            this.comboDestAxis.SelectionChangeCommitted += new System.EventHandler(this.Change);
             // 
             // groupBox3
             // 
-            this.groupBox3.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
+            this.groupBox3.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+                        | System.Windows.Forms.AnchorStyles.Left)
+                        | System.Windows.Forms.AnchorStyles.Right)));
             this.groupBox3.Controls.Add(this.curveResponse);
             this.groupBox3.Location = new System.Drawing.Point(5, 92);
             this.groupBox3.Name = "groupBox3";
@@ -161,17 +165,18 @@
             // 
             // curveResponse
             // 
-            this.curveResponse.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
+            this.curveResponse.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+                        | System.Windows.Forms.AnchorStyles.Left)
+                        | System.Windows.Forms.AnchorStyles.Right)));
             this.curveResponse.BackColor = System.Drawing.Color.White;
-            this.curveResponse.HorizontalLines = 10;
+            this.curveResponse.HorizontalLines = 5;
             this.curveResponse.Location = new System.Drawing.Point(6, 19);
             this.curveResponse.Name = "curveResponse";
             this.curveResponse.Padding = new System.Windows.Forms.Padding(10);
-            this.curveResponse.PointCount = 4;
+            this.curveResponse.PointsCount = 13;
             this.curveResponse.Size = new System.Drawing.Size(577, 282);
             this.curveResponse.TabIndex = 1;
+            this.curveResponse.OnCurveChange += new System.EventHandler<System.EventArgs>(this.Change);
             // 
             // AxisEditor
             // 
