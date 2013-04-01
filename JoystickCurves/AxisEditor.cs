@@ -21,6 +21,7 @@ namespace JoystickCurves
         private BindingSource _destContrBSource, _sourceContrBSource, _destAxisBSource, _sourceAxisBSource;
         private string _selectedDestDevice, _selectedDestAxis, _selectedSourceDevice, _selectedSourceAxis;
         public event EventHandler<EventArgs> OnChange;
+        private object lockRead = new object();
 
         public AxisEditor()
         {
@@ -30,6 +31,11 @@ namespace JoystickCurves
             _selectedDestDevice = NOTSET;
             _selectedSourceAxis = NOTSET;
             _selectedSourceDevice = NOTSET;
+        }
+        public int Index
+        {
+            get;
+            set;
         }
         public List<String> SourceControllers
         {
@@ -90,8 +96,8 @@ namespace JoystickCurves
                 }
                 _sourceAxis = value;
                 Utils.SetComboDataSource(comboSourceAxis, _sourceAxisBSource);
-
                 Utils.SetProperty<ComboBox, String>(comboSourceAxis, "SelectedItem", _selectedSourceAxis);
+                Utils.SetProperty<TabPage, String>((TabPage)Parent,"Text", _selectedSourceAxis);
             }
 
         }
@@ -162,12 +168,20 @@ namespace JoystickCurves
         }
         private void Change(object sender, EventArgs e)
         {
-            CurrentDestAxis = comboDestAxis.SelectedItem as string;
-            CurrentDestDevice = comboDestDevice.SelectedItem as string;
-            CurrentSourceAxis = comboSourceAxis.SelectedItem as string;
-            CurrentSourceDevice = comboSourceDevice.SelectedItem as string;
+
+            CurrentDestAxis = (string)Utils.GetProperty<ComboBox>(comboDestAxis, "SelectedItem");
+            CurrentDestDevice = (string)Utils.GetProperty<ComboBox>(comboDestDevice, "SelectedItem");
+            CurrentSourceAxis = (string)Utils.GetProperty<ComboBox>(comboSourceAxis, "SelectedItem");
+            CurrentSourceDevice = (string)Utils.GetProperty<ComboBox>(comboSourceDevice, "SelectedItem");
+
             Title = CurrentSourceAxis;
 
+            if (OnChange != null)
+                OnChange(this, EventArgs.Empty);
+        }
+
+        private void curveResponse_OnCurveChange(object sender, EventArgs e)
+        {
             if (OnChange != null)
                 OnChange(this, EventArgs.Empty);
         }

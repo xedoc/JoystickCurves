@@ -46,6 +46,9 @@ namespace JoystickCurves
     }
     public class ProfileTab
     {
+        private object lockPoints = new object();
+        private BezierCurvePoints _curvePoints;
+
         public ProfileTab()
         {
 
@@ -78,7 +81,19 @@ namespace JoystickCurves
         [XmlElement]
         public BezierCurvePoints CurvePoints
         {
-            get;set;
+            get { 
+                lock( lockPoints )
+                {
+                    return _curvePoints;
+                }
+            }
+            set
+            {
+                lock (lockPoints)
+                {
+                    _curvePoints = value;
+                }
+            }
         }
 
     }

@@ -40,8 +40,8 @@ namespace JoystickCurves
         }
         public int PercentValue
         {
-            get { return (100 / (Max - Min)) * Value; }
-            set { Value = value * 100 / (Max - Min); }
+            get { return (int)Utils.PTop(100, Value + Max, Max - Min); }
+            set { Value = (int)((value + Max) * 100.0f / (Max - Min)); }
         }
         public int Max
         {

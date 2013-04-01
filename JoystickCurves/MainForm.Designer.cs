@@ -49,13 +49,14 @@
             this.label9 = new System.Windows.Forms.Label();
             this.comboVirtPitch = new System.Windows.Forms.ComboBox();
             this.label11 = new System.Windows.Forms.Label();
+            this.copyCurveToToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.joystickTester = new JoystickCurves.JoystickTester(this.components);
             this.label4 = new System.Windows.Forms.Label();
             this.label3 = new System.Windows.Forms.Label();
             this.label1 = new System.Windows.Forms.Label();
-            this.label6 = new System.Windows.Forms.Label();
-            this.label10 = new System.Windows.Forms.Label();
-            this.label5 = new System.Windows.Forms.Label();
+            this.labelYawPercent = new System.Windows.Forms.Label();
+            this.labelRollPercent = new System.Windows.Forms.Label();
+            this.labelPitchPercent = new System.Windows.Forms.Label();
             this.tabAxis.SuspendLayout();
             this.contextMenuTabPage.SuspendLayout();
             this.groupBox1.SuspendLayout();
@@ -67,6 +68,7 @@
             // comboProfiles
             // 
             this.comboProfiles.DataBindings.Add(new System.Windows.Forms.Binding("Text", global::JoystickCurves.Properties.Settings.Default, "CurrentProfile", true, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged));
+            this.comboProfiles.Enabled = false;
             this.comboProfiles.FormattingEnabled = true;
             this.comboProfiles.Items.AddRange(new object[] {
             "<New profile...>",
@@ -101,16 +103,17 @@
             // contextMenuTabPage
             // 
             this.contextMenuTabPage.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.copyCurveToToolStripMenuItem,
             this.deleteAxis});
             this.contextMenuTabPage.Name = "contextMenuTabPage";
-            this.contextMenuTabPage.Size = new System.Drawing.Size(128, 26);
+            this.contextMenuTabPage.Size = new System.Drawing.Size(158, 48);
             this.contextMenuTabPage.ItemClicked += new System.Windows.Forms.ToolStripItemClickedEventHandler(this.contextMenuTabPage_ItemClicked);
             // 
             // deleteAxis
             // 
             this.deleteAxis.Name = "deleteAxis";
-            this.deleteAxis.Size = new System.Drawing.Size(127, 22);
-            this.deleteAxis.Text = "Delete axis";
+            this.deleteAxis.Size = new System.Drawing.Size(157, 22);
+            this.deleteAxis.Text = "Delete tab";
             // 
             // tabAddNew
             // 
@@ -132,6 +135,7 @@
             // 
             // buttonHotKey
             // 
+            this.buttonHotKey.Enabled = false;
             this.buttonHotKey.Location = new System.Drawing.Point(329, 4);
             this.buttonHotKey.Name = "buttonHotKey";
             this.buttonHotKey.Size = new System.Drawing.Size(75, 23);
@@ -142,6 +146,7 @@
             // checkHoldActivate
             // 
             this.checkHoldActivate.AutoSize = true;
+            this.checkHoldActivate.Enabled = false;
             this.checkHoldActivate.Location = new System.Drawing.Point(410, 9);
             this.checkHoldActivate.Name = "checkHoldActivate";
             this.checkHoldActivate.Size = new System.Drawing.Size(101, 17);
@@ -248,27 +253,34 @@
             this.label11.TabIndex = 12;
             this.label11.Text = "Pitch/Roll:";
             // 
+            // copyCurveToToolStripMenuItem
+            // 
+            this.copyCurveToToolStripMenuItem.Name = "copyCurveToToolStripMenuItem";
+            this.copyCurveToToolStripMenuItem.Size = new System.Drawing.Size(157, 22);
+            this.copyCurveToToolStripMenuItem.Text = "Copy curve to...";
+            this.copyCurveToToolStripMenuItem.DropDownItemClicked += new System.Windows.Forms.ToolStripItemClickedEventHandler(this.copyCurveToToolStripMenuItem_DropDownItemClicked);
+            // 
             // joystickTester
             // 
             this.joystickTester.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(64)))), ((int)(((byte)(0)))));
             this.joystickTester.Controls.Add(this.label4);
             this.joystickTester.Controls.Add(this.label3);
             this.joystickTester.Controls.Add(this.label1);
-            this.joystickTester.Controls.Add(this.label6);
-            this.joystickTester.Controls.Add(this.label10);
-            this.joystickTester.Controls.Add(this.label5);
-            this.joystickTester.HandleBounds = new System.Drawing.Rectangle(35, 20, 69, 69);
+            this.joystickTester.Controls.Add(this.labelYawPercent);
+            this.joystickTester.Controls.Add(this.labelRollPercent);
+            this.joystickTester.Controls.Add(this.labelPitchPercent);
+            this.joystickTester.HandleBounds = new System.Drawing.Rectangle(30, 15, 281, 281);
             this.joystickTester.Location = new System.Drawing.Point(625, 132);
             this.joystickTester.Margin = new System.Windows.Forms.Padding(40, 25, 20, 50);
             this.joystickTester.Name = "joystickTester";
-            this.joystickTester.PhysicalHandleLocation = new System.Drawing.Point(173, 158);
-            this.joystickTester.PhysicalRudderLocation = new System.Drawing.Point(173, 327);
-            this.joystickTester.RudderBounds = new System.Drawing.Rectangle(35, 119, 69, 10);
+            this.joystickTester.PhysicalHandleLocation = new System.Drawing.Point(170, 155);
+            this.joystickTester.PhysicalRudderLocation = new System.Drawing.Point(170, 326);
+            this.joystickTester.RudderBounds = new System.Drawing.Rectangle(30, 326, 281, 20);
             this.joystickTester.Size = new System.Drawing.Size(356, 356);
             this.joystickTester.TabIndex = 9;
             this.joystickTester.TabStop = false;
-            this.joystickTester.VirtualHandleLocation = new System.Drawing.Point(173, 158);
-            this.joystickTester.VirtualRudderLocation = new System.Drawing.Point(173, 327);
+            this.joystickTester.VirtualHandleLocation = new System.Drawing.Point(170, 155);
+            this.joystickTester.VirtualRudderLocation = new System.Drawing.Point(170, 326);
             // 
             // label4
             // 
@@ -300,39 +312,39 @@
             this.label1.TabIndex = 0;
             this.label1.Text = "Pitch";
             // 
-            // label6
+            // labelYawPercent
             // 
-            this.label6.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(64)))), ((int)(((byte)(0)))));
-            this.label6.FlatStyle = System.Windows.Forms.FlatStyle.System;
-            this.label6.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(250)))), ((int)(((byte)(0)))));
-            this.label6.Location = new System.Drawing.Point(2, 334);
-            this.label6.Name = "label6";
-            this.label6.Size = new System.Drawing.Size(28, 13);
-            this.label6.TabIndex = 10;
-            this.label6.Text = "0%";
-            this.label6.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.labelYawPercent.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(64)))), ((int)(((byte)(0)))));
+            this.labelYawPercent.FlatStyle = System.Windows.Forms.FlatStyle.System;
+            this.labelYawPercent.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(250)))), ((int)(((byte)(0)))));
+            this.labelYawPercent.Location = new System.Drawing.Point(2, 334);
+            this.labelYawPercent.Name = "labelYawPercent";
+            this.labelYawPercent.Size = new System.Drawing.Size(28, 13);
+            this.labelYawPercent.TabIndex = 10;
+            this.labelYawPercent.Text = "0%";
+            this.labelYawPercent.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
-            // label10
+            // labelRollPercent
             // 
-            this.label10.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(64)))), ((int)(((byte)(0)))));
-            this.label10.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(250)))), ((int)(((byte)(0)))));
-            this.label10.Location = new System.Drawing.Point(-1, 163);
-            this.label10.Name = "label10";
-            this.label10.Size = new System.Drawing.Size(37, 13);
-            this.label10.TabIndex = 10;
-            this.label10.Text = "0%";
-            this.label10.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.labelRollPercent.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(64)))), ((int)(((byte)(0)))));
+            this.labelRollPercent.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(250)))), ((int)(((byte)(0)))));
+            this.labelRollPercent.Location = new System.Drawing.Point(-1, 163);
+            this.labelRollPercent.Name = "labelRollPercent";
+            this.labelRollPercent.Size = new System.Drawing.Size(37, 13);
+            this.labelRollPercent.TabIndex = 10;
+            this.labelRollPercent.Text = "0%";
+            this.labelRollPercent.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
-            // label5
+            // labelPitchPercent
             // 
-            this.label5.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(64)))), ((int)(((byte)(0)))));
-            this.label5.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(250)))), ((int)(((byte)(0)))));
-            this.label5.Location = new System.Drawing.Point(177, 0);
-            this.label5.Name = "label5";
-            this.label5.Size = new System.Drawing.Size(37, 13);
-            this.label5.TabIndex = 10;
-            this.label5.Text = "0%";
-            this.label5.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.labelPitchPercent.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(64)))), ((int)(((byte)(0)))));
+            this.labelPitchPercent.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(250)))), ((int)(((byte)(0)))));
+            this.labelPitchPercent.Location = new System.Drawing.Point(177, 0);
+            this.labelPitchPercent.Name = "labelPitchPercent";
+            this.labelPitchPercent.Size = new System.Drawing.Size(37, 13);
+            this.labelPitchPercent.TabIndex = 10;
+            this.labelPitchPercent.Text = "0%";
+            this.labelPitchPercent.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // MainForm
             // 
@@ -381,9 +393,9 @@
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.Label label4;
         private System.Windows.Forms.Label label1;
-        private System.Windows.Forms.Label label6;
-        private System.Windows.Forms.Label label10;
-        private System.Windows.Forms.Label label5;
+        private System.Windows.Forms.Label labelYawPercent;
+        private System.Windows.Forms.Label labelRollPercent;
+        private System.Windows.Forms.Label labelPitchPercent;
         private System.Windows.Forms.CheckBox checkHoldActivate;
         private System.Windows.Forms.ContextMenuStrip contextMenuTabPage;
         private System.Windows.Forms.ToolStripMenuItem deleteAxis;
@@ -397,6 +409,7 @@
         private System.Windows.Forms.Label label9;
         private System.Windows.Forms.ComboBox comboVirtPitch;
         private System.Windows.Forms.Label label11;
+        private System.Windows.Forms.ToolStripMenuItem copyCurveToToolStripMenuItem;
     }
 }
 

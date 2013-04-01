@@ -208,12 +208,20 @@ namespace JoystickCurves
             }
         }
 
+        void SetupTabContextMenu()
+        {
+            var axisList = DIUtils.AxisNames.ToList().Except(new string[] {tabAxis.SelectedTab.Text}).ToList();
+            copyCurveToToolStripMenuItem.DropDownItems.Clear();
+            foreach( var a in axisList )
+                copyCurveToToolStripMenuItem.DropDownItems.Add(a);
+        }
+
         void axisEditor_OnChange(object sender, EventArgs e)
         {
             var axisEditor = sender as AxisEditor;
-            axisEditor.Parent.Text = axisEditor.CurrentSourceAxis;
+            Utils.SetProperty<TabPage,String>( (TabPage)axisEditor.Parent, "Text",axisEditor.CurrentSourceAxis );
             var currentProfileName = _currentProfile.Title;
-            _currentProfile.Tabs[tabAxis.SelectedIndex] = axisEditor;
+            _currentProfile.Tabs[axisEditor.Index] = axisEditor;
         }
         void deviceManager_OnDeviceList(object sender, EventArgs e)
         {
@@ -239,15 +247,17 @@ namespace JoystickCurves
                 if (e.Data.DirectInputID == JoystickOffset.X)
                 {
                     Utils.SetProperty<JoystickTester, Axis>(joystickTester, "VirtualAxisRoll", e.Data);
+                    Utils.SetProperty<Label, String>(labelRollPercent, "Text", e.Data.PercentValue.ToString() + "%");
                 }
                 else if (e.Data.DirectInputID == JoystickOffset.Y)
                 {
                     Utils.SetProperty<JoystickTester, Axis>(joystickTester, "VirtualAxisPitch", e.Data);
+                    Utils.SetProperty<Label, String>(labelPitchPercent, "Text", e.Data.PercentValue.ToString() + "%");
                 }
                 else if (e.Data.DirectInputID == JoystickOffset.RZ)
                 {
                     Utils.SetProperty<JoystickTester, Axis>(joystickTester, "VirtualAxisRudder", e.Data);
-
+                    Utils.SetProperty<Label,String>(labelYawPercent,"Text", e.Data.PercentValue.ToString() + "%");
                 }
 
                 return;
@@ -255,29 +265,33 @@ namespace JoystickCurves
 
             var devName = e.Data.DeviceName;
             var axisName = DIUtils.Name(e.Data.DirectInputID);
-
             BezierCurvePoints curvePoints = _currentProfile.Tabs.Where(t => t.SourceDevice == devName && t.SourceAxis == axisName).Select( t => t.CurvePoints).FirstOrDefault();
+            float multiplier = 1.0f;
+            if (curvePoints != null)
+                multiplier = curvePoints.GetY(Utils.PTop(1, Math.Abs(e.Data.Value), 32767));
+
                 
             if (e.Data.DirectInputID == JoystickOffset.X)
             {
                 Utils.SetProperty<JoystickTester, Axis>(joystickTester, "PhysicalAxisRoll", e.Data);
+                Debug.Print("{0:0.00} {1:0.00}", multiplier, (float)e.Data.Value * multiplier);
+                _vjoy.X = (int)((float)e.Data.Value * multiplier);
             }
             else if (e.Data.DirectInputID == JoystickOffset.Y)
             {
-                ThreadPool.QueueUserWorkItem(arg=> Utils.SetProperty<JoystickTester, Axis>(joystickTester, "PhysicalAxisPitch", e.Data));
-                if (curvePoints != null)
-                {
-                    var multipler = 1 - curvePoints.GetY(Utils.PTop(1, e.Data.Value + 32767, 65534));
-                }
+                Utils.SetProperty<JoystickTester, Axis>(joystickTester, "PhysicalAxisPitch", e.Data);
+                _vjoy.Y = (int)((float)e.Data.Value * multiplier);
             }
             else if (e.Data.DirectInputID == JoystickOffset.RZ)
             {
                 Utils.SetProperty<JoystickTester, Axis>(joystickTester, "PhysicalAxisRudder", e.Data);
+                _vjoy.RZ = (int)((float)e.Data.Value * multiplier);
             }
         }
 
         private void tabAxis_SelectedIndexChanged(object sender, EventArgs e)
         {
+
             var tab = sender as TabControl;
             if (tab.SelectedTab.Name == "tabAddNew")
             {
@@ -289,6 +303,7 @@ namespace JoystickCurves
                 SetupEditorComboBoxes();
                 _currentProfile.Tabs.Add(axisEditor);
             }
+            SetupTabContextMenu();
         }
 
         private TabPage AddNewProfileTab(TabControl tab, bool select = false)
@@ -298,7 +313,8 @@ namespace JoystickCurves
 
             newTabPage.Controls.Add(new AxisEditor() { 
                 Location = new Point( templateTab.Padding.Left, templateTab.Padding.Top ), 
-                Size = new Size(templateTab.Width - Padding.Left - Padding.Right, templateTab.Height - Padding.Top - Padding.Bottom)
+                Size = new Size(templateTab.Width - Padding.Left - Padding.Right, templateTab.Height - Padding.Top - Padding.Bottom),
+                Index = tabAxis.TabPages.Count - 1
             });
 
             tabAxis.TabPages.Insert(tabAxis.TabPages.Count - 1, newTabPage);
@@ -313,6 +329,37 @@ namespace JoystickCurves
         {
             if (e.ClickedItem.Name == "deleteAxis")
                 tabAxis.TabPages.Remove(tabAxis.SelectedTab);
+        }
+
+        private void copyCurveToToolStripMenuItem_DropDownItemClicked(object sender, ToolStripItemClickedEventArgs e)
+        {
+            var title = e.ClickedItem.Text;
+            var axisEditor = tabAxis.SelectedTab.Controls[0] as AxisEditor;
+            var tab = _currentProfile.Tabs.Where(t => t.TabTitle == title).FirstOrDefault();
+            if (tab != null)
+            {
+                tab.CurvePoints = axisEditor.CurrentCurve;
+                foreach (TabPage tp in tabAxis.TabPages)
+                {
+                    if (tp.Text == title)
+                    {
+                        ((AxisEditor)tp.Controls[0]).CurrentCurve = axisEditor.CurrentCurve;
+                        break;
+                    }
+                }
+             
+            }
+            else
+            {
+                var newTab = AddNewProfileTab(tabAxis, true);
+                var newAxisEditor = newTab.Controls[0] as AxisEditor;
+                newAxisEditor.CurrentSourceAxis = e.ClickedItem.Text;
+                newAxisEditor.CurrentCurve = axisEditor.CurrentCurve;
+                SetupEditorComboBoxes();
+                SetupTabContextMenu();
+
+                _currentProfile.Tabs.Add(newAxisEditor);
+            }
         }
 
 

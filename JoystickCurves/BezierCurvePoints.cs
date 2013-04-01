@@ -14,6 +14,7 @@ namespace JoystickCurves
         private int _drawWidth, _drawHeight;
         private int _pointsCount;
         private const int DEFAULTPOINTSCOUNT = 13;
+        private object lockPoints = new object();
         public BezierCurvePoints()
         {
             InitPoints(DEFAULTPOINTSCOUNT);           
@@ -103,22 +104,25 @@ namespace JoystickCurves
         }
         public void ScaleRawPoints(int index = -1)
         {
-            if (_drawPoints.Count == 0)
-                return;
+            lock (lockPoints)
+            {
+                if (_drawPoints.Count == 0)
+                    return;
 
-            if (index == -1)
-            {
-                _rawPoints = new List<PointF>();
-                for (var i = 0; i < _pointsCount; i++)
+                if (index == -1)
                 {
-                    Point p = _drawPoints[i];
-                    PointF pf = new PointF(Utils.PTop(1, p.X, DrawWidth), Utils.PTop(1, p.Y, DrawHeight));
-                    _rawPoints.Add(pf);
+                    _rawPoints = new List<PointF>();
+                    for (var i = 0; i < _pointsCount; i++)
+                    {
+                        Point p = _drawPoints[i];
+                        PointF pf = new PointF(Utils.PTop(1, p.X, DrawWidth), Utils.PTop(1, p.Y, DrawHeight));
+                        _rawPoints.Add(pf);
+                    }
                 }
-            }
-            else
-            {
-                _rawPoints[index] = new PointF(Utils.PTop(1, _drawPoints[index].X, DrawWidth), Utils.PTop(1, _drawPoints[index].Y, DrawHeight));
+                else
+                {
+                    _rawPoints[index] = new PointF(Utils.PTop(1, _drawPoints[index].X, DrawWidth), Utils.PTop(1, _drawPoints[index].Y, DrawHeight));
+                }
             }
         }
 
@@ -128,20 +132,28 @@ namespace JoystickCurves
         }
         public float GetY(float x)
         {
-            if (x < 0 || x > 1.0f)
-                throw new Exception("X must be set between 0 and 1");
+            lock (lockPoints)
+            {
+                if (x < 0 || x > 1.0f)
+                    throw new Exception("X must be set between 0 and 1");
 
-            if (x == 1.0f)
-                return 1 - _rawPoints[_rawPoints.Count - 1].Y;
-            if (x == 0)
-                return 1 - _rawPoints[0].Y;
+                if (x == 1.0f)
+                    return 1 - _rawPoints[_rawPoints.Count - 1].Y;
+                if (x == 0)
+                    return 1 - _rawPoints[0].Y;
 
-            var i = _rawPoints.AsEnumerable().Select((p, j) => new { Index = j, Value = p.X }).Where( a => a.Index % 3 == 0 && a.Value <= x ).LastOrDefault().Index;
+                var i = _rawPoints.AsEnumerable().Select((p, j) => new { Index = j, Value = p.X }).Where(a => a.Index % 3 == 0 && a.Value <= x).LastOrDefault().Index;
 
-            if (i + 4 > _rawPoints.Count)
-                return _rawPoints[_rawPoints.Count - 1].Y;
-
-            return 1 - Bezier(_rawPoints[i], _rawPoints[i+1], _rawPoints[i+2], _rawPoints[i+3], x).Y;
+                if (i + 4 > _rawPoints.Count)
+                    return _rawPoints[_rawPoints.Count - 1].Y;
+                
+                var firstPoint = _rawPoints[i];
+                
+                x = (x - firstPoint.X) * 4.0f;
+                var offsetPoints = _rawPoints.GetRange(i, 4).Select(p => new PointF(p.X, p.Y)).ToArray();
+                
+                return 1 - Bezier(offsetPoints[0], offsetPoints[1], offsetPoints[2], offsetPoints[3], x).Y;
+            }
         }
         PointF Bezier(PointF a, PointF b, PointF c, PointF d, float t)
         {

@@ -11,16 +11,23 @@ namespace JoystickCurves
         #region Private properties
         private vJoy _joystick;
         private UInt32 _deviceid;
-        
+        private const int AXISLIMIT = 32767;
+        private Dictionary<HID_USAGES, int[]> minMaxAxis;
+        private Dictionary<HID_USAGES, int> lastValue;
+        private object lockSetAxis = new object();
+        vJoy.JoystickState state;
         #endregion
 
         #region Public accessors/methods/properties
         public VirtualJoystick(uint id)
         {
+            minMaxAxis = new Dictionary<HID_USAGES, int[]>();
+            lastValue = new Dictionary<HID_USAGES, int>();
             _joystick = new vJoy();
             if (!Enabled)
                 throw new Exception("VJoy isn't enabled! Check driver installation!");
-            
+
+
             Acquire(id);
         }
         public void Reset()
@@ -51,22 +58,55 @@ namespace JoystickCurves
             _joystick.AcquireVJD(_deviceid);
             _joystick.ResetVJD(_deviceid);
 
+            state = new vJoy.JoystickState();
+
+            var axisList = new HID_USAGES[] { HID_USAGES.HID_USAGE_X, HID_USAGES.HID_USAGE_Y, HID_USAGES.HID_USAGE_RZ };
+            var v = 0;
+            foreach (var a in axisList)
+                v = AxisMinValue(a);
+
         }
         private int AxisMaxValue(HID_USAGES hidusage)
         {
             long maxValue = 0;
-            _joystick.GetVJDAxisMax(_deviceid, hidusage, ref maxValue);
-            return (int)maxValue;
+            long minValue = 0;
+            if (!minMaxAxis.ContainsKey(hidusage))
+            {
+                _joystick.GetVJDAxisMax(_deviceid, hidusage, ref maxValue);
+                _joystick.GetVJDAxisMin(_deviceid, hidusage, ref minValue);
+                minMaxAxis.Add(hidusage, new int[] { (int)minValue, (int)maxValue });
+            }
+            return AXISLIMIT;
         }
         private int AxisMinValue(HID_USAGES hidusage)
         {
+            long maxValue = 0;
             long minValue = 0;
-            _joystick.GetVJDAxisMin(_deviceid, hidusage, ref minValue);
-            return (int)minValue;
+            if (!minMaxAxis.ContainsKey(hidusage))
+            {
+                _joystick.GetVJDAxisMax(_deviceid, hidusage, ref maxValue);
+                _joystick.GetVJDAxisMin(_deviceid, hidusage, ref minValue);
+                minMaxAxis.Add(hidusage, new int[] { (int)minValue, (int)maxValue });
+            }
+            return -AXISLIMIT;
         }
+
+        //-32767 .. 32767
         public void SetAxis(int value, HID_USAGES axis)
         {
-            _joystick.SetAxis(value, _deviceid, HID_USAGES.HID_USAGE_X);
+            lock(lockSetAxis)
+            {
+                try
+                {
+                    var val = (value + AXISLIMIT) / 2;
+                    if (!lastValue.Keys.Contains(axis))
+                        lastValue.Add(axis, val);
+
+                    if (val != lastValue[axis])
+                        _joystick.SetAxis(val, _deviceid, axis);
+                }
+                catch { }
+            }
         }
         public void SetContPOV(int value, uint pov_number)
         {

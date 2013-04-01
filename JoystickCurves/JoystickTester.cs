@@ -18,7 +18,7 @@ namespace JoystickCurves
     }
     public partial class JoystickTester : PictureBox
     {
-        public const int RETICLE_SIZE = 10;
+        public const int RETICLE_SIZE = 20;
         private Point _physicalRudderLocation;
         private Point _physicalHandleLocation;
         private Point _virtualRudderLocation;
@@ -45,11 +45,16 @@ namespace JoystickCurves
         private void Init()
         {
             this.HandleCreated += new EventHandler(JoystickTester_HandleCreated);
-            //this.DoubleBuffered = true;
+            this.DoubleBuffered = true;
             this.SetStyle(ControlStyles.AllPaintingInWmPaint | ControlStyles.ResizeRedraw | ControlStyles.UserPaint, true);
-           //Invalidate();
+
+            frameUpdateTimer = new System.Threading.Timer(new TimerCallback(frame_Tick), null, 0, 33);
         }
 
+        void frame_Tick(object o)
+        {
+            Invalidate();
+        }
         void JoystickTester_HandleCreated(object sender, EventArgs e)
         {
 
@@ -82,7 +87,6 @@ namespace JoystickCurves
                 if (!_physicalRudderLocation.Equals(value))
                 {
                     _physicalRudderLocation = value;
-                    //Invalidate();
                 }
             }
         }
@@ -94,7 +98,6 @@ namespace JoystickCurves
                 if (!_physicalHandleLocation.Equals(value))
                 {
                     _physicalHandleLocation = value;
-                    //Invalidate(true);
                 }
             }
         }
@@ -106,7 +109,6 @@ namespace JoystickCurves
                 if (!_virtualRudderLocation.Equals(value))
                 {
                     _virtualRudderLocation = value;
-                    //Invalidate();
                 }
             }
 
@@ -119,9 +121,6 @@ namespace JoystickCurves
                 if (!_virtualHandleLocation.Equals(value))
                 {
                     _virtualHandleLocation = value;
-                    Invalidate(invalidateRegion);
-                    //Debug.Print(String.Format("{0}", _virtualHandleLocation.X));
-                    //Invalidate();
                 }
             }
 
@@ -294,18 +293,17 @@ namespace JoystickCurves
                 var pcG = Graphics.FromImage(physicalCross);
                 var plG = Graphics.FromImage(physicalLine);
 
-                var pen = new Pen(Color.FromArgb(0, 150, 0));
 
                 HandleBounds = new Rectangle(topLeft.X - RETICLE_SIZE / 2, topLeft.Y - RETICLE_SIZE / 2, smallestSide, smallestSide);
                 RudderBounds = new Rectangle(pointLeftRudder.X - RETICLE_SIZE / 2, pointLeftRudder.Y - RETICLE_SIZE / 2, rudderWidth, RETICLE_SIZE);
-
-                invalidateRegion = new Region();
-
-                DrawReticle(plG, ReticleShape.VerticalLine, PhysicalRudderLocation, pen);
-                DrawReticle(pcG, ReticleShape.Cross, PhysicalHandleLocation, pen);
+                
+                var p0 = new Point(0, 0);
+                var pen = new Pen(Color.FromArgb(0, 150, 0));
+                DrawReticle(plG, ReticleShape.VerticalLine, p0, pen);
+                DrawReticle(pcG, ReticleShape.Cross, p0, pen);
 
                 pen = new Pen(Color.FromArgb(0, 255, 0));
-                var p0 = new Point(0,0);
+    
                 DrawReticle(vlG, ReticleShape.VerticalLine, p0, pen);
                 DrawReticle(vcG, ReticleShape.Cross, p0, pen);
 
@@ -316,20 +314,29 @@ namespace JoystickCurves
                 pen.Dispose();
                 gridPen.Dispose();
 
-            }
-            e.Graphics.DrawImage(virtualCross, VirtualHandleLocation);
-            e.Graphics.DrawImage(physicalCross, PhysicalHandleLocation);
-            e.Graphics.DrawImage(virtualLine, VirtualRudderLocation);
-            e.Graphics.DrawImage(physicalLine, PhysicalRudderLocation);
+                var centerPoint = new Point(center.X - RETICLE_SIZE / 2, center.Y - RETICLE_SIZE / 2);
+                var centerAxis = new Axis() {Max = 1000, Min = -1000, Value = 0};
+                PhysicalAxisPitch = centerAxis;
+                PhysicalAxisRoll = centerAxis;
+                PhysicalAxisRudder = centerAxis;
+                VirtualAxisPitch = centerAxis;
+                VirtualAxisRoll = centerAxis;
+                VirtualAxisRudder = centerAxis;
 
-            invalidateRegion.Union(new Rectangle(VirtualHandleLocation, new Size(RETICLE_SIZE, RETICLE_SIZE)));
-            invalidateRegion.Union(new Rectangle(VirtualRudderLocation, new Size(RETICLE_SIZE, RETICLE_SIZE)));
-            invalidateRegion.Union(new Rectangle(PhysicalHandleLocation, new Size(RETICLE_SIZE, RETICLE_SIZE)));
-            invalidateRegion.Union(new Rectangle(PhysicalRudderLocation, new Size(RETICLE_SIZE, RETICLE_SIZE)));
+            }
+            e.Graphics.DrawImage(physicalCross, PhysicalHandleLocation);
+            e.Graphics.DrawImage(physicalLine, PhysicalRudderLocation);
+            e.Graphics.DrawImage(virtualCross, VirtualHandleLocation);
+            e.Graphics.DrawImage(virtualLine, VirtualRudderLocation);
+
+            //invalidateRegion.Union(new Rectangle(VirtualHandleLocation, new Size(RETICLE_SIZE, RETICLE_SIZE)));
+            //invalidateRegion.Union(new Rectangle(VirtualRudderLocation, new Size(RETICLE_SIZE, RETICLE_SIZE)));
+            //invalidateRegion.Union(new Rectangle(PhysicalHandleLocation, new Size(RETICLE_SIZE, RETICLE_SIZE)));
+            //invalidateRegion.Union(new Rectangle(PhysicalRudderLocation, new Size(RETICLE_SIZE, RETICLE_SIZE)));
         }
         public void DrawReticle(Graphics g, ReticleShape ReticleAppearance, Point loc, Pen pen)
         {
-            pen.Width = 1;
+            pen.Width = 3;
             var top = new Point(loc.X + RETICLE_SIZE/2, loc.Y);
             var bottom = new Point(loc.X + RETICLE_SIZE / 2, loc.Y + RETICLE_SIZE);
             var left = new Point(loc.X, loc.Y + RETICLE_SIZE / 2);

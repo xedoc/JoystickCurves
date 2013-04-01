@@ -33,7 +33,7 @@ namespace JoystickCurves
             _points = new BezierCurvePoints();
 
             this.HandleCreated += new EventHandler(BezierCurve_HandleCreated);
-            this.SetStyle(ControlStyles.AllPaintingInWmPaint | ControlStyles.ResizeRedraw | ControlStyles.UserPaint | ControlStyles.DoubleBuffer, true);
+            //this.SetStyle( ControlStyles.UserPaint | ControlStyles.OptimizedDoubleBuffer, true);
         }
 
         void BezierCurve_HandleCreated(object sender, EventArgs e)
@@ -45,7 +45,7 @@ namespace JoystickCurves
             this.Resize += new EventHandler(BezierCurve_Resize);
             this.SetStyle(ControlStyles.AllPaintingInWmPaint | ControlStyles.ResizeRedraw | ControlStyles.UserPaint | ControlStyles.DoubleBuffer, true);
 
-            //frameUpdateTimer = new System.Threading.Timer(new TimerCallback(frameUpdate_Tick), null, 0, 16);
+            frameUpdateTimer = new System.Threading.Timer(new TimerCallback(frameUpdate_Tick), null, 0, 16);
         }
 
         private void frameUpdate_Tick(object o)
@@ -55,6 +55,7 @@ namespace JoystickCurves
         void BezierCurve_Resize(object sender, EventArgs e)
         {
             Invalidate();
+
         }
 
 
@@ -145,10 +146,7 @@ namespace JoystickCurves
             var newToolText = String.Format("{0:0.00}%", Math.Abs(100.0f - Utils.PTop(100, _points.DrawPoints[dragRect.Index].Y, _points.DrawHeight)));
             if (_toolText != newToolText)
             {
-                if (dragRect.Location.X > Size.Width - 45)
-                    _tooltip.Show(newToolText, dragRect, -45, dragRect.Height);
-                else
-                    _tooltip.Show(newToolText, dragRect, dragRect.Width, dragRect.Height);
+                _tooltip.Show(newToolText, this, Size.Width / 2 - 20, Size.Height);
                 _toolText = newToolText;
             }
         }
@@ -188,10 +186,10 @@ namespace JoystickCurves
                 _points.DrawPoints[dragRect.Index] = newPoint;
                 _points.ScaleRawPoints(dragRect.Index);
 
-                Invalidate();
 
-                if (OnCurveChange != null)
-                    OnCurveChange(this, EventArgs.Empty);
+                //if (OnCurveChange != null)
+                 //   ThreadPool.QueueUserWorkItem( arg => OnCurveChange(this, EventArgs.Empty));
+                //Invalidate();
 
                 ShowToolTip(dragRect);
 
