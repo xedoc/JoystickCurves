@@ -60,6 +60,7 @@
             this.contextMenuTabPage.SuspendLayout();
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.joystickTester)).BeginInit();
             this.joystickTester.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -102,13 +103,13 @@
             this.contextMenuTabPage.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.deleteAxis});
             this.contextMenuTabPage.Name = "contextMenuTabPage";
-            this.contextMenuTabPage.Size = new System.Drawing.Size(153, 48);
+            this.contextMenuTabPage.Size = new System.Drawing.Size(128, 26);
             this.contextMenuTabPage.ItemClicked += new System.Windows.Forms.ToolStripItemClickedEventHandler(this.contextMenuTabPage_ItemClicked);
             // 
             // deleteAxis
             // 
             this.deleteAxis.Name = "deleteAxis";
-            this.deleteAxis.Size = new System.Drawing.Size(152, 22);
+            this.deleteAxis.Size = new System.Drawing.Size(127, 22);
             this.deleteAxis.Text = "Delete axis";
             // 
             // tabAddNew
@@ -256,17 +257,18 @@
             this.joystickTester.Controls.Add(this.label6);
             this.joystickTester.Controls.Add(this.label10);
             this.joystickTester.Controls.Add(this.label5);
-            this.joystickTester.HandleBounds = new System.Drawing.Rectangle(30, 15, 280, 280);
-            this.joystickTester.Location = new System.Drawing.Point(625, 133);
+            this.joystickTester.HandleBounds = new System.Drawing.Rectangle(35, 20, 69, 69);
+            this.joystickTester.Location = new System.Drawing.Point(625, 132);
             this.joystickTester.Margin = new System.Windows.Forms.Padding(40, 25, 20, 50);
             this.joystickTester.Name = "joystickTester";
-            this.joystickTester.PhysicalHandleLocation = new System.Drawing.Point(170, 155);
-            this.joystickTester.PhysicalRudderLocation = new System.Drawing.Point(170, 325);
-            this.joystickTester.RudderBounds = new System.Drawing.Rectangle(30, 325, 280, 20);
-            this.joystickTester.Size = new System.Drawing.Size(356, 355);
+            this.joystickTester.PhysicalHandleLocation = new System.Drawing.Point(173, 158);
+            this.joystickTester.PhysicalRudderLocation = new System.Drawing.Point(173, 327);
+            this.joystickTester.RudderBounds = new System.Drawing.Rectangle(35, 119, 69, 10);
+            this.joystickTester.Size = new System.Drawing.Size(356, 356);
             this.joystickTester.TabIndex = 9;
-            this.joystickTester.VirtualHandleLocation = new System.Drawing.Point(170, 155);
-            this.joystickTester.VirtualRudderLocation = new System.Drawing.Point(170, 325);
+            this.joystickTester.TabStop = false;
+            this.joystickTester.VirtualHandleLocation = new System.Drawing.Point(173, 158);
+            this.joystickTester.VirtualRudderLocation = new System.Drawing.Point(173, 327);
             // 
             // label4
             // 
@@ -336,15 +338,15 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(988, 502);
+            this.ClientSize = new System.Drawing.Size(989, 502);
             this.Controls.Add(this.groupBox2);
             this.Controls.Add(this.groupBox1);
             this.Controls.Add(this.checkHoldActivate);
-            this.Controls.Add(this.joystickTester);
             this.Controls.Add(this.buttonHotKey);
             this.Controls.Add(this.label2);
             this.Controls.Add(this.tabAxis);
             this.Controls.Add(this.comboProfiles);
+            this.Controls.Add(this.joystickTester);
             this.DoubleBuffered = true;
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.MaximizeBox = false;
@@ -359,6 +361,7 @@
             this.groupBox1.PerformLayout();
             this.groupBox2.ResumeLayout(false);
             this.groupBox2.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.joystickTester)).EndInit();
             this.joystickTester.ResumeLayout(false);
             this.joystickTester.PerformLayout();
             this.ResumeLayout(false);

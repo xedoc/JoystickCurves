@@ -14,11 +14,13 @@ namespace JoystickCurves
     {
         private BezierCurvePoints _points;
         private DragRectangle[] _dragPoints = null;
-        private bool dontMove = false;
         private ToolTip _tooltip;
         private Rectangle _drawRectangle;
         private string _toolText;
+        private Point newPoint = new Point();
+        private System.Threading.Timer frameUpdateTimer;
         public event EventHandler<EventArgs> OnCurveChange;
+       
         public BezierCurve()
         {
             _tooltip = new ToolTip();
@@ -31,6 +33,7 @@ namespace JoystickCurves
             _points = new BezierCurvePoints();
 
             this.HandleCreated += new EventHandler(BezierCurve_HandleCreated);
+            this.SetStyle(ControlStyles.AllPaintingInWmPaint | ControlStyles.ResizeRedraw | ControlStyles.UserPaint | ControlStyles.DoubleBuffer, true);
         }
 
         void BezierCurve_HandleCreated(object sender, EventArgs e)
@@ -38,12 +41,17 @@ namespace JoystickCurves
             _drawRectangle = new Rectangle(Padding.Left, Padding.Top, Size.Width - (Padding.Left + Padding.Right), Size.Height - (Padding.Top + Padding.Bottom));
             InitCurve();
 
-           this.SetStyle(ControlStyles.AllPaintingInWmPaint | ControlStyles.UserPaint | ControlStyles.DoubleBuffer, true);
-
             this.Paint += new PaintEventHandler(Curve_Paint);
             this.Resize += new EventHandler(BezierCurve_Resize);
+            this.SetStyle(ControlStyles.AllPaintingInWmPaint | ControlStyles.ResizeRedraw | ControlStyles.UserPaint | ControlStyles.DoubleBuffer, true);
+
+            //frameUpdateTimer = new System.Threading.Timer(new TimerCallback(frameUpdate_Tick), null, 0, 16);
         }
 
+        private void frameUpdate_Tick(object o)
+        {
+            Invalidate();
+        }
         void BezierCurve_Resize(object sender, EventArgs e)
         {
             Invalidate();
@@ -78,10 +86,7 @@ namespace JoystickCurves
             _points.DrawWidth = _drawRectangle.Width;
             _points.DrawHeight = _drawRectangle.Height;
 
-            if (_dragPoints == null)
-            {
-                InitDragPoints();
-            }
+            InitDragPoints();
 
             Invalidate();
 
@@ -89,6 +94,8 @@ namespace JoystickCurves
         
         private void InitDragPoints()
         {
+            this.Controls.Clear();
+
             if (_points.DrawPoints.Count == 0)
                 return;
 
@@ -108,7 +115,7 @@ namespace JoystickCurves
                 _dragPoints[i].Index = i;
                 _dragPoints[i].PointType = pointType;
                 _dragPoints[i].MinY = Padding.Top + yOffset;
-                _dragPoints[i].MaxY = Size.Height - Padding.Bottom - Padding.Top - yOffset + 1;
+                _dragPoints[i].MaxY = _drawRectangle.Height - yOffset;// - yOffset; //.Height - Padding.Bottom - Padding.Top - yOffset + 2;
                 _dragPoints[i].Move += new EventHandler(Curve_DragRectangleMove);
                 _dragPoints[i].MouseUp += new MouseEventHandler(Curve_MouseUp);
                 _dragPoints[i].MouseDown += new MouseEventHandler(Curve_MouseDown);
@@ -133,12 +140,22 @@ namespace JoystickCurves
                 this.Controls.Add(_dragPoints[i]);
             }
         }
-
+        void ShowToolTip( DragRectangle dragRect)
+        {
+            var newToolText = String.Format("{0:0.00}%", Math.Abs(100.0f - Utils.PTop(100, _points.DrawPoints[dragRect.Index].Y, _points.DrawHeight)));
+            if (_toolText != newToolText)
+            {
+                if (dragRect.Location.X > Size.Width - 45)
+                    _tooltip.Show(newToolText, dragRect, -45, dragRect.Height);
+                else
+                    _tooltip.Show(newToolText, dragRect, dragRect.Width, dragRect.Height);
+                _toolText = newToolText;
+            }
+        }
         void Curve_MouseDown(object sender, MouseEventArgs e)
         {
             DragRectangle dragRect = (DragRectangle)sender;
-            var toolText = String.Format("{0:0.00}%", Math.Abs(100.0f - Utils.PTop(100, _points.DrawPoints[dragRect.Index].Y, _points.DrawHeight - 1)));
-            _tooltip.Show(toolText, dragRect, dragRect.Width, dragRect.Height);
+            ShowToolTip(dragRect);
         }
 
         void Curve_MouseUp(object sender, MouseEventArgs e)
@@ -149,29 +166,35 @@ namespace JoystickCurves
 
         void Curve_DragRectangleMove(object sender, EventArgs e)
         {
-            if (dontMove)
-                return;
-
             DragRectangle dragRect = (DragRectangle)sender;
             Point newLocation = dragRect.Location;
             newLocation.Offset(dragRect.Width/2, dragRect.Height/2);
             if (!newLocation.Equals(_points.DrawPoints[dragRect.Index]))
             {
-                _points.DrawPoints[dragRect.Index] = new Point(newLocation.X - Padding.Left, newLocation.Y - Padding.Top);
+                newPoint.X = newLocation.X - Padding.Left;
+                newPoint.Y = newLocation.Y - Padding.Top;               
 
-                var newToolText = String.Format("{0:0.00}%", Math.Abs(100.0f - Utils.PTop(100, _points.DrawPoints[dragRect.Index].Y, _points.DrawHeight - 1)));
-                if (_toolText != newToolText)
+                if( dragRect.Location.Y == dragRect.MaxY )
                 {
-                    _tooltip.Show(newToolText, dragRect, dragRect.Width, dragRect.Height);
-                    _toolText = newToolText;
+                    newPoint.X = _points.DrawPoints[dragRect.Index].X; 
+                    newPoint.Y = _drawRectangle.Height;
+                }
+                else if (dragRect.Location.Y == dragRect.MinY)
+                {
+                    newPoint.X = _points.DrawPoints[dragRect.Index].X;
+                    newPoint.Y = 0;
                 }
 
+                _points.DrawPoints[dragRect.Index] = newPoint;
                 _points.ScaleRawPoints(dragRect.Index);
+
+                Invalidate();
 
                 if (OnCurveChange != null)
                     OnCurveChange(this, EventArgs.Empty);
 
-                Invalidate();
+                ShowToolTip(dragRect);
+
             }
 
         }
@@ -230,6 +253,7 @@ namespace JoystickCurves
 
             if (_points.DrawPoints != null && _points.DrawPoints.Count >= 4)
             {
+                e.Graphics.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
                 e.Graphics.DrawBeziers(bluePen, _points.DrawPoints.Select( p => new Point(p.X + Padding.Left, p.Y + Padding.Top)).ToArray());
                 DrawHelperLInes(e);
             }

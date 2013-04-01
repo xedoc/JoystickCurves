@@ -12,11 +12,6 @@ namespace JoystickCurves
         private vJoy _joystick;
         private UInt32 _deviceid;
         
-        private VirtualAxis _axis;
-        private MultiControlState<bool> _buttons;
-        private MultiControlState<int> _continuousPovs;
-        private MultiControlState<int> _discretePovs;
-
         #endregion
 
         #region Public accessors/methods/properties
@@ -25,7 +20,7 @@ namespace JoystickCurves
             _joystick = new vJoy();
             if (!Enabled)
                 throw new Exception("VJoy isn't enabled! Check driver installation!");
-
+            
             Acquire(id);
         }
         public void Reset()
@@ -57,82 +52,183 @@ namespace JoystickCurves
             _joystick.ResetVJD(_deviceid);
 
         }
-        public VirtualAxis Axis
+        private int AxisMaxValue(HID_USAGES hidusage)
         {
-            get {
-                if (_axis == null)
-                    _axis = new VirtualAxis();
-
-                _axis.X = CreateAxisControlState(HID_USAGES.HID_USAGE_X);
-                _axis.Y = CreateAxisControlState(HID_USAGES.HID_USAGE_Y);
-                _axis.Z = CreateAxisControlState(HID_USAGES.HID_USAGE_Z);
-                _axis.RX = CreateAxisControlState(HID_USAGES.HID_USAGE_RX);
-                _axis.RZ = CreateAxisControlState(HID_USAGES.HID_USAGE_RZ); 
-                return _axis;
-            }
-            set
-            {
-                if (value != null)
-                    _axis = value;
-            }
-
+            long maxValue = 0;
+            _joystick.GetVJDAxisMax(_deviceid, hidusage, ref maxValue);
+            return (int)maxValue;
         }
-        public MultiControlState<bool> Buttons
+        private int AxisMinValue(HID_USAGES hidusage)
         {
-            get
-            {
-                if (_buttons == null)
-                {
-                    _buttons = new MultiControlState<bool>(_joystick.GetVJDButtonNumber(_deviceid), SetButton);
-                }
-                return _buttons;
-
-            }
-            set
-            {
-                if (value != null)
-                    _buttons = value;
-
-            }
+            long minValue = 0;
+            _joystick.GetVJDAxisMin(_deviceid, hidusage, ref minValue);
+            return (int)minValue;
         }
-        public MultiControlState<int> ContinuousPovs
+        public void SetAxis(int value, HID_USAGES axis)
         {
-            get
-            {
-                if (_continuousPovs == null)
-                {
-                    _continuousPovs = new MultiControlState<int>(_joystick.GetVJDContPovNumber(_deviceid), SetContinuousPOV);
-                }
-                return _continuousPovs;
-
-            }
-            set
-            {
-                if (value != null)
-                    _continuousPovs = value;
-
-            }
+            _joystick.SetAxis(value, _deviceid, HID_USAGES.HID_USAGE_X);
+        }
+        public void SetContPOV(int value, uint pov_number)
+        {
+            _joystick.SetContPov(value, _deviceid, pov_number);
+        }
+        public void SetDiscPOV(int value, uint pov_number)
+        {
+            _joystick.SetDiscPov(value, _deviceid, pov_number);
+        }
+        public Int32 X
+        {
+            set { SetAxis(value, HID_USAGES.HID_USAGE_X); }
+        }
+        public int MaxX
+        {
+            get { return AxisMaxValue(HID_USAGES.HID_USAGE_X); }
+        }
+        public int MinX
+        {
+            get { return AxisMinValue(HID_USAGES.HID_USAGE_X); }
         }
 
-        public MultiControlState<int> DiscretePovs
+        public Int32 Y
         {
-            get
-            {
-                if (_discretePovs == null)
-                {
-                    _discretePovs = new MultiControlState<int>(_joystick.GetVJDDiscPovNumber(_deviceid), SetDiscretePov );
-                }
-                return _discretePovs;
-
-            }
-            set
-            {
-                if (value != null)
-                    _discretePovs = value;
-
-            }
+            set { SetAxis(value, HID_USAGES.HID_USAGE_Y); }
+        }
+        public int MaxY
+        {
+            get { return AxisMaxValue(HID_USAGES.HID_USAGE_Y); }
+        }
+        public int MinY
+        {
+            get { return AxisMinValue(HID_USAGES.HID_USAGE_Y); }
         }
 
+        public Int32 Z
+        {
+            set { SetAxis(value, HID_USAGES.HID_USAGE_Z); }
+        }
+        public int MaxZ
+        {
+            get { return AxisMaxValue(HID_USAGES.HID_USAGE_Z); }
+        }
+        public int MinZ
+        {
+            get { return AxisMinValue(HID_USAGES.HID_USAGE_Z); }
+        }
+
+        public Int32 RX
+        {
+            set { SetAxis(value, HID_USAGES.HID_USAGE_RX); }
+        }
+        public int MaxRX
+        {
+            get { return AxisMaxValue(HID_USAGES.HID_USAGE_RX); }
+        }
+        public int MinRX
+        {
+            get { return AxisMinValue(HID_USAGES.HID_USAGE_RX); }
+        }
+
+        public Int32 RY
+        {
+            set { SetAxis(value, HID_USAGES.HID_USAGE_RY); }
+        }
+        public int MaxRY
+        {
+            get { return AxisMaxValue(HID_USAGES.HID_USAGE_RY); }
+        }
+        public int MinRY
+        {
+            get { return AxisMinValue(HID_USAGES.HID_USAGE_RY); }
+        }
+        
+        public Int32 RZ
+        {
+            set { SetAxis(value, HID_USAGES.HID_USAGE_RZ); }
+        }
+        public int MaxRZ
+        {
+            get { return AxisMaxValue(HID_USAGES.HID_USAGE_RZ); }
+        }
+        public int MinRZ
+        {
+            get { return AxisMinValue(HID_USAGES.HID_USAGE_RZ); }
+        }
+
+
+        public Int32 SL0
+        {
+            set { SetAxis(value, HID_USAGES.HID_USAGE_SL0); }
+        }
+        public int MaxSL0
+        {
+            get { return AxisMaxValue(HID_USAGES.HID_USAGE_SL0); }
+        }
+        public int MinSL0
+        {
+            get { return AxisMinValue(HID_USAGES.HID_USAGE_SL0); }
+        }
+
+        public Int32 SL1
+        {
+            set { SetAxis(value, HID_USAGES.HID_USAGE_SL1); }
+        }
+        public int MaxSL1
+        {
+            get { return AxisMaxValue(HID_USAGES.HID_USAGE_SL1); }
+        }
+        public int MinSL1
+        {
+            get { return AxisMinValue(HID_USAGES.HID_USAGE_SL1); }
+        }
+
+
+
+        public Int32 WHL
+        {
+            set { SetAxis(value, HID_USAGES.HID_USAGE_WHL); }
+        }
+        public int MaxWHL
+        {
+            get { return AxisMaxValue(HID_USAGES.HID_USAGE_WHL); }
+        }
+        public int MinWHL
+        {
+            get { return AxisMinValue(HID_USAGES.HID_USAGE_WHL); }
+        }
+
+
+        public Int32 ContPOV1
+        {
+            set { SetContPOV(value, 1); }
+        }
+        public Int32 ContPOV2
+        {
+            set { SetContPOV(value, 2); }
+        }
+        public Int32 ContPOV3
+        {
+            set { SetContPOV(value, 3); }
+        }
+        public Int32 ContPOV4
+        {
+            set { SetContPOV(value, 4); }
+        }
+        public Int32 DiscPOV1
+        {
+            set { SetDiscPOV(value, 1); }
+        }
+        public Int32 DiscPOV2
+        {
+            set { SetDiscPOV(value, 2); }
+        }
+        public Int32 DiscPOV3
+        {
+            set { SetDiscPOV(value, 3); }
+        }
+        public Int32 DiscPOV4
+        {
+            set { SetDiscPOV(value, 4); }
+        }
         public UInt32 DeviceID
         {
             get { 
@@ -165,101 +261,8 @@ namespace JoystickCurves
         #endregion
 
         #region Private methods/accessors
-
-        private void SetButton(ControlState<bool> button)
-        {
-            _joystick.SetBtn(button.Value, _deviceid, button.Index);
-        }
-
-        private void SetContinuousPOV(ControlState<int> pov)
-        {
-            _joystick.SetContPov(pov.Value, _deviceid, pov.Index);
-        }
-
-        private void SetDiscretePov(ControlState<int> pov)
-        {
-            _joystick.SetDiscPov(pov.Value, _deviceid, pov.Index);
-        }
-        private void SetAxis(ControlState<int> axis)
-        {
-            _joystick.SetAxis(axis.Value, _deviceid, axis.HidUsage);
-        }
-
-        private ControlState<int> CreateAxisControlState(HID_USAGES usage)
-        {
-            return new ControlState<int>()
-            {
-                Enabled = _joystick.GetVJDAxisExist(_deviceid, usage),
-                HidUsage = usage,
-                Action = SetAxis
-            };
-        }
         #endregion
 
-
-    }
-
-
-
-    public class ControlState<T>
-    {
-        public bool Enabled
-        {
-            get;
-            set;
-        }
-
-        public T Value
-        {
-            get;
-            set;
-        }
-        public uint Index
-        {
-            get;
-            set;
-        }
-        public HID_USAGES HidUsage
-        {
-            get;
-            set;
-        }
-        public Action<ControlState<T>> Action
-        {
-            get;
-            set;
-        }
-        public void Set( T value )
-        {
-            Value = value;
-            Action(this);
-        }
-    }
-
-    public class MultiControlState<T>
-    {
-        public MultiControlState(int count, Action<ControlState<T>> setAction)
-        {
-            Count = count;
-            State = new List<ControlState<T>>();
-            for( uint i = 1; i <= count; i++ )
-                State.Add( new ControlState<T>() { Enabled = true, Index = i, Action = setAction});                        
-        }
-        public int Count
-        {
-            get;
-            set;
-        }
-        public ControlState<T> this[int index]
-        {
-            get { return State[index]; }
-            set { State[index] = value; }
-        }
-        public List<ControlState<T>> State
-        {
-            get;
-            set;
-        }
     }
 
 }

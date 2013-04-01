@@ -69,6 +69,8 @@ namespace JoystickCurves
                 axisEditor.CurrentDestDevice = p.DestinationDevice;
                 axisEditor.CurrentSourceAxis = p.SourceAxis;
                 axisEditor.CurrentSourceDevice = p.SourceDevice;
+                axisEditor.Title = p.TabTitle;
+                tabPage.Text = axisEditor.Title;
             }
             tabAxis.SelectedIndex = 0;
         }
@@ -138,7 +140,30 @@ namespace JoystickCurves
             _deviceManager = new DeviceManager();
             _deviceManager.OnDeviceList += new EventHandler<EventArgs>(deviceManager_OnDeviceList);
 
+            for (var i = 0.0f; i <= 1.0f; i += 0.01f)
+            {
+                Debug.Print("{0:0.00}: {1:0.00}", i, _currentProfile.Tabs[0].CurvePoints.GetY(i));            
+            }
+            //TestAnimation();
 
+        }
+        void TestAnimation()
+        {
+            var x = _vjoy.MinX;
+            var min = _vjoy.MinX;
+            var max = _vjoy.MaxX;
+            var ax = new Axis(_vjoy.MinX, _vjoy.MaxX);
+            for (var i = 0; i < 6000000; i++)
+            {
+                x += 50;
+                if (x > max)
+                    x = min;
+                ax.Value = x;
+                //Utils.SetProperty<JoystickTester,Axis>(joystickTester,"VirtualAxisRoll",ax);
+                ThreadPool.QueueUserWorkItem(arg => { _vjoy.X = x; });
+                Application.DoEvents();
+    
+            }
         }
         void SetupTesterComboBoxes()
         {
@@ -174,7 +199,7 @@ namespace JoystickCurves
                 if (tp.Controls.Count > 0)
                 {
                     AxisEditor axisEditor = tp.Controls[0] as AxisEditor;
-                    axisEditor.SourceControllers = _deviceManager.Devices.Where(d => d.Type == GameControllerType.Physical).Select( d=>d.Name).ToList();
+                    axisEditor.SourceControllers  = _deviceManager.Devices.Where(d => d.Type == GameControllerType.Physical).Select(d => d.Name).ToList();
                     axisEditor.DestinationControllers = _deviceManager.Devices.Where(d => d.Type == GameControllerType.Virtual).Select( d=>d.Name).ToList();
                     axisEditor.SourceAxis = DIUtils.AxisNames.ToList();
                     axisEditor.DestinationAxis = DIUtils.AxisNames.ToList();
@@ -187,6 +212,8 @@ namespace JoystickCurves
         {
             var axisEditor = sender as AxisEditor;
             axisEditor.Parent.Text = axisEditor.CurrentSourceAxis;
+            var currentProfileName = _currentProfile.Title;
+            _currentProfile.Tabs[tabAxis.SelectedIndex] = axisEditor;
         }
         void deviceManager_OnDeviceList(object sender, EventArgs e)
         {
@@ -234,7 +261,6 @@ namespace JoystickCurves
             if (e.Data.DirectInputID == JoystickOffset.X)
             {
                 Utils.SetProperty<JoystickTester, Axis>(joystickTester, "PhysicalAxisRoll", e.Data);
-                //_vjoy.Axis.X.Set((int)(e.Data.Value * multipler));
             }
             else if (e.Data.DirectInputID == JoystickOffset.Y)
             {
@@ -242,16 +268,11 @@ namespace JoystickCurves
                 if (curvePoints != null)
                 {
                     var multipler = 1 - curvePoints.GetY(Utils.PTop(1, e.Data.Value + 32767, 65534));
-                    //Debug.Print("{0}", multipler);
-                    _vjoy.Axis.Y.Set((e.Data.Value + 32767)/2);
-                    //_vjoy.Axis.Y.Set((int)(e.Data.Value * multipler));
                 }
             }
             else if (e.Data.DirectInputID == JoystickOffset.RZ)
             {
                 Utils.SetProperty<JoystickTester, Axis>(joystickTester, "PhysicalAxisRudder", e.Data);
-                //_vjoy.Axis.RZ.Set((int)(e.Data.Value * multipler));
-
             }
         }
 
@@ -266,6 +287,7 @@ namespace JoystickCurves
                 curve.PointsCount = 13;
                 axisEditor.CurrentCurve = curve;
                 SetupEditorComboBoxes();
+                _currentProfile.Tabs.Add(axisEditor);
             }
         }
 

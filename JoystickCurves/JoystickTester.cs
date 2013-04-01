@@ -6,22 +6,27 @@ using System.Linq;
 using System.Text;
 using System.Drawing;
 using System.Windows.Forms;
+using System.Threading;
+using System.Drawing.Drawing2D;
 
 namespace JoystickCurves
 {
-    public enum Reticle
+    public enum ReticleShape
     {
         Cross,
         VerticalLine
     }
-    public partial class JoystickTester : Panel
+    public partial class JoystickTester : PictureBox
     {
-        public const int RETICLE_SIZE = 20;
+        public const int RETICLE_SIZE = 10;
         private Point _physicalRudderLocation;
         private Point _physicalHandleLocation;
         private Point _virtualRudderLocation;
         private Point _virtualHandleLocation;
-
+        private Bitmap background;
+        private Region invalidateRegion;
+        private Bitmap virtualCross, virtualLine, physicalCross, physicalLine;
+        private System.Threading.Timer frameUpdateTimer;
 
         public JoystickTester()
         {
@@ -39,24 +44,27 @@ namespace JoystickCurves
 
         private void Init()
         {
-           this.HandleCreated += new EventHandler(JoystickTester_HandleCreated);
-           this.SetStyle(ControlStyles.AllPaintingInWmPaint | ControlStyles.UserPaint | ControlStyles.DoubleBuffer, true);
-           Invalidate();
+            this.HandleCreated += new EventHandler(JoystickTester_HandleCreated);
+            //this.DoubleBuffered = true;
+            this.SetStyle(ControlStyles.AllPaintingInWmPaint | ControlStyles.ResizeRedraw | ControlStyles.UserPaint, true);
+           //Invalidate();
         }
 
         void JoystickTester_HandleCreated(object sender, EventArgs e)
         {
+
             Paint += new PaintEventHandler(JoystickTester_Paint);
-            PhysicalAxisPitch = new Axis();
-            PhysicalAxisRoll = new Axis();
-            PhysicalAxisRudder = new Axis();
+            var defaultAxis = new Axis();
+            PhysicalAxisPitch = defaultAxis;
+            PhysicalAxisRoll = defaultAxis;
+            PhysicalAxisRudder = defaultAxis;
 
-            VirtualAxisPitch = new Axis();
-            VirtualAxisRoll = new Axis();
-            VirtualAxisRudder = new Axis();
-            Invalidate();
+            VirtualAxisPitch = defaultAxis;
+            VirtualAxisRoll = defaultAxis;
+            VirtualAxisRudder = defaultAxis;
+
+            //this.SetStyle(ControlStyles.AllPaintingInWmPaint | ControlStyles.ResizeRedraw | ControlStyles.UserPaint | ControlStyles.DoubleBuffer, true);
         }
-
         public Rectangle HandleBounds
         {
             get;
@@ -74,7 +82,7 @@ namespace JoystickCurves
                 if (!_physicalRudderLocation.Equals(value))
                 {
                     _physicalRudderLocation = value;
-                    Invalidate();
+                    //Invalidate();
                 }
             }
         }
@@ -86,7 +94,7 @@ namespace JoystickCurves
                 if (!_physicalHandleLocation.Equals(value))
                 {
                     _physicalHandleLocation = value;
-                    Invalidate();
+                    //Invalidate(true);
                 }
             }
         }
@@ -98,7 +106,7 @@ namespace JoystickCurves
                 if (!_virtualRudderLocation.Equals(value))
                 {
                     _virtualRudderLocation = value;
-                    Invalidate();
+                    //Invalidate();
                 }
             }
 
@@ -111,7 +119,9 @@ namespace JoystickCurves
                 if (!_virtualHandleLocation.Equals(value))
                 {
                     _virtualHandleLocation = value;
-                    Invalidate();
+                    Invalidate(invalidateRegion);
+                    //Debug.Print(String.Format("{0}", _virtualHandleLocation.X));
+                    //Invalidate();
                 }
             }
 
@@ -181,31 +191,82 @@ namespace JoystickCurves
             int newCoord = (int)Utils.PTop(bound, value.Value - value.Min, value.Max - value.Min);
             return newCoord;
         }
+        protected override void OnPaintBackground(PaintEventArgs e)
+        {
+            if (background == null)
+            {
+                var dashValues = new Single[] { 1, 1 };
+                var dashCircleValues = new Single[] { 5, 5 };
+                var smallestSide = Math.Min(Size.Width - Margin.Left - Margin.Right, Size.Height - Margin.Top - Margin.Bottom);
+                var drawArea = new Rectangle(Margin.Left, Margin.Top, smallestSide, smallestSide);
+                var topLeft = new Point(Margin.Left, Margin.Top);
+                var topMiddle = new Point(smallestSide / 2 + Margin.Left, Margin.Top);
+                var topRight = new Point(smallestSide + Margin.Left, Margin.Top);
+                var leftMiddle = new Point(Margin.Left, smallestSide / 2 + Margin.Top);
+                var bottomLeft = new Point(Margin.Left, smallestSide + Margin.Top);
+                var bottomMiddle = new Point(smallestSide / 2 + Margin.Left, smallestSide + Margin.Top);
+                var bottomRight = new Point(smallestSide + Margin.Left, smallestSide + Margin.Top);
+                var rightMiddle = new Point(smallestSide + Margin.Left, smallestSide / 2 + Margin.Top);
+                var center = new Point(smallestSide / 2 + Margin.Left, smallestSide / 2 + Margin.Top);
+                var green = 80;
+                var gridPen = new Pen(Color.FromArgb(0, green, 0));
+                var pointLeftRudder = new Point(Margin.Left, Size.Height - 20);
+                var pointRightRudder = new Point(smallestSide + Margin.Left, Size.Height - 20);
+                var rudderWidth = pointRightRudder.X - pointLeftRudder.X;
+                var pen = new Pen(Color.FromArgb(0, 150, 0));
+
+                gridPen.Width = 1;
+
+                gridPen.DashPattern = dashCircleValues;
+
+                background = new Bitmap(Size.Width,Size.Height);
+                using (Graphics g = Graphics.FromImage(background))
+                {
+                    g.FillRectangle(new SolidBrush(Color.FromArgb(0, 64, 0)), new Rectangle(0,0,Size.Width, Size.Height));
+
+                    g.DrawEllipse(gridPen, drawArea);
+
+                    for (var i = 0; i < 5; i++)
+                    {
+                        var delta = smallestSide / 10;
+                        delta *= i;
+                        green += 10;
+                        gridPen.Color = Color.FromArgb(0, green, 0);
+                        gridPen.DashPattern = dashCircleValues;
+                        g.DrawEllipse(gridPen, new Rectangle(drawArea.X + delta, drawArea.Y + delta, drawArea.Width - delta * 2, drawArea.Height - delta * 2));
+                    }
+
+                    gridPen = new Pen(Color.FromArgb(0, 120, 0));
+                    gridPen.DashPattern = dashValues;
+
+                    //Diagonal
+                    g.DrawLine(gridPen, topLeft, new Point(center.X - 10, center.Y - 10));
+                    g.DrawLine(gridPen, topRight, new Point(center.X + 10, center.Y - 10));
+                    g.DrawLine(gridPen, bottomLeft, new Point(center.X - 10, center.Y + 10));
+                    g.DrawLine(gridPen, bottomRight, new Point(center.X + 10, center.Y + 10));
+
+                    g.DrawLine(gridPen, topMiddle, new Point(center.X, center.Y - 10));
+                    g.DrawLine(gridPen, bottomMiddle, new Point(center.X, center.Y + 10));
+                    g.DrawLine(gridPen, leftMiddle, new Point(center.X - 10, center.Y));
+                    g.DrawLine(gridPen, rightMiddle, new Point(center.X + 10, center.Y));
+
+                    //Yaw
+
+                    g.DrawLine(gridPen, pointLeftRudder, pointRightRudder);
+
+                }
+            }
+
+            e.Graphics.DrawImage(background, 0,0);
+
+        }
         void JoystickTester_Paint(object sender, PaintEventArgs e)
         {
-            var dashValues = new Single[] { 1, 1};
-            var dashCircleValues = new Single[] { 5, 5};
+
+            var dashValues = new Single[] { 1, 1 };
+            var dashCircleValues = new Single[] { 5, 5 };
             var smallestSide = Math.Min(Size.Width - Margin.Left - Margin.Right, Size.Height - Margin.Top - Margin.Bottom);
-            var drawArea = new Rectangle(Margin.Left,Margin.Top,smallestSide,smallestSide);
-
-            var green = 80;
-            var gridPen = new Pen(Color.FromArgb(0, green, 0));
-            gridPen.Width = 1;
-            gridPen.DashPattern = dashCircleValues;
-
-            e.Graphics.DrawEllipse(gridPen, drawArea);
-
-            for (var i = 0; i < 5; i++)
-            {
-                var delta = smallestSide/10;
-                delta*= i;
-                green += 10;
-                gridPen.Color = Color.FromArgb(0, green, 0);
-                gridPen.DashPattern = dashCircleValues;
-                e.Graphics.DrawEllipse(gridPen, new Rectangle(drawArea.X + delta, drawArea.Y + delta, drawArea.Width - delta * 2, drawArea.Height - delta * 2));
-            }
-            
-            gridPen = new Pen(Color.FromArgb(0,120,0));
+            var drawArea = new Rectangle(Margin.Left, Margin.Top, smallestSide, smallestSide);
             var topLeft = new Point(Margin.Left, Margin.Top);
             var topMiddle = new Point(smallestSide / 2 + Margin.Left, Margin.Top);
             var topRight = new Point(smallestSide + Margin.Left, Margin.Top);
@@ -214,60 +275,78 @@ namespace JoystickCurves
             var bottomMiddle = new Point(smallestSide / 2 + Margin.Left, smallestSide + Margin.Top);
             var bottomRight = new Point(smallestSide + Margin.Left, smallestSide + Margin.Top);
             var rightMiddle = new Point(smallestSide + Margin.Left, smallestSide / 2 + Margin.Top);
-            var center = new Point(smallestSide/2 + Margin.Left, smallestSide/2 + Margin.Top);
-
-            gridPen.DashPattern = dashValues;
-
-            //Diagonal
-            e.Graphics.DrawLine(gridPen, topLeft, new Point(center.X - 10, center.Y - 10));
-            e.Graphics.DrawLine(gridPen, topRight, new Point(center.X + 10, center.Y - 10));
-            e.Graphics.DrawLine(gridPen, bottomLeft, new Point(center.X - 10, center.Y + 10));
-            e.Graphics.DrawLine(gridPen, bottomRight, new Point(center.X + 10, center.Y + 10));
-
-            e.Graphics.DrawLine(gridPen, topMiddle, new Point(center.X, center.Y - 10));
-            e.Graphics.DrawLine(gridPen, bottomMiddle, new Point(center.X, center.Y + 10));                        
-            e.Graphics.DrawLine(gridPen, leftMiddle, new Point(center.X - 10, center.Y));
-            e.Graphics.DrawLine(gridPen, rightMiddle, new Point(center.X + 10, center.Y));
-
-            //Yaw
-            
+            var center = new Point(smallestSide / 2 + Margin.Left, smallestSide / 2 + Margin.Top);
+            var green = 80;
+            var gridPen = new Pen(Color.FromArgb(0, green, 0));
             var pointLeftRudder = new Point(Margin.Left, Size.Height - 20);
             var pointRightRudder = new Point(smallestSide + Margin.Left, Size.Height - 20);
             var rudderWidth = pointRightRudder.X - pointLeftRudder.X;
-            e.Graphics.DrawLine(gridPen, pointLeftRudder, pointRightRudder);
+            if (virtualCross == null)
+            {
 
-            HandleBounds = new Rectangle(topLeft.X - RETICLE_SIZE / 2, topLeft.Y - RETICLE_SIZE / 2, smallestSide, smallestSide);
-            RudderBounds = new Rectangle(pointLeftRudder.X - RETICLE_SIZE / 2, pointLeftRudder.Y - RETICLE_SIZE / 2, rudderWidth, RETICLE_SIZE);
+                virtualCross = new Bitmap(RETICLE_SIZE, RETICLE_SIZE);
+                virtualLine = new Bitmap(RETICLE_SIZE, RETICLE_SIZE);
+                physicalCross = new Bitmap(RETICLE_SIZE, RETICLE_SIZE);
+                physicalLine = new Bitmap(RETICLE_SIZE, RETICLE_SIZE);
 
+                var vcG = Graphics.FromImage(virtualCross);
+                var vlG = Graphics.FromImage(virtualLine);
+                var pcG = Graphics.FromImage(physicalCross);
+                var plG = Graphics.FromImage(physicalLine);
 
+                var pen = new Pen(Color.FromArgb(0, 150, 0));
 
-            var pen = new Pen(Color.FromArgb(0, 150, 0));
-            DrawReticle(e.Graphics, Reticle.VerticalLine, PhysicalRudderLocation, pen);
-            DrawReticle(e.Graphics, Reticle.Cross, PhysicalHandleLocation, pen);
+                HandleBounds = new Rectangle(topLeft.X - RETICLE_SIZE / 2, topLeft.Y - RETICLE_SIZE / 2, smallestSide, smallestSide);
+                RudderBounds = new Rectangle(pointLeftRudder.X - RETICLE_SIZE / 2, pointLeftRudder.Y - RETICLE_SIZE / 2, rudderWidth, RETICLE_SIZE);
 
-            pen = new Pen(Color.FromArgb(0, 255, 0));
-            DrawReticle(e.Graphics, Reticle.VerticalLine, VirtualRudderLocation, pen);
-            DrawReticle(e.Graphics, Reticle.Cross, VirtualHandleLocation, pen);
+                invalidateRegion = new Region();
+
+                DrawReticle(plG, ReticleShape.VerticalLine, PhysicalRudderLocation, pen);
+                DrawReticle(pcG, ReticleShape.Cross, PhysicalHandleLocation, pen);
+
+                pen = new Pen(Color.FromArgb(0, 255, 0));
+                var p0 = new Point(0,0);
+                DrawReticle(vlG, ReticleShape.VerticalLine, p0, pen);
+                DrawReticle(vcG, ReticleShape.Cross, p0, pen);
+
+                vcG.Dispose();
+                vlG.Dispose();
+                pcG.Dispose();
+                plG.Dispose();
+                pen.Dispose();
+                gridPen.Dispose();
+
+            }
+            e.Graphics.DrawImage(virtualCross, VirtualHandleLocation);
+            e.Graphics.DrawImage(physicalCross, PhysicalHandleLocation);
+            e.Graphics.DrawImage(virtualLine, VirtualRudderLocation);
+            e.Graphics.DrawImage(physicalLine, PhysicalRudderLocation);
+
+            invalidateRegion.Union(new Rectangle(VirtualHandleLocation, new Size(RETICLE_SIZE, RETICLE_SIZE)));
+            invalidateRegion.Union(new Rectangle(VirtualRudderLocation, new Size(RETICLE_SIZE, RETICLE_SIZE)));
+            invalidateRegion.Union(new Rectangle(PhysicalHandleLocation, new Size(RETICLE_SIZE, RETICLE_SIZE)));
+            invalidateRegion.Union(new Rectangle(PhysicalRudderLocation, new Size(RETICLE_SIZE, RETICLE_SIZE)));
         }
-        public void DrawReticle(Graphics g, Reticle ReticleAppearance, Point loc, Pen pen)
+        public void DrawReticle(Graphics g, ReticleShape ReticleAppearance, Point loc, Pen pen)
         {
-            pen.Width = 3;
+            pen.Width = 1;
             var top = new Point(loc.X + RETICLE_SIZE/2, loc.Y);
             var bottom = new Point(loc.X + RETICLE_SIZE / 2, loc.Y + RETICLE_SIZE);
             var left = new Point(loc.X, loc.Y + RETICLE_SIZE / 2);
             var right = new Point(loc.X + RETICLE_SIZE, loc.Y + RETICLE_SIZE/ 2);
 
-            if (ReticleAppearance == Reticle.Cross)
+            if (ReticleAppearance == ReticleShape.Cross)
             {
                 g.DrawLine(pen, top, bottom);
                 g.DrawLine(pen, left, right);
             }
-            else if (ReticleAppearance == Reticle.VerticalLine)
+            else if (ReticleAppearance == ReticleShape.VerticalLine)
             {
                 g.DrawLine(pen, top, bottom);
             }
-        }
 
+            
+        }
 
     }
 }

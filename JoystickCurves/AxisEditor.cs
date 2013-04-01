@@ -145,12 +145,28 @@ namespace JoystickCurves
             get;
             set;
         }
+        public static implicit operator ProfileTab(AxisEditor axisEditor)
+        {            
+            axisEditor.CurrentCurve.ScaleRawPoints();
+            var profileTab = new ProfileTab()
+            {
+                CurvePoints = axisEditor.CurrentCurve,
+                DestinationAxis = axisEditor.CurrentDestAxis,
+                DestinationDevice = axisEditor.CurrentDestDevice,
+                SourceAxis = axisEditor.CurrentSourceAxis,
+                SourceDevice = axisEditor.CurrentSourceDevice,
+                TabTitle = axisEditor.Title
+            };
+
+            return profileTab;
+        }
         private void Change(object sender, EventArgs e)
         {
             CurrentDestAxis = comboDestAxis.SelectedItem as string;
             CurrentDestDevice = comboDestDevice.SelectedItem as string;
             CurrentSourceAxis = comboSourceAxis.SelectedItem as string;
             CurrentSourceDevice = comboSourceDevice.SelectedItem as string;
+            Title = CurrentSourceAxis;
 
             if (OnChange != null)
                 OnChange(this, EventArgs.Empty);

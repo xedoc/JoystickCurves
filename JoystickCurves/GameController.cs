@@ -66,7 +66,7 @@ namespace JoystickCurves
         {
             _pollTimer.Change(Timeout.Infinite, Timeout.Infinite);
 
-            //_device.Poll();
+            _device.Poll();
 
             var queue = _device.GetBufferedData();
             if (queue == null)

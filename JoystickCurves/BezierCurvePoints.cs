@@ -132,13 +132,16 @@ namespace JoystickCurves
                 throw new Exception("X must be set between 0 and 1");
 
             if (x == 1.0f)
-                return 1.0f;
+                return 1 - _rawPoints[_rawPoints.Count - 1].Y;
+            if (x == 0)
+                return 1 - _rawPoints[0].Y;
 
-            PointF startPoint = _rawPoints.AsEnumerable().Where((p, i) => (i % 3 == 0 && p.X <= x)).Select((p, i) => p).LastOrDefault();
+            var i = _rawPoints.AsEnumerable().Select((p, j) => new { Index = j, Value = p.X }).Where( a => a.Index % 3 == 0 && a.Value <= x ).LastOrDefault().Index;
 
-            PointF[] endPoints = _rawPoints.Where(p => p.X > startPoint.X).Take(3).ToArray();
+            if (i + 4 > _rawPoints.Count)
+                return _rawPoints[_rawPoints.Count - 1].Y;
 
-            return Bezier(startPoint, endPoints[0], endPoints[1], endPoints[2], x).Y;
+            return 1 - Bezier(_rawPoints[i], _rawPoints[i+1], _rawPoints[i+2], _rawPoints[i+3], x).Y;
         }
         PointF Bezier(PointF a, PointF b, PointF c, PointF d, float t)
         {
