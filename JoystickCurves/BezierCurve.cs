@@ -74,6 +74,7 @@ namespace JoystickCurves
                 InitCurve();
             }
         }
+
         public int PointsCount
         {
             get;
@@ -161,7 +162,13 @@ namespace JoystickCurves
             DragRectangle dragRect = (DragRectangle)sender;
             _tooltip.Hide(dragRect);
         }
-
+        public void ResetCurve()
+        {
+            Points.Reset();
+            InitCurve();
+            if (OnCurveChange != null)
+                OnCurveChange(this, EventArgs.Empty);
+        }
         void Curve_DragRectangleMove(object sender, EventArgs e)
         {
             DragRectangle dragRect = (DragRectangle)sender;
@@ -173,23 +180,15 @@ namespace JoystickCurves
                 newPoint.Y = newLocation.Y - Padding.Top;               
 
                 if( dragRect.Location.Y == dragRect.MaxY )
-                {
-                    newPoint.X = _points.DrawPoints[dragRect.Index].X; 
-                    newPoint.Y = _drawRectangle.Height;
-                }
+                    newPoint.Y = _points.DrawHeight;
                 else if (dragRect.Location.Y == dragRect.MinY)
-                {
-                    newPoint.X = _points.DrawPoints[dragRect.Index].X;
                     newPoint.Y = 0;
-                }
 
                 _points.DrawPoints[dragRect.Index] = newPoint;
                 _points.ScaleRawPoints(dragRect.Index);
 
-
-                //if (OnCurveChange != null)
-                 //   ThreadPool.QueueUserWorkItem( arg => OnCurveChange(this, EventArgs.Empty));
-                //Invalidate();
+                if (OnCurveChange != null)
+                   OnCurveChange(this, EventArgs.Empty);
 
                 ShowToolTip(dragRect);
 

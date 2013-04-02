@@ -55,8 +55,7 @@ namespace JoystickCurves
 
                 if( String.IsNullOrEmpty(_selectedSourceDevice))
                     return;
-
-                
+              
                 Utils.SetProperty<ComboBox,String>(comboSourceDevice, "SelectedItem", _selectedSourceDevice);
             }
         }
@@ -75,7 +74,6 @@ namespace JoystickCurves
                 }
                 _destDevices = value;
                 Utils.SetComboDataSource(comboDestDevice, _destContrBSource);
-
                 Utils.SetProperty<ComboBox, String>(comboDestDevice, "SelectedItem", _selectedDestDevice);
             }
         }
@@ -117,34 +115,40 @@ namespace JoystickCurves
                 }
                 _destAxis = value;
                 Utils.SetComboDataSource(comboDestAxis, _destAxisBSource);
-
                 Utils.SetProperty<ComboBox, String>(comboDestAxis, "SelectedItem", _selectedDestAxis);
             }
         }
         public BezierCurvePoints CurrentCurve
         {
             get { return curveResponse.Points; }
-            set { curveResponse.Points = value; }
+            set { curveResponse.Points = value;
+            if (OnChange != null)
+                OnChange(this, EventArgs.Empty);
+            }
+        }
+        public void ResetCurve()
+        {
+            curveResponse.ResetCurve();
         }
         public String CurrentSourceAxis
         {
             get { return _selectedSourceAxis; }
-            set { _selectedSourceAxis = value; }
+            set { _selectedSourceAxis = String.IsNullOrEmpty(value) ? NOTSET : value; }
         }
         public String CurrentDestAxis
         {
             get { return _selectedDestAxis; }
-            set { _selectedDestAxis = value; }
+            set { _selectedDestAxis = String.IsNullOrEmpty(value) ? NOTSET : value; }
         }
         public String CurrentSourceDevice
         {
             get { return _selectedSourceDevice; }
-            set { _selectedSourceDevice = value; }
+            set { _selectedSourceDevice = String.IsNullOrEmpty(value) ? NOTSET : value; }
         }
         public String CurrentDestDevice
         {
             get { return _selectedDestDevice; }
-            set { _selectedDestDevice = value; }
+            set { _selectedDestDevice = String.IsNullOrEmpty(value) ? NOTSET : value; }
         }
         public String Title
         {
@@ -161,7 +165,7 @@ namespace JoystickCurves
                 DestinationDevice = axisEditor.CurrentDestDevice,
                 SourceAxis = axisEditor.CurrentSourceAxis,
                 SourceDevice = axisEditor.CurrentSourceDevice,
-                TabTitle = axisEditor.Title
+                TabTitle = axisEditor.CurrentSourceAxis
             };
 
             return profileTab;

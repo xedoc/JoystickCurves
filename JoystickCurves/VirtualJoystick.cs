@@ -63,7 +63,11 @@ namespace JoystickCurves
             var axisList = new HID_USAGES[] { HID_USAGES.HID_USAGE_X, HID_USAGES.HID_USAGE_Y, HID_USAGES.HID_USAGE_RZ };
             var v = 0;
             foreach (var a in axisList)
+            {
                 v = AxisMinValue(a);
+                SetAxis(0, a);
+            }
+
 
         }
         private int AxisMaxValue(HID_USAGES hidusage)

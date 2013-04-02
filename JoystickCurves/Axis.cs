@@ -13,6 +13,7 @@ namespace JoystickCurves
 
         private const string UNKNOWN = "Unknown";
         private string _name;
+        private HID_USAGES _virtualID;
         public Axis()
         {
             Min = -1;
@@ -57,16 +58,19 @@ namespace JoystickCurves
         {
             get{ return _name; }
             set{
-                JoystickOffset result;
-                Enum.TryParse<JoystickOffset>(value, out result);
-                if ((int)result == 0)
-                    _name = UNKNOWN;
-                else
-                {
-                    DirectInputID = result;
-                    _name = value;
-                }
-
+                _joystickOffset = DIUtils.ID(value);
+                _virtualID = DIUtils.VirtualID(value);
+                _name = value;
+ 
+            }
+        }
+        public HID_USAGES VirtualID
+        {
+            get { return _virtualID; }
+            set {
+                _name = DIUtils.VirtualName(value);
+                _virtualID = value;
+                _joystickOffset = DIUtils.ID(_name);
             }
         }
         public JoystickOffset DirectInputID
@@ -76,6 +80,7 @@ namespace JoystickCurves
             {
                 _name = value.ToString();
                 _joystickOffset = value;
+                _virtualID = DIUtils.VirtualID(_name);
             }        
         }
         public static implicit operator String(Axis ax)

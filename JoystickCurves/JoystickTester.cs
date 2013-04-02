@@ -8,6 +8,7 @@ using System.Drawing;
 using System.Windows.Forms;
 using System.Threading;
 using System.Drawing.Drawing2D;
+using Microsoft.DirectX.DirectInput;
 
 namespace JoystickCurves
 {
@@ -354,6 +355,48 @@ namespace JoystickCurves
 
             
         }
+
+        public String CurrentVirtualDevice
+        {
+            get;
+            set;
+        }
+        public String CurrentPhysicalDevice
+        {
+            get;
+            set;
+        }
+        public JoystickOffset CurrentVirtualX
+        {
+            get;
+            set;
+        }
+        public JoystickOffset CurrentVirtualY
+        {
+            get;
+            set;
+        }
+        public JoystickOffset CurrentVirtualRZ
+        {
+            get;
+            set;
+        }
+        public JoystickOffset CurrentPhysicalX
+        {
+            get;
+            set;
+        }
+        public JoystickOffset CurrentPhysicalY
+        {
+            get;
+            set;
+        }
+        public JoystickOffset CurrentPhysicalRZ
+        {
+            get;
+            set;
+        }
+
 
     }
 }

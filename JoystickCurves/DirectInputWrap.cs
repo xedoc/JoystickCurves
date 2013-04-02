@@ -16,6 +16,19 @@ namespace JoystickCurves
             else
                 return pair.Key;
         }
+        public static HID_USAGES VirtualID(String name)
+        {
+            if (AllNames.ContainsValue(name))
+                return VirtualIDs[ID(name)];
+            else
+                return 0;
+        }
+        public static String VirtualName(HID_USAGES id)
+        {
+            JoystickOffset offset = VirtualIDs.Where(vid => vid.Value == id).FirstOrDefault().Key;
+            return AllNames[offset];
+        }
+         
         public static String Name(JoystickOffset id)
         {
             var pair = AllNames.FirstOrDefault(n => n.Key == id);
@@ -49,13 +62,28 @@ namespace JoystickCurves
         {
             get { return AllNames.Where(n => n.Value.ToLower().StartsWith("slider")).Select(n => n.Value).ToArray(); }
         }
+        public static readonly System.Collections.Generic.Dictionary<JoystickOffset, HID_USAGES> VirtualIDs =
+            new Dictionary<JoystickOffset, HID_USAGES>() {
+                {JoystickOffset.X, HID_USAGES.HID_USAGE_X},
+                {JoystickOffset.Y, HID_USAGES.HID_USAGE_Y},
+                {JoystickOffset.Z, HID_USAGES.HID_USAGE_Z},
+                {JoystickOffset.RX, HID_USAGES.HID_USAGE_RX},
+                {JoystickOffset.RY, HID_USAGES.HID_USAGE_RY},
+                {JoystickOffset.RZ, HID_USAGES.HID_USAGE_RZ},
+                {JoystickOffset.Slider0, HID_USAGES.HID_USAGE_SL0},
+                {JoystickOffset.Slider1, HID_USAGES.HID_USAGE_SL1},
+                {JoystickOffset.PointOfView0, HID_USAGES.HID_USAGE_POV},
+                {JoystickOffset.PointOfView1, HID_USAGES.HID_USAGE_POV},
+                {JoystickOffset.PointOfView2, HID_USAGES.HID_USAGE_POV},
+                {JoystickOffset.PointOfView3, HID_USAGES.HID_USAGE_POV},
+            };
         public static readonly System.Collections.Generic.Dictionary<JoystickOffset, String> AllNames =
             new Dictionary<JoystickOffset, string>() {
                 {JoystickOffset.X, "Roll"},
                 {JoystickOffset.Y, "Pitch"},
                 {JoystickOffset.Z, "Throttle"},
-                {JoystickOffset.RX, "Brakes/Rotary 1"},
-                {JoystickOffset.RY, "Brakes/Rotary 2"},
+                {JoystickOffset.RX, "Rotary 1"},
+                {JoystickOffset.RY, "Rotary 2"},
                 {JoystickOffset.RZ, "Yaw"},
                 {JoystickOffset.Slider0, "Slider 1"},
                 {JoystickOffset.Slider1, "Slider 2"},

@@ -17,6 +17,7 @@ namespace JoystickCurves
         private object lockPoints = new object();
         public BezierCurvePoints()
         {
+
             InitPoints(DEFAULTPOINTSCOUNT);           
         }
         public BezierCurvePoints( int pointsCount )
@@ -31,18 +32,20 @@ namespace JoystickCurves
             _drawHeight = 100000;
             _drawPoints = new List<Point>();
             _rawPoints = new List<PointF>();
-            _pointsCount = pointsCount;
+            PointsCount = pointsCount;
+            
+        }
+
+        public void Reset()
+        {
+            _rawPoints = Enumerable.Range(0, _pointsCount).AsEnumerable().Select((dp, i) => new PointF((float)i * (1.0f / (_pointsCount - 1)), 0)).ToList();
+            ScaleDrawPoints();
         }
         [XmlIgnore]
         public int PointsCount
         {
             get { return _pointsCount; }
-            set
-            {
-                if( RawPoints.Count == 0 )
-                    RawPoints = Enumerable.Range(0, _pointsCount).AsEnumerable().Select((dp, i) => new PointF((float)i * (1.0f / (_pointsCount - 1)), 0)).ToList();
-
-            }
+            set { _pointsCount = value; }
         }
         [XmlAttribute]
         public int DrawWidth
@@ -89,6 +92,7 @@ namespace JoystickCurves
         {
             get
             {
+
                 return _rawPoints;
             }
             set
@@ -97,10 +101,9 @@ namespace JoystickCurves
                     return;
                 if (value.Count == 0)
                     return;
-
-                _rawPoints = value;
                 ScaleDrawPoints();
             }
+
         }
         public void ScaleRawPoints(int index = -1)
         {
@@ -132,6 +135,9 @@ namespace JoystickCurves
         }
         public float GetY(float x)
         {
+            if (_rawPoints.Count <= 0)
+                return 1;
+
             lock (lockPoints)
             {
                 if (x < 0 || x > 1.0f)
