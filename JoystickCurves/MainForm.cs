@@ -29,6 +29,7 @@ namespace JoystickCurves
         private const int DEFPOINTSCOUNT = 13;
         private const string ANY = "Any";
         private const string NOTSET = "Not set";
+        private Form debugForm;
         public MainForm()
         {
 
@@ -42,6 +43,9 @@ namespace JoystickCurves
             _axisNamesVirtYaw = new BindingSource();
             _virtualDeviceNames = new BindingSource();
             _physicalDeviceNames = new BindingSource();
+
+
+            debugForm = new DebugForm();
         }
 
 
@@ -361,7 +365,6 @@ namespace JoystickCurves
                     if( !item.Equals(currentItem) )
                         item.Checked = false;
 
-            Debug.Print(currentItem.Text);
             switch (currentItem.Name.ToLower())
             {
                 case "virtaxisy":
@@ -450,17 +453,39 @@ namespace JoystickCurves
                     if (tp.Controls.Count > 0)
                     {
                         AxisEditor axisEditor = tp.Controls[0] as AxisEditor;
-                        if (axisEditor.CurrentDestDevice != NOTSET)
+                        if (axisEditor.CurrentDestDevice != NOTSET && axisEditor.CurrentDestAxis != NOTSET && axisEditor.CurrentSourceAxis != NOTSET )
                         {
-                            _axisBinding.Add(axisEditor.CurrentSourceDevice, new Dictionary<JoystickOffset, Axis>{
+                            if (_axisBinding.ContainsKey(axisEditor.CurrentSourceDevice))
                             {
-                                DIUtils.ID(axisEditor.CurrentSourceAxis),
-                                new Axis() { 
-                                    DirectInputID = DIUtils.ID(axisEditor.CurrentDestAxis),
-                                    DeviceName = axisEditor.CurrentDestDevice
+                                if (!_axisBinding[axisEditor.CurrentSourceDevice].ContainsKey(DIUtils.ID(axisEditor.CurrentSourceAxis)))
+                                {
+                                    _axisBinding[axisEditor.CurrentSourceDevice].Add(DIUtils.ID(axisEditor.CurrentSourceAxis), new Axis()
+                                    {
+                                        DirectInputID = DIUtils.ID(axisEditor.CurrentDestAxis),
+                                        DeviceName = axisEditor.CurrentDestDevice,
+                                        Min = -32767,
+                                        Max = 32767,
+                                        Value = 0
+
+                                    });
                                 }
                             }
-                            });
+                            else
+                            {
+                            
+                                _axisBinding.Add(axisEditor.CurrentSourceDevice, new Dictionary<JoystickOffset, Axis>{
+                                {
+                                    DIUtils.ID(axisEditor.CurrentSourceAxis),
+                                    new Axis() { 
+                                        DirectInputID = DIUtils.ID(axisEditor.CurrentDestAxis),
+                                        DeviceName = axisEditor.CurrentDestDevice,
+                                        Min = -32767,
+                                        Max = 32767,
+                                        Value = 0
+                                    }
+                                }
+                                });
+                            }
                         }
 
                     }
@@ -483,6 +508,8 @@ namespace JoystickCurves
             var currentProfileName = _currentProfile.Title;
             _currentProfile.Tabs[axisEditor.Index] = axisEditor;
 
+            UpdateAxisBindings();
+
         }
 
         private void deviceManager_OnDeviceList(object sender, EventArgs e)
@@ -496,6 +523,7 @@ namespace JoystickCurves
 
             SetupTester();
             SetupEditorComboBoxes();
+            UpdateAxisBindings();
         }
 
         private void dev_OnButtonChange(object sender, CustomEventArgs<Button> e)
@@ -507,52 +535,58 @@ namespace JoystickCurves
             var devName = e.Data.DeviceName;
 
             var axisName = DIUtils.Name(e.Data.DirectInputID);
-            BezierCurvePoints curvePoints = _currentProfile.Tabs.Where(t => t.SourceDevice == devName && t.SourceAxis == axisName).Select(t => t.CurvePoints).FirstOrDefault();
-            int newValue = e.Data.Value;
-            if (curvePoints != null)
-                newValue = (int)((float)e.Data.Value * curvePoints.GetY(Utils.PTop(1, Math.Abs(e.Data.Value), 32767)));
 
 
-            if (_axisBinding.ContainsKey(devName))
-            {
+
                 lock (lockAxisBinding)
                 {
-                    Dictionary<JoystickOffset, Axis> bindParams = _axisBinding[devName];
+                    Dictionary<JoystickOffset, Axis> bindParams = _axisBinding.FirstOrDefault(x => x.Key == devName).Value;
                     if (bindParams != null)
                     {
-                        Axis dstAxis = bindParams[e.Data.DirectInputID];
-                        if (dstAxis != null)
+                    
+                        BezierCurvePoints curvePoints = _currentProfile.Tabs.Where(t => t.SourceDevice == devName && t.SourceAxis == axisName).Select(t => t.CurvePoints).FirstOrDefault();
+                        int newValue = e.Data.Value;
+
+                        if (curvePoints != null)
+                            newValue = (int)((float)e.Data.Value * curvePoints.GetY(Utils.PTop(1, Math.Abs(e.Data.Value), 32767)));
+                    
+                        if (bindParams != null)
                         {
-                            switch (dstAxis.DirectInputID)
+                            //Axis dstAxis
+                            var dstAxis = bindParams.FirstOrDefault(x => x.Key == e.Data.DirectInputID).Value;
+                            if (dstAxis != null)
                             {
-                                case JoystickOffset.X:
-                                    _vjoy.X = newValue;
-                                    break;
-                                case JoystickOffset.Y:
-                                    _vjoy.Y = newValue;
-                                    break;
-                                case JoystickOffset.Z:
-                                    _vjoy.Z = newValue;
-                                    break;
-                                case JoystickOffset.RX:
-                                    _vjoy.RX = newValue;
-                                    break;
-                                case JoystickOffset.RY:
-                                    _vjoy.RY = newValue;
-                                    break;
-                                case JoystickOffset.RZ:
-                                    _vjoy.RZ = newValue;
-                                    break;
-                                case JoystickOffset.Slider0:
-                                    _vjoy.SL0 = newValue;
-                                    break;
-                                case JoystickOffset.Slider1:
-                                    _vjoy.SL1 = newValue;
-                                    break;
+                                switch (dstAxis.DirectInputID)
+                                {
+                                    case JoystickOffset.X:
+                                        _vjoy.X = newValue;
+                                        break;
+                                    case JoystickOffset.Y:
+                                        _vjoy.Y = newValue;
+                                        break;
+                                    case JoystickOffset.Z:
+                                        _vjoy.Z = newValue;
+                                        break;
+                                    case JoystickOffset.RX:
+                                        _vjoy.RX = newValue;
+                                        break;
+                                    case JoystickOffset.RY:
+                                        _vjoy.RY = newValue;
+                                        break;
+                                    case JoystickOffset.RZ:
+                                        _vjoy.RZ = newValue;
+                                        break;
+                                    case JoystickOffset.Slider0:
+                                        _vjoy.SL0 = newValue;
+                                        break;
+                                    case JoystickOffset.Slider1:
+                                        _vjoy.SL1 = newValue;
+                                        break;
+                                }
                             }
                         }
                     }
-                }
+                
             }
 
             
@@ -689,7 +723,11 @@ namespace JoystickCurves
             _currentContextMenu = currentItem.Text;
         }
 
-
+        public static void ThreadException(object sender, System.Threading.ThreadExceptionEventArgs e)
+        {
+            var errorMsg = e.Exception.Message + "\n\nStack Trace:\n" + e.Exception.StackTrace;
+            Debug.Print(errorMsg);
+        }
     }
 
 }

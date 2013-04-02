@@ -78,6 +78,12 @@
   <ItemGroup>
     <Compile Include="Axis.cs" />
     <Compile Include="Button.cs" />
+    <Compile Include="DebugForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="DebugForm.Designer.cs">
+      <DependentUpon>DebugForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="DirectInputWrap.cs" />
     <Compile Include="Settings.cs" />
     <Compile Include="Utils.cs" />
@@ -116,6 +122,9 @@
     <Compile Include="VirtualJoystick.cs" />
     <EmbeddedResource Include="AxisEditor.resx">
       <DependentUpon>AxisEditor.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="DebugForm.resx">
+      <DependentUpon>DebugForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="MainForm.resx">
       <DependentUpon>MainForm.cs</DependentUpon>
