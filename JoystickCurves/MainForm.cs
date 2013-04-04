@@ -29,11 +29,10 @@ namespace JoystickCurves
         private const int DEFPOINTSCOUNT = 13;
         private const string ANY = "Any";
         private const string NOTSET = "Not set";
-<<<<<<< HEAD
         private const string NEWPROFILE = "<New profile...>";
-=======
+
         private Form debugForm;
->>>>>>> 10400b8cb30acc91cfc29ad28eb22942aaaac20c
+
         public MainForm()
         {
 
@@ -719,7 +718,6 @@ namespace JoystickCurves
             _currentContextMenu = currentItem.Text;
         }
 
-<<<<<<< HEAD
 
         private void comboProfiles_SelectionChangeCommitted(object sender, EventArgs e)
         {
@@ -776,12 +774,9 @@ namespace JoystickCurves
             comboProfiles.Items.AddRange(profileTitles);
             comboProfiles.Items.Insert(0, NEWPROFILE);
             Utils.SetProperty<ComboBox, String>(comboProfiles, "SelectedItem", _currentProfile.Title);
-=======
         public static void ThreadException(object sender, System.Threading.ThreadExceptionEventArgs e)
         {
             var errorMsg = e.Exception.Message + "\n\nStack Trace:\n" + e.Exception.StackTrace;
-            Debug.Print(errorMsg);
->>>>>>> 10400b8cb30acc91cfc29ad28eb22942aaaac20c
         }
     }
 
