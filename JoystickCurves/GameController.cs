@@ -19,7 +19,7 @@ namespace JoystickCurves
         public event EventHandler<EventArgs> OnAcquire;
         public event EventHandler<CustomEventArgs<Axis>> OnAxisChange;
         public event EventHandler<CustomEventArgs<Button>> OnButtonChange;
-        private const int POLL_INTERVAL = 50;
+        private const int POLL_INTERVAL = 10;
         private const int AXIS_RANGE = 32767;
         private JoystickOffset[] JoystickAxes = new JoystickOffset[] { JoystickOffset.X, 
                                                      JoystickOffset.Y, 
