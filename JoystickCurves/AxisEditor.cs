@@ -22,15 +22,32 @@ namespace JoystickCurves
         private string _selectedDestDevice, _selectedDestAxis, _selectedSourceDevice, _selectedSourceAxis;
         public event EventHandler<EventArgs> OnChange;
         private object lockRead = new object();
+        CurveType _curveType;
 
+        public enum CurveType
+        {
+            Bezier,
+            Cardinal
+        }
         public AxisEditor()
         {
             InitializeComponent();
+            Type = CurveType.Bezier;
             CurrentCurve = curveResponse.Points;
             _selectedDestAxis = NOTSET;
             _selectedDestDevice = NOTSET;
             _selectedSourceAxis = NOTSET;
             _selectedSourceDevice = NOTSET;
+        }
+        public CurveType Type
+        {
+            get { return _curveType; }
+            set
+            {
+                _curveType = value;
+            }
+
+
         }
         public int Index
         {
@@ -58,6 +75,10 @@ namespace JoystickCurves
               
                 Utils.SetProperty<ComboBox,String>(comboSourceDevice, "SelectedItem", _selectedSourceDevice);
             }
+        }
+        public void StopUpdates()
+        {
+            curveResponse.StopUpdates();
         }
         public List<String> DestinationControllers
         {

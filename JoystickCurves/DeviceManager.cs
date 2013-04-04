@@ -13,7 +13,7 @@ namespace JoystickCurves
     {
         public event EventHandler<EventArgs> OnDeviceList;
         private DeviceList _gameControllers;
-        private String[] virtualTags = new String[] { "vjoy" };      
+        private String[] virtualTags = new String[] { "vjoy", "parallel port joystick" };      
 
         public DeviceManager()
         {

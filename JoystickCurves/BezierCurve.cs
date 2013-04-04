@@ -169,6 +169,12 @@ namespace JoystickCurves
             if (OnCurveChange != null)
                 OnCurveChange(this, EventArgs.Empty);
         }
+        public void StopUpdates()
+        {
+            frameUpdateTimer.Change(Timeout.Infinite, Timeout.Infinite);
+            this.Paint -= new PaintEventHandler(Curve_Paint);
+            this.Resize -= new EventHandler(BezierCurve_Resize);
+        }
         void Curve_DragRectangleMove(object sender, EventArgs e)
         {
             DragRectangle dragRect = (DragRectangle)sender;

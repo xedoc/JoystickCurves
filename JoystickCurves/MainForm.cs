@@ -29,6 +29,7 @@ namespace JoystickCurves
         private const int DEFPOINTSCOUNT = 13;
         private const string ANY = "Any";
         private const string NOTSET = "Not set";
+        private const string NEWPROFILE = "<New profile...>";
         public MainForm()
         {
 
@@ -53,6 +54,7 @@ namespace JoystickCurves
             if (_settings.Profiles != null)
                 _profileManager = _settings.Profiles;
 
+
             if (_profileManager == null)
                 _profileManager = new ProfileManager() { Title = "Default Manager" };
 
@@ -74,7 +76,9 @@ namespace JoystickCurves
             if (_currentProfile.Tabs == null)
                 _currentProfile.Tabs.Add(new ProfileTab() { TabTitle = "Axis 1" });
 
-            SetProfile(_currentProfile);
+            SetCurrentProfile(_currentProfile);
+            SetupProfileCombo();
+
 
             if (String.IsNullOrEmpty(_settings.TesterPhysicalJoystickX))
                 _settings.TesterPhysicalJoystickX = "Roll";
@@ -103,27 +107,9 @@ namespace JoystickCurves
 
         }
 
-        private void SetProfile(Profile profile)
+        private Profile GetCurrentProfile()
         {
-            foreach (var p in profile.Tabs)
-            {
-                var tabPage = AddNewProfileTab(tabAxis);
-                var axisEditor = tabPage.Controls[0] as AxisEditor;
-                p.CurvePoints.ScaleDrawPoints();
-                axisEditor.CurrentCurve = p.CurvePoints;
-                axisEditor.CurrentDestAxis = p.DestinationAxis;
-                axisEditor.CurrentDestDevice = p.DestinationDevice;
-                axisEditor.CurrentSourceAxis = p.SourceAxis;
-                axisEditor.CurrentSourceDevice = p.SourceDevice;
-                axisEditor.Title = p.TabTitle;
-                tabPage.Text = axisEditor.Title;
-            }
-            tabAxis.SelectedIndex = 0;
-        }
-
-        private Profile GetProfile()
-        {
-            Profile profile = new Profile();
+            Profile profile = new Profile(_currentProfile.Title);
             foreach (TabPage p in tabAxis.TabPages)
             {
                 if (p.Controls.Count > 0)
@@ -144,13 +130,16 @@ namespace JoystickCurves
             return profile;
         }
 
-        private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
+        private void SaveSettings()
         {
             _settings.Profiles = _profileManager;
-            _settings.CurrentProfile = GetProfile();
-            
+            _settings.CurrentProfile = GetCurrentProfile();
             _settings.Save();
+        
+        }
 
+        private void UnacquireDevices()
+        {
             if (_vjoy == null)
                 return;
 
@@ -159,13 +148,16 @@ namespace JoystickCurves
 
             _vjoy.Reset();
 
-            
+
             foreach (var d in _deviceManager.Devices)
                 d.Unacquire();
+        }
 
-   
-            Thread.Sleep(100);
-
+        private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            e.Cancel = false;
+            SaveSettings();
+            UnacquireDevices();
         }
 
         private void MainForm_Shown(object sender, EventArgs e)
@@ -219,7 +211,7 @@ namespace JoystickCurves
                 if (physicalDevices.Count > 0)
                     _settings.TesterPhysicalJoystick = physicalDevices[0].Text;
                 else
-                    _settings.TesterPhysicalJoystick = "Any";
+                    _settings.TesterPhysicalJoystick = ANY;
 
                 joystickTester.CurrentPhysicalDevice = _settings.TesterPhysicalJoystick;
 
@@ -229,7 +221,7 @@ namespace JoystickCurves
                 if (virtualDevices.Count > 0)
                     _settings.TesterVirtualJoystick = virtualDevices[0].Text;
                 else
-                    _settings.TesterVirtualJoystick = "Any";
+                    _settings.TesterVirtualJoystick = ANY;
 
                 joystickTester.CurrentVirtualDevice = _settings.TesterVirtualJoystick;
             }
@@ -241,9 +233,9 @@ namespace JoystickCurves
             var axisListPhysY = DIUtils.AxisNames.Select(ax => new ToolStripMenuItem(ax) { CheckOnClick = true }).ToList();
             var axisListPhysRZ = DIUtils.AxisNames.Select(ax => new ToolStripMenuItem(ax) { CheckOnClick = true }).ToList();
 
-            physicalDevices.Insert(0, new ToolStripMenuItem("Any") { CheckOnClick = true });
+            physicalDevices.Insert(0, new ToolStripMenuItem(ANY) { CheckOnClick = true });
             physicalDevices.Insert(0, new ToolStripMenuItem("Not set") { CheckOnClick = true });
-            virtualDevices.Insert(0, new ToolStripMenuItem("Any") { CheckOnClick = true });
+            virtualDevices.Insert(0, new ToolStripMenuItem(ANY) { CheckOnClick = true });
             virtualDevices.Insert(0, new ToolStripMenuItem("Not set") { CheckOnClick = true });
 
             axisListVirtX.Insert(0, new ToolStripMenuItem("Not set") { CheckOnClick = true });
@@ -424,6 +416,8 @@ namespace JoystickCurves
 
         private void SetupEditorComboBoxes()
         {
+            if (_deviceManager == null)
+                return;
 
             foreach (TabPage tp in tabAxis.TabPages)
             {
@@ -615,7 +609,7 @@ namespace JoystickCurves
         private TabPage AddNewProfileTab(TabControl tab, bool select = false)
         {
             var templateTab = tabAxis.TabPages[tabAxis.TabPages.Count-1];
-            var newTabPage = new TabPage("Axis " + tab.TabCount);
+            var newTabPage = new TabPage("Axis " + tab.TabCount) { Name = "tabAxis" };
 
             var newAxisEditor = new AxisEditor() { 
                 Location = new Point( templateTab.Padding.Left, templateTab.Padding.Top ), 
@@ -628,14 +622,13 @@ namespace JoystickCurves
             tabAxis.TabPages.Insert(tabAxis.TabPages.Count - 1, newTabPage);
             if( select )
                 tabAxis.SelectedTab = newTabPage;
-            Invalidate();
             
             return newTabPage;
         }
 
         private void contextMenuTabPage_ItemClicked(object sender, ToolStripItemClickedEventArgs e)
         {
-            if (e.ClickedItem.Name == "deleteAxis")
+            if (e.ClickedItem.Name == "deleteAxis" && tabAxis.SelectedTab != null )
                 tabAxis.TabPages.Remove(tabAxis.SelectedTab);
         }
 
@@ -690,6 +683,62 @@ namespace JoystickCurves
         }
 
 
+        private void comboProfiles_SelectionChangeCommitted(object sender, EventArgs e)
+        {
+            if (((String)comboProfiles.SelectedItem) == NEWPROFILE)
+                return;
+
+            SetCurrentProfile((String)Utils.GetProperty<ComboBox>( comboProfiles, "SelectedItem"));
+        }
+        private void SetCurrentProfile(String title)
+        {           
+            if (string.IsNullOrEmpty(title))
+            {
+                Utils.SetProperty<ComboBox, String>(comboProfiles, "SelectedItem", _currentProfile.Title);
+                return;
+            }
+
+            if (_profileManager.Profiles.Exists(p => p.Title == _currentProfile.Title))
+            {
+                _profileManager.Profiles.RemoveAll(p => p.Title == _currentProfile.Title);
+            }
+            _profileManager.Profiles.Add(_currentProfile);
+
+            var selectedProfile = _profileManager.Profiles.FirstOrDefault(p => p.Title == title);
+            if (selectedProfile != null)
+                _currentProfile = selectedProfile;
+            else
+                _currentProfile.Title = title;
+
+            while (tabAxis.TabPages.Count > 1)
+                tabAxis.TabPages.RemoveAt(0);
+
+            foreach (var p in _currentProfile.Tabs)
+            {
+                var tabPage = AddNewProfileTab(tabAxis);
+                var axisEditor = tabPage.Controls[0] as AxisEditor;
+
+                p.CurvePoints.ScaleDrawPoints();
+                axisEditor.CurrentCurve = p.CurvePoints;
+                axisEditor.CurrentDestAxis = p.DestinationAxis;
+                axisEditor.CurrentDestDevice = p.DestinationDevice;
+                axisEditor.CurrentSourceAxis = p.SourceAxis;
+                axisEditor.CurrentSourceDevice = p.SourceDevice;
+                axisEditor.Title = p.TabTitle;
+                tabPage.Text = axisEditor.Title;
+            }
+            tabAxis.SelectedIndex = 0;
+            Utils.SetProperty<ComboBox, String>(comboProfiles, "SelectedItem", _currentProfile.Title);
+
+        }
+
+        private void SetupProfileCombo()
+        {
+            var profileTitles = _profileManager.Profiles.Select(p => p.Title).ToArray();
+            comboProfiles.Items.AddRange(profileTitles);
+            comboProfiles.Items.Insert(0, NEWPROFILE);
+            Utils.SetProperty<ComboBox, String>(comboProfiles, "SelectedItem", _currentProfile.Title);
+        }
     }
 
 }

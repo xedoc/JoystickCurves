@@ -24,7 +24,9 @@ namespace JoystickCurves
             else
             {
                 Type t = ctrl.GetType();
-                t.InvokeMember(propName, BindingFlags.Instance | BindingFlags.SetProperty | BindingFlags.Public, null, ctrl, new object[] { value });
+                var curVal = t.InvokeMember(propName, BindingFlags.Instance | BindingFlags.GetProperty | BindingFlags.Public, null, ctrl, null);
+                if( curVal == null || !curVal.Equals( value ) )
+                    t.InvokeMember(propName, BindingFlags.Instance | BindingFlags.SetProperty | BindingFlags.Public, null, ctrl, new object[] { value });
             }
 
         }

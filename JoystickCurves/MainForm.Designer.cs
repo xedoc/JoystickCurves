@@ -47,12 +47,17 @@
             this.physicalDeviceDarkGreenToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.contextMenuPhysicalDevices = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.virtualPitchToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.contextMenuAxisListVirtualX = new System.Windows.Forms.ContextMenuStrip(this.components);
-            this.physicalRollToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.contextMenuAxisListVirtualY = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.virtualRollToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.contextMenuAxisListVirtualX = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.virtualYawToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.contextMenuAxisListVirtualRZ = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.physicalPitchToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.contextMenuAxisListPhysY = new System.Windows.Forms.ContextMenuStrip(this.components);
+            this.physicalRollToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.contextMenuAxisListPhysX = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.physicalYawToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.contextMenuAxisListPhysRZ = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.label5 = new System.Windows.Forms.Label();
             this.joystickTester = new JoystickCurves.JoystickTester(this.components);
             this.label4 = new System.Windows.Forms.Label();
@@ -61,11 +66,6 @@
             this.labelYawPercent = new System.Windows.Forms.Label();
             this.labelRollPercent = new System.Windows.Forms.Label();
             this.labelPitchPercent = new System.Windows.Forms.Label();
-            this.contextMenuAxisListVirtualY = new System.Windows.Forms.ContextMenuStrip(this.components);
-            this.contextMenuAxisListVirtualRZ = new System.Windows.Forms.ContextMenuStrip(this.components);
-            this.contextMenuAxisListPhysX = new System.Windows.Forms.ContextMenuStrip(this.components);
-            this.contextMenuAxisListPhysY = new System.Windows.Forms.ContextMenuStrip(this.components);
-            this.contextMenuAxisListPhysRZ = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.tabAxis.SuspendLayout();
             this.contextMenuTabPage.SuspendLayout();
             this.contextMenuTester.SuspendLayout();
@@ -75,17 +75,12 @@
             // 
             // comboProfiles
             // 
-            this.comboProfiles.DataBindings.Add(new System.Windows.Forms.Binding("Text", global::JoystickCurves.Properties.Settings.Default, "CurrentProfile", true, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged));
-            this.comboProfiles.Enabled = false;
             this.comboProfiles.FormattingEnabled = true;
-            this.comboProfiles.Items.AddRange(new object[] {
-            "<New profile...>",
-            "Default"});
             this.comboProfiles.Location = new System.Drawing.Point(54, 6);
             this.comboProfiles.Name = "comboProfiles";
             this.comboProfiles.Size = new System.Drawing.Size(269, 21);
             this.comboProfiles.TabIndex = 4;
-            this.comboProfiles.Text = global::JoystickCurves.Properties.Settings.Default.CurrentProfile;
+            this.comboProfiles.SelectionChangeCommitted += new System.EventHandler(this.comboProfiles_SelectionChangeCommitted);
             // 
             // label2
             // 
@@ -191,7 +186,7 @@
             this.physicalRollToolStripMenuItem,
             this.physicalYawToolStripMenuItem});
             this.contextMenuTester.Name = "contextMenuTester";
-            this.contextMenuTester.Size = new System.Drawing.Size(217, 202);
+            this.contextMenuTester.Size = new System.Drawing.Size(217, 180);
             this.contextMenuTester.Closing += new System.Windows.Forms.ToolStripDropDownClosingEventHandler(this.contextMenuTester_Closing);
             // 
             // virtualDeviceLightGreenToolStripMenuItem
@@ -205,6 +200,7 @@
             // contextMenuVirtualDevices
             // 
             this.contextMenuVirtualDevices.Name = "contextMenuVirtualDevices";
+            this.contextMenuVirtualDevices.OwnerItem = this.virtualDeviceLightGreenToolStripMenuItem;
             this.contextMenuVirtualDevices.Size = new System.Drawing.Size(61, 4);
             this.contextMenuVirtualDevices.Closing += new System.Windows.Forms.ToolStripDropDownClosingEventHandler(this.contextMenuTester_Closing);
             this.contextMenuVirtualDevices.MouseDown += new System.Windows.Forms.MouseEventHandler(this.testerContextDevices_MouseDown);
@@ -220,6 +216,7 @@
             // contextMenuPhysicalDevices
             // 
             this.contextMenuPhysicalDevices.Name = "contextMenuVirtualDevices";
+            this.contextMenuPhysicalDevices.OwnerItem = this.physicalDeviceDarkGreenToolStripMenuItem;
             this.contextMenuPhysicalDevices.Size = new System.Drawing.Size(61, 4);
             this.contextMenuPhysicalDevices.Closing += new System.Windows.Forms.ToolStripDropDownClosingEventHandler(this.contextMenuTester_Closing);
             this.contextMenuPhysicalDevices.MouseDown += new System.Windows.Forms.MouseEventHandler(this.testerContextDevices_MouseDown);
@@ -232,20 +229,13 @@
             this.virtualPitchToolStripMenuItem.Text = "Virtual Pitch";
             this.virtualPitchToolStripMenuItem.Click += new System.EventHandler(this.testerRootMenuItem_Click);
             // 
-            // contextMenuAxisListVirtualX
+            // contextMenuAxisListVirtualY
             // 
-            this.contextMenuAxisListVirtualX.Name = "contextMenuVirtualDevices";
-            this.contextMenuAxisListVirtualX.Size = new System.Drawing.Size(61, 4);
-            this.contextMenuAxisListVirtualX.Closing += new System.Windows.Forms.ToolStripDropDownClosingEventHandler(this.contextMenuTester_Closing);
-            this.contextMenuAxisListVirtualX.MouseDown += new System.Windows.Forms.MouseEventHandler(this.testerContextDevices_MouseDown);
-            // 
-            // physicalRollToolStripMenuItem
-            // 
-            this.physicalRollToolStripMenuItem.DropDown = this.contextMenuAxisListPhysX;
-            this.physicalRollToolStripMenuItem.Name = "physicalRollToolStripMenuItem";
-            this.physicalRollToolStripMenuItem.Size = new System.Drawing.Size(216, 22);
-            this.physicalRollToolStripMenuItem.Text = "Physical Roll";
-            this.physicalRollToolStripMenuItem.Click += new System.EventHandler(this.testerRootMenuItem_Click);
+            this.contextMenuAxisListVirtualY.Name = "contextMenuVirtualDevices";
+            this.contextMenuAxisListVirtualY.OwnerItem = this.virtualPitchToolStripMenuItem;
+            this.contextMenuAxisListVirtualY.Size = new System.Drawing.Size(61, 4);
+            this.contextMenuAxisListVirtualY.Closing += new System.Windows.Forms.ToolStripDropDownClosingEventHandler(this.contextMenuTester_Closing);
+            this.contextMenuAxisListVirtualY.MouseDown += new System.Windows.Forms.MouseEventHandler(this.testerContextDevices_MouseDown);
             // 
             // virtualRollToolStripMenuItem
             // 
@@ -255,6 +245,14 @@
             this.virtualRollToolStripMenuItem.Text = "Virtual Roll";
             this.virtualRollToolStripMenuItem.Click += new System.EventHandler(this.testerRootMenuItem_Click);
             // 
+            // contextMenuAxisListVirtualX
+            // 
+            this.contextMenuAxisListVirtualX.Name = "contextMenuVirtualDevices";
+            this.contextMenuAxisListVirtualX.OwnerItem = this.virtualRollToolStripMenuItem;
+            this.contextMenuAxisListVirtualX.Size = new System.Drawing.Size(61, 4);
+            this.contextMenuAxisListVirtualX.Closing += new System.Windows.Forms.ToolStripDropDownClosingEventHandler(this.contextMenuTester_Closing);
+            this.contextMenuAxisListVirtualX.MouseDown += new System.Windows.Forms.MouseEventHandler(this.testerContextDevices_MouseDown);
+            // 
             // virtualYawToolStripMenuItem
             // 
             this.virtualYawToolStripMenuItem.DropDown = this.contextMenuAxisListVirtualRZ;
@@ -262,6 +260,14 @@
             this.virtualYawToolStripMenuItem.Size = new System.Drawing.Size(216, 22);
             this.virtualYawToolStripMenuItem.Text = "Virtual Yaw";
             this.virtualYawToolStripMenuItem.Click += new System.EventHandler(this.testerRootMenuItem_Click);
+            // 
+            // contextMenuAxisListVirtualRZ
+            // 
+            this.contextMenuAxisListVirtualRZ.Name = "contextMenuVirtualDevices";
+            this.contextMenuAxisListVirtualRZ.OwnerItem = this.virtualYawToolStripMenuItem;
+            this.contextMenuAxisListVirtualRZ.Size = new System.Drawing.Size(61, 4);
+            this.contextMenuAxisListVirtualRZ.Closing += new System.Windows.Forms.ToolStripDropDownClosingEventHandler(this.contextMenuTester_Closing);
+            this.contextMenuAxisListVirtualRZ.MouseDown += new System.Windows.Forms.MouseEventHandler(this.testerContextDevices_MouseDown);
             // 
             // physicalPitchToolStripMenuItem
             // 
@@ -271,6 +277,30 @@
             this.physicalPitchToolStripMenuItem.Text = "Physical Pitch";
             this.physicalPitchToolStripMenuItem.Click += new System.EventHandler(this.testerRootMenuItem_Click);
             // 
+            // contextMenuAxisListPhysY
+            // 
+            this.contextMenuAxisListPhysY.Name = "contextMenuVirtualDevices";
+            this.contextMenuAxisListPhysY.OwnerItem = this.physicalPitchToolStripMenuItem;
+            this.contextMenuAxisListPhysY.Size = new System.Drawing.Size(61, 4);
+            this.contextMenuAxisListPhysY.Closing += new System.Windows.Forms.ToolStripDropDownClosingEventHandler(this.contextMenuTester_Closing);
+            this.contextMenuAxisListPhysY.MouseDown += new System.Windows.Forms.MouseEventHandler(this.testerContextDevices_MouseDown);
+            // 
+            // physicalRollToolStripMenuItem
+            // 
+            this.physicalRollToolStripMenuItem.DropDown = this.contextMenuAxisListPhysX;
+            this.physicalRollToolStripMenuItem.Name = "physicalRollToolStripMenuItem";
+            this.physicalRollToolStripMenuItem.Size = new System.Drawing.Size(216, 22);
+            this.physicalRollToolStripMenuItem.Text = "Physical Roll";
+            this.physicalRollToolStripMenuItem.Click += new System.EventHandler(this.testerRootMenuItem_Click);
+            // 
+            // contextMenuAxisListPhysX
+            // 
+            this.contextMenuAxisListPhysX.Name = "contextMenuVirtualDevices";
+            this.contextMenuAxisListPhysX.OwnerItem = this.physicalRollToolStripMenuItem;
+            this.contextMenuAxisListPhysX.Size = new System.Drawing.Size(61, 4);
+            this.contextMenuAxisListPhysX.Closing += new System.Windows.Forms.ToolStripDropDownClosingEventHandler(this.contextMenuTester_Closing);
+            this.contextMenuAxisListPhysX.MouseDown += new System.Windows.Forms.MouseEventHandler(this.testerContextDevices_MouseDown);
+            // 
             // physicalYawToolStripMenuItem
             // 
             this.physicalYawToolStripMenuItem.DropDown = this.contextMenuAxisListPhysRZ;
@@ -278,6 +308,14 @@
             this.physicalYawToolStripMenuItem.Size = new System.Drawing.Size(216, 22);
             this.physicalYawToolStripMenuItem.Text = "Physical Yaw";
             this.physicalYawToolStripMenuItem.Click += new System.EventHandler(this.testerRootMenuItem_Click);
+            // 
+            // contextMenuAxisListPhysRZ
+            // 
+            this.contextMenuAxisListPhysRZ.Name = "contextMenuVirtualDevices";
+            this.contextMenuAxisListPhysRZ.OwnerItem = this.physicalYawToolStripMenuItem;
+            this.contextMenuAxisListPhysRZ.Size = new System.Drawing.Size(61, 4);
+            this.contextMenuAxisListPhysRZ.Closing += new System.Windows.Forms.ToolStripDropDownClosingEventHandler(this.contextMenuTester_Closing);
+            this.contextMenuAxisListPhysRZ.MouseDown += new System.Windows.Forms.MouseEventHandler(this.testerContextDevices_MouseDown);
             // 
             // label5
             // 
@@ -382,42 +420,6 @@
             this.labelPitchPercent.TabIndex = 10;
             this.labelPitchPercent.Text = "0%";
             this.labelPitchPercent.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-            // 
-            // contextMenuAxisListVirtualY
-            // 
-            this.contextMenuAxisListVirtualY.Name = "contextMenuVirtualDevices";
-            this.contextMenuAxisListVirtualY.Size = new System.Drawing.Size(61, 4);
-            this.contextMenuAxisListVirtualY.Closing += new System.Windows.Forms.ToolStripDropDownClosingEventHandler(this.contextMenuTester_Closing);
-            this.contextMenuAxisListVirtualY.MouseDown += new System.Windows.Forms.MouseEventHandler(this.testerContextDevices_MouseDown);
-            // 
-            // contextMenuAxisListVirtualRZ
-            // 
-            this.contextMenuAxisListVirtualRZ.Name = "contextMenuVirtualDevices";
-            this.contextMenuAxisListVirtualRZ.Size = new System.Drawing.Size(61, 4);
-            this.contextMenuAxisListVirtualRZ.Closing += new System.Windows.Forms.ToolStripDropDownClosingEventHandler(this.contextMenuTester_Closing);
-            this.contextMenuAxisListVirtualRZ.MouseDown += new System.Windows.Forms.MouseEventHandler(this.testerContextDevices_MouseDown);
-            // 
-            // contextMenuAxisListPhysX
-            // 
-            this.contextMenuAxisListPhysX.Name = "contextMenuVirtualDevices";
-            this.contextMenuAxisListPhysX.Size = new System.Drawing.Size(61, 4);
-            this.contextMenuAxisListPhysX.Closing += new System.Windows.Forms.ToolStripDropDownClosingEventHandler(this.contextMenuTester_Closing);
-            this.contextMenuAxisListPhysX.MouseDown += new System.Windows.Forms.MouseEventHandler(this.testerContextDevices_MouseDown);
-            // 
-            // contextMenuAxisListPhysY
-            // 
-            this.contextMenuAxisListPhysY.Name = "contextMenuVirtualDevices";
-            this.contextMenuAxisListPhysY.Size = new System.Drawing.Size(61, 4);
-            this.contextMenuAxisListPhysY.Closing += new System.Windows.Forms.ToolStripDropDownClosingEventHandler(this.contextMenuTester_Closing);
-            this.contextMenuAxisListPhysY.MouseDown += new System.Windows.Forms.MouseEventHandler(this.testerContextDevices_MouseDown);
-            // 
-            // contextMenuAxisListPhysRZ
-            // 
-            this.contextMenuAxisListPhysRZ.Name = "contextMenuVirtualDevices";
-            this.contextMenuAxisListPhysRZ.OwnerItem = this.physicalYawToolStripMenuItem;
-            this.contextMenuAxisListPhysRZ.Size = new System.Drawing.Size(153, 26);
-            this.contextMenuAxisListPhysRZ.Closing += new System.Windows.Forms.ToolStripDropDownClosingEventHandler(this.contextMenuTester_Closing);
-            this.contextMenuAxisListPhysRZ.MouseDown += new System.Windows.Forms.MouseEventHandler(this.testerContextDevices_MouseDown);
             // 
             // MainForm
             // 

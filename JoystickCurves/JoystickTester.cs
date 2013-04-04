@@ -397,6 +397,12 @@ namespace JoystickCurves
             set;
         }
 
+        public void StopUpdates()
+        {
+            Paint -= new PaintEventHandler(JoystickTester_Paint);
+            frameUpdateTimer.Change(Timeout.Infinite, Timeout.Infinite);
+        }
+
 
     }
 }
