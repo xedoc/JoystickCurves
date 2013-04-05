@@ -15,6 +15,7 @@ namespace JoystickCurves
         private int _pointsCount;
         private const int DEFAULTPOINTSCOUNT = 13;
         private object lockPoints = new object();
+        public event EventHandler<EventArgs> OnChange;
         public BezierCurvePoints()
         {
 
@@ -26,7 +27,7 @@ namespace JoystickCurves
         }
         private void InitPoints(int pointsCount)
         {
-            if (pointsCount < 3) throw new Exception("Not enough points for Bezier curve!");
+            if (pointsCount < 4) throw new Exception("Not enough points for Bezier curve!");
 
             _drawWidth = 100000;
             _drawHeight = 100000;
@@ -35,7 +36,7 @@ namespace JoystickCurves
             PointsCount = pointsCount;
             
         }
-
+        
         public void Reset()
         {
             _rawPoints = Enumerable.Range(0, _pointsCount).AsEnumerable().Select((dp, i) => new PointF((float)i * (1.0f / (_pointsCount - 1)), 0)).ToList();
@@ -128,7 +129,25 @@ namespace JoystickCurves
                 }
             }
         }
-
+        public PointF InterpolateLinear( PointF a, PointF b, PointF c )
+        {
+            if ((c.X - b.X) == 0)
+            {
+                return new PointF(a.X, (b.Y + c.Y) / 2);
+            }
+            return new PointF(a.X,b.Y + (a.X - b.X) * (c.Y - b.Y) / (c.X - b.X));
+        
+        }
+        public void Streighten()
+        {
+            if( _rawPoints.Count < 3 )
+                return;
+            for (int i = 1; i < _rawPoints.Count - 1; i++ )
+            {
+                _rawPoints[i] = InterpolateLinear( _rawPoints[i], _rawPoints[0], _rawPoints[_rawPoints.Count-1]);
+            }
+            ScaleDrawPoints();
+        }
         PointF Interpolate(PointF a, PointF b, float t)
         {
             return new PointF(a.X + (b.X - a.X) * t, a.Y + (b.Y - a.Y) * t);
@@ -194,6 +213,9 @@ namespace JoystickCurves
             {
                 _drawPoints[index] = new Point((int)Utils.PTop(DrawWidth, _rawPoints[index].X, 1), (int)Utils.PTop(DrawHeight, _rawPoints[index].Y, 1));
             }
+            
+            if (OnChange != null)
+                OnChange(this,EventArgs.Empty);
         }
 
         

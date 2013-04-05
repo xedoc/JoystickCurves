@@ -190,7 +190,7 @@ namespace JoystickCurves
             _device.Acquire();
 
            
-            _pollTimer.Change(POLL_INTERVAL, POLL_INTERVAL);
+            _pollTimer.Change(0, POLL_INTERVAL);
             
             if (OnAcquire != null)
                 OnAcquire(this, EventArgs.Empty);

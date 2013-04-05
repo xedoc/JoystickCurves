@@ -7,11 +7,15 @@ using System.Windows.Forms;
 using System.Xml.Serialization;
 using System.Xml;
 using System.IO;
+using Microsoft.DirectX.DirectInput;
 
 namespace JoystickCurves
 {
     public static class Utils
     {
+        private const string ANY = "Any";
+        private const string NOTSET = "Not set";
+
         public delegate void SetPropCallback(Control ctrl, string propName, object value);
         public static void SetProperty<TControl, TValue>(this TControl ctrl, string propName, TValue value) where TControl : Control
         {
@@ -83,6 +87,44 @@ namespace JoystickCurves
             }
         }
 
+
+        public static List<ToolStripMenuItem> SetAxisContextMenuItems(String itemName, JoystickOffset currentOffset, EventHandler<EventArgs>clickHandler, MouseEventHandler mouseDownHandler)
+        {
+            var items = DIUtils.AxisNames.Select(ax => new ToolStripMenuItem(ax) { CheckOnClick = true }).ToList();
+            items.Insert(0, new ToolStripMenuItem(NOTSET) { CheckOnClick = true });
+
+            foreach (var d in items )
+            {
+                d.Click += new EventHandler(clickHandler);
+                d.MouseDown += new MouseEventHandler(mouseDownHandler);
+                d.Name = itemName;
+                if (currentOffset == DIUtils.ID(d.Text) && DIUtils.AxisNames.Contains(d.Text))
+                    d.Checked = true;
+                else
+                    d.Checked = false;
+            }
+            return items;
+        }
+
+
+        public static List<ToolStripMenuItem> SetDeviceContextMenuItems(List<ToolStripMenuItem> items, String itemName, String currentDevice, EventHandler<EventArgs> clickHandler, MouseEventHandler mouseDownHandler)
+        {            
+            items.Insert(0, new ToolStripMenuItem(NOTSET) { CheckOnClick = true });
+            items.Insert(1, new ToolStripMenuItem(ANY) { CheckOnClick = true });
+
+            foreach (var d in items)
+            {
+                d.Click += new EventHandler(clickHandler);
+                d.MouseDown += new MouseEventHandler(mouseDownHandler);
+                d.Name = itemName;
+                if (currentDevice == d.Text)
+                    d.Checked = true;
+                else
+                    d.Checked = false;
+            }
+            return items;
+        }
+
     }
     public class XmlSerializableBase<T> where T : XmlSerializableBase<T>
     {
@@ -93,5 +135,7 @@ namespace JoystickCurves
         public void SerializeTo(XmlWriter xw) { serializer.Serialize(xw, this); }
         public void SerializeTo(StringWriter sw) { serializer.Serialize(sw, this); }
     }
+
+
 
 }

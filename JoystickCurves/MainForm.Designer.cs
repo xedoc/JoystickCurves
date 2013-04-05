@@ -36,6 +36,7 @@
             this.contextMenuTabPage = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.copyCurveToToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.resetCurveToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.streightenUpCurveToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.deleteAxis = new System.Windows.Forms.ToolStripMenuItem();
             this.tabAddNew = new System.Windows.Forms.TabPage();
             this.imageList = new System.Windows.Forms.ImageList(this.components);
@@ -66,11 +67,16 @@
             this.labelYawPercent = new System.Windows.Forms.Label();
             this.labelRollPercent = new System.Windows.Forms.Label();
             this.labelPitchPercent = new System.Windows.Forms.Label();
+            this.trayIcon = new System.Windows.Forms.NotifyIcon(this.components);
+            this.contextMenuTray = new System.Windows.Forms.ContextMenuStrip(this.components);
+            this.exitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.profilesToolStripMenuItem = new System.Windows.Forms.ToolStripComboBox();
             this.tabAxis.SuspendLayout();
             this.contextMenuTabPage.SuspendLayout();
             this.contextMenuTester.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.joystickTester)).BeginInit();
             this.joystickTester.SuspendLayout();
+            this.contextMenuTray.SuspendLayout();
             this.SuspendLayout();
             // 
             // comboProfiles
@@ -81,6 +87,7 @@
             this.comboProfiles.Size = new System.Drawing.Size(269, 21);
             this.comboProfiles.TabIndex = 4;
             this.comboProfiles.SelectionChangeCommitted += new System.EventHandler(this.comboProfiles_SelectionChangeCommitted);
+            this.comboProfiles.Validated += new System.EventHandler(this.comboProfiles_Validated);
             // 
             // label2
             // 
@@ -108,9 +115,10 @@
             this.contextMenuTabPage.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.copyCurveToToolStripMenuItem,
             this.resetCurveToolStripMenuItem,
+            this.streightenUpCurveToolStripMenuItem,
             this.deleteAxis});
             this.contextMenuTabPage.Name = "contextMenuTabPage";
-            this.contextMenuTabPage.Size = new System.Drawing.Size(155, 70);
+            this.contextMenuTabPage.Size = new System.Drawing.Size(155, 92);
             this.contextMenuTabPage.ItemClicked += new System.Windows.Forms.ToolStripItemClickedEventHandler(this.contextMenuTabPage_ItemClicked);
             // 
             // copyCurveToToolStripMenuItem
@@ -126,6 +134,13 @@
             this.resetCurveToolStripMenuItem.Size = new System.Drawing.Size(154, 22);
             this.resetCurveToolStripMenuItem.Text = "Reset curve";
             this.resetCurveToolStripMenuItem.Click += new System.EventHandler(this.resetCurveToolStripMenuItem_Click);
+            // 
+            // streightenUpCurveToolStripMenuItem
+            // 
+            this.streightenUpCurveToolStripMenuItem.Name = "streightenUpCurveToolStripMenuItem";
+            this.streightenUpCurveToolStripMenuItem.Size = new System.Drawing.Size(154, 22);
+            this.streightenUpCurveToolStripMenuItem.Text = "Streighten curve";
+            this.streightenUpCurveToolStripMenuItem.Click += new System.EventHandler(this.streightenUpCurveToolStripMenuItem_Click);
             // 
             // deleteAxis
             // 
@@ -421,6 +436,36 @@
             this.labelPitchPercent.Text = "0%";
             this.labelPitchPercent.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
+            // trayIcon
+            // 
+            this.trayIcon.ContextMenuStrip = this.contextMenuTray;
+            this.trayIcon.Icon = ((System.Drawing.Icon)(resources.GetObject("trayIcon.Icon")));
+            this.trayIcon.Text = "JoystickCurve";
+            this.trayIcon.Visible = true;
+            this.trayIcon.DoubleClick += new System.EventHandler(this.trayIcon_DoubleClick);
+            // 
+            // contextMenuTray
+            // 
+            this.contextMenuTray.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.profilesToolStripMenuItem,
+            this.exitToolStripMenuItem});
+            this.contextMenuTray.Name = "contextMenuTray";
+            this.contextMenuTray.Size = new System.Drawing.Size(213, 51);
+            // 
+            // exitToolStripMenuItem
+            // 
+            this.exitToolStripMenuItem.Name = "exitToolStripMenuItem";
+            this.exitToolStripMenuItem.Size = new System.Drawing.Size(212, 22);
+            this.exitToolStripMenuItem.Text = "Exit";
+            this.exitToolStripMenuItem.Click += new System.EventHandler(this.exitToolStripMenuItem_Click);
+            // 
+            // profilesToolStripMenuItem
+            // 
+            this.profilesToolStripMenuItem.Name = "profilesToolStripMenuItem";
+            this.profilesToolStripMenuItem.Size = new System.Drawing.Size(152, 21);
+            this.profilesToolStripMenuItem.Text = "Profile";
+            this.profilesToolStripMenuItem.SelectedIndexChanged += new System.EventHandler(this.profilesToolStripMenuItem_SelectedIndexChanged);
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -435,18 +480,21 @@
             this.Controls.Add(this.joystickTester);
             this.DoubleBuffered = true;
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MaximizeBox = false;
             this.Name = "MainForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Joystick Curves";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.MainForm_FormClosing);
             this.Shown += new System.EventHandler(this.MainForm_Shown);
+            this.Resize += new System.EventHandler(this.MainForm_Resize);
             this.tabAxis.ResumeLayout(false);
             this.contextMenuTabPage.ResumeLayout(false);
             this.contextMenuTester.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.joystickTester)).EndInit();
             this.joystickTester.ResumeLayout(false);
             this.joystickTester.PerformLayout();
+            this.contextMenuTray.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -490,6 +538,11 @@
         private System.Windows.Forms.ContextMenuStrip contextMenuAxisListPhysX;
         private System.Windows.Forms.ContextMenuStrip contextMenuAxisListPhysY;
         private System.Windows.Forms.ContextMenuStrip contextMenuAxisListPhysRZ;
+        private System.Windows.Forms.ToolStripMenuItem streightenUpCurveToolStripMenuItem;
+        private System.Windows.Forms.NotifyIcon trayIcon;
+        private System.Windows.Forms.ContextMenuStrip contextMenuTray;
+        private System.Windows.Forms.ToolStripComboBox profilesToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem exitToolStripMenuItem;
     }
 }
 

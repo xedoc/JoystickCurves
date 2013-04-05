@@ -30,6 +30,8 @@ namespace JoystickCurves
         private const string ANY = "Any";
         private const string NOTSET = "Not set";
         private const string NEWPROFILE = "<New profile...>";
+        private const string PROFILEDEFNAME = "New Profile";
+        private bool isExit = false;
 
         private Form debugForm;
 
@@ -161,11 +163,25 @@ namespace JoystickCurves
 
         private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
         {
-            e.Cancel = false;
-            SaveSettings();
-            UnacquireDevices();
+            if (isExit)
+            {
+                e.Cancel = false;
+            }
+            else
+            {
+                this.WindowState = FormWindowState.Minimized;
+                MinimizeToTray();
+                e.Cancel = true;
+            }
+            
         }
-
+        private void MinimizeToTray()
+        {
+            if (FormWindowState.Minimized == this.WindowState)
+            {
+                this.Hide();
+            }
+        }
         private void MainForm_Shown(object sender, EventArgs e)
         {
             LoadSettings();
@@ -186,156 +202,44 @@ namespace JoystickCurves
 
         }
 
-        private void TestAnimation()
+        private void SetupTesterContextMenus()
         {
-            var x = _vjoy.MinX;
-            var min = _vjoy.MinX;
-            var max = _vjoy.MaxX;
-            var ax = new Axis(_vjoy.MinX, _vjoy.MaxX);
-            for (var i = 0; i < 6000000; i++)
-            {
-                x += 50;
-                if (x > max)
-                    x = min;
-                ax.Value = x;
-                //Utils.SetProperty<JoystickTester,Axis>(joystickTester,"VirtualAxisRoll",ax);
-                ThreadPool.QueueUserWorkItem(arg => { _vjoy.X = x; });
-                Application.DoEvents();
-    
-            }
-        }
+            var physicalDevices = Utils.SetDeviceContextMenuItems( 
+                    _deviceManager.Devices.Where(d => d.Type == GameControllerType.Physical).Select(d => new ToolStripMenuItem(d.Name) { CheckOnClick = true, Name = "physicalDevice" }).ToList(),
+                    "PhysicalDevice", 
+                    joystickTester.CurrentPhysicalDevice, 
+                    testerContextDevices_Click, 
+                    testerContextDevices_MouseDown
+               );
 
-        private void SetupTester()
-        {
-            var physicalDevices = _deviceManager.Devices.Where(d => d.Type == GameControllerType.Physical).Select(d => 
-                new ToolStripMenuItem(d.Name) { CheckOnClick = true, Name = "physicalDevice" }).ToList();
-            var virtualDevices = _deviceManager.Devices.Where(d => d.Type == GameControllerType.Virtual).Select(d => 
-                new ToolStripMenuItem(d.Name) { CheckOnClick = true, Name = "virtualDevice" }).ToList();
-
+            var virtualDevices = Utils.SetDeviceContextMenuItems( 
+                    _deviceManager.Devices.Where(d => d.Type == GameControllerType.Virtual).Select(d => new ToolStripMenuItem(d.Name) { CheckOnClick = true, Name = "virtualDevice" }).ToList(),
+                    "VirtualDevice", 
+                    joystickTester.CurrentVirtualDevice,
+                    testerContextDevices_Click, 
+                    testerContextDevices_MouseDown
+               );
+           
             if (string.IsNullOrEmpty(_settings.TesterPhysicalJoystick))
             {
-                if (physicalDevices.Count > 0)
-                    _settings.TesterPhysicalJoystick = physicalDevices[0].Text;
-                else
-                    _settings.TesterPhysicalJoystick = ANY;
-
+                _settings.TesterPhysicalJoystick = physicalDevices.Count > 0?physicalDevices[0].Text:ANY;
                 joystickTester.CurrentPhysicalDevice = _settings.TesterPhysicalJoystick;
-
             }
             if (string.IsNullOrEmpty(_settings.TesterVirtualJoystick))
             {
-                if (virtualDevices.Count > 0)
-                    _settings.TesterVirtualJoystick = virtualDevices[0].Text;
-                else
-                    _settings.TesterVirtualJoystick = ANY;
-
+                _settings.TesterVirtualJoystick = virtualDevices.Count > 0?virtualDevices[0].Text:ANY;
                 joystickTester.CurrentVirtualDevice = _settings.TesterVirtualJoystick;
             }
 
-            var axisListVirtX = DIUtils.AxisNames.Select(ax => new ToolStripMenuItem(ax) { CheckOnClick = true }).ToList();
-            var axisListVirtY = DIUtils.AxisNames.Select(ax => new ToolStripMenuItem(ax) { CheckOnClick = true }).ToList();
-            var axisListVirtRZ = DIUtils.AxisNames.Select(ax => new ToolStripMenuItem(ax) { CheckOnClick = true }).ToList();
-            var axisListPhysX = DIUtils.AxisNames.Select(ax => new ToolStripMenuItem(ax) { CheckOnClick = true }).ToList();
-            var axisListPhysY = DIUtils.AxisNames.Select(ax => new ToolStripMenuItem(ax) { CheckOnClick = true }).ToList();
-            var axisListPhysRZ = DIUtils.AxisNames.Select(ax => new ToolStripMenuItem(ax) { CheckOnClick = true }).ToList();
-
-            physicalDevices.Insert(0, new ToolStripMenuItem(ANY) { CheckOnClick = true });
-            physicalDevices.Insert(0, new ToolStripMenuItem("Not set") { CheckOnClick = true });
-            virtualDevices.Insert(0, new ToolStripMenuItem(ANY) { CheckOnClick = true });
-            virtualDevices.Insert(0, new ToolStripMenuItem("Not set") { CheckOnClick = true });
-
-            axisListVirtX.Insert(0, new ToolStripMenuItem("Not set") { CheckOnClick = true });
-            axisListVirtY.Insert(0, new ToolStripMenuItem("Not set") { CheckOnClick = true });
-            axisListVirtRZ.Insert(0, new ToolStripMenuItem("Not set") { CheckOnClick = true });
-            axisListPhysX.Insert(0, new ToolStripMenuItem("Not set") { CheckOnClick = true });
-            axisListPhysY.Insert(0, new ToolStripMenuItem("Not set") { CheckOnClick = true });
-            axisListPhysRZ.Insert(0, new ToolStripMenuItem("Not set") { CheckOnClick = true });
-
-            foreach (var d in physicalDevices)
-            {
-                d.Click += new EventHandler(testerContextDevices_Click);
-                d.MouseDown += new MouseEventHandler(testerContextDevices_MouseDown);
-                d.Name = "PhysicalDevice";
-                if (joystickTester.CurrentPhysicalDevice == d.Text)
-                    d.Checked = true;
-                else
-                    d.Checked = false;
-            }
-            foreach (var d in virtualDevices)
-            {
-                d.Click += new EventHandler(testerContextDevices_Click);
-                d.MouseDown += new MouseEventHandler(testerContextDevices_MouseDown);
-                d.Name = "VirtualDevice";
-                if (joystickTester.CurrentVirtualDevice == d.Text)
-                    d.Checked = true;
-                else
-                    d.Checked = false;
-            }
-
-            foreach (var d in axisListVirtX)
-            {
-                d.Click += new EventHandler(testerContextDevices_Click);
-                d.MouseDown += new MouseEventHandler(testerContextDevices_MouseDown);
-                d.Name = "VirtAxisX";
-                if (joystickTester.CurrentVirtualX == DIUtils.ID(d.Text) && DIUtils.AxisNames.Contains(d.Text) )
-                    d.Checked = true;
-                else
-                    d.Checked = false;
-            }
-            foreach (var d in axisListVirtY)
-            {
-                d.Click += new EventHandler(testerContextDevices_Click);
-                d.MouseDown += new MouseEventHandler(testerContextDevices_MouseDown);
-                d.Name = "VirtAxisY";
-                if (joystickTester.CurrentVirtualY == DIUtils.ID(d.Text) && DIUtils.AxisNames.Contains(d.Text))
-                    d.Checked = true;
-                else
-                    d.Checked = false;
-            }
-            foreach (var d in axisListVirtRZ)
-            {
-                d.Click += new EventHandler(testerContextDevices_Click);
-                d.MouseDown += new MouseEventHandler(testerContextDevices_MouseDown);
-                d.Name = "VirtAxisRZ";
-                if (joystickTester.CurrentVirtualRZ == DIUtils.ID(d.Text) && DIUtils.AxisNames.Contains(d.Text))
-                    d.Checked = true;
-                else
-                    d.Checked = false;
-            }
-            foreach (var d in axisListPhysX)
-            {
-                d.Click += new EventHandler(testerContextDevices_Click);
-                d.MouseDown += new MouseEventHandler(testerContextDevices_MouseDown);
-                d.Name = "PhysAxisX";
-                if (joystickTester.CurrentPhysicalX == DIUtils.ID(d.Text) && DIUtils.AxisNames.Contains(d.Text))
-                    d.Checked = true;
-                else
-                    d.Checked = false;
-            }
-            foreach (var d in axisListPhysY)
-            {
-                d.Click += new EventHandler(testerContextDevices_Click);
-                d.MouseDown += new MouseEventHandler(testerContextDevices_MouseDown);
-                d.Name = "PhysAxisY";
-                if (joystickTester.CurrentPhysicalY == DIUtils.ID(d.Text) && DIUtils.AxisNames.Contains(d.Text))
-                    d.Checked = true;
-                else
-                    d.Checked = false;
-            }
-            foreach (var d in axisListPhysRZ)
-            {
-                d.Click += new EventHandler(testerContextDevices_Click);
-                d.MouseDown += new MouseEventHandler(testerContextDevices_MouseDown);
-                d.Name = "PhysAxisRZ";
-                if (joystickTester.CurrentPhysicalRZ == DIUtils.ID(d.Text) && DIUtils.AxisNames.Contains(d.Text))
-                    d.Checked = true;
-                else
-                    d.Checked = false;
-            }
-            
+            var axisListVirtX = Utils.SetAxisContextMenuItems( "VirtAxisX", joystickTester.CurrentVirtualX, testerContextDevices_Click, testerContextDevices_MouseDown);
+            var axisListVirtY = Utils.SetAxisContextMenuItems( "VirtAxisY", joystickTester.CurrentVirtualY, testerContextDevices_Click, testerContextDevices_MouseDown);
+            var axisListVirtRZ = Utils.SetAxisContextMenuItems( "VirtAxisRZ", joystickTester.CurrentVirtualRZ, testerContextDevices_Click, testerContextDevices_MouseDown);
+            var axisListPhysX = Utils.SetAxisContextMenuItems( "PhysAxisX", joystickTester.CurrentPhysicalX, testerContextDevices_Click, testerContextDevices_MouseDown);
+            var axisListPhysY = Utils.SetAxisContextMenuItems( "PhysAxisY", joystickTester.CurrentPhysicalY, testerContextDevices_Click, testerContextDevices_MouseDown);
+            var axisListPhysRZ = Utils.SetAxisContextMenuItems("PhysAxisRZ", joystickTester.CurrentPhysicalRZ, testerContextDevices_Click, testerContextDevices_MouseDown);
+           
             virtualDeviceLightGreenToolStripMenuItem.DropDownItems.Clear();
             physicalDeviceDarkGreenToolStripMenuItem.DropDownItems.Clear();
-
 
             contextMenuVirtualDevices.Items.AddRange(virtualDevices.ToArray());
             contextMenuPhysicalDevices.Items.AddRange(physicalDevices.ToArray());
@@ -517,7 +421,7 @@ namespace JoystickCurves
                 dev.Acquire();
             }
 
-            SetupTester();
+            SetupTesterContextMenus();
             SetupEditorComboBoxes();
             UpdateAxisBindings();
         }
@@ -529,59 +433,54 @@ namespace JoystickCurves
         private void dev_OnAxisChange(object sender, CustomEventArgs<Axis> e)
         {
             var devName = e.Data.DeviceName;
-
             var axisName = DIUtils.Name(e.Data.DirectInputID);
-
-
-
-                lock (lockAxisBinding)
+            lock (lockAxisBinding)
+            {
+                Dictionary<JoystickOffset, Axis> bindParams = _axisBinding.FirstOrDefault(x => x.Key == devName).Value;
+                if (bindParams != null)
                 {
-                    Dictionary<JoystickOffset, Axis> bindParams = _axisBinding.FirstOrDefault(x => x.Key == devName).Value;
+                    
+                    BezierCurvePoints curvePoints = _currentProfile.Tabs.Where(t => t.SourceDevice == devName && t.SourceAxis == axisName).Select(t => t.CurvePoints).FirstOrDefault();
+                    int newValue = e.Data.Value;
+
+                    if (curvePoints != null)
+                        newValue = (int)((float)e.Data.Value * curvePoints.GetY(Utils.PTop(1, Math.Abs(e.Data.Value), 32767)));
+                    
                     if (bindParams != null)
                     {
-                    
-                        BezierCurvePoints curvePoints = _currentProfile.Tabs.Where(t => t.SourceDevice == devName && t.SourceAxis == axisName).Select(t => t.CurvePoints).FirstOrDefault();
-                        int newValue = e.Data.Value;
-
-                        if (curvePoints != null)
-                            newValue = (int)((float)e.Data.Value * curvePoints.GetY(Utils.PTop(1, Math.Abs(e.Data.Value), 32767)));
-                    
-                        if (bindParams != null)
+                        var dstAxis = bindParams.FirstOrDefault(x => x.Key == e.Data.DirectInputID).Value;
+                        if (dstAxis != null)
                         {
-                            //Axis dstAxis
-                            var dstAxis = bindParams.FirstOrDefault(x => x.Key == e.Data.DirectInputID).Value;
-                            if (dstAxis != null)
+                            switch (dstAxis.DirectInputID)
                             {
-                                switch (dstAxis.DirectInputID)
-                                {
-                                    case JoystickOffset.X:
-                                        _vjoy.X = newValue;
-                                        break;
-                                    case JoystickOffset.Y:
-                                        _vjoy.Y = newValue;
-                                        break;
-                                    case JoystickOffset.Z:
-                                        _vjoy.Z = newValue;
-                                        break;
-                                    case JoystickOffset.RX:
-                                        _vjoy.RX = newValue;
-                                        break;
-                                    case JoystickOffset.RY:
-                                        _vjoy.RY = newValue;
-                                        break;
-                                    case JoystickOffset.RZ:
-                                        _vjoy.RZ = newValue;
-                                        break;
-                                    case JoystickOffset.Slider0:
-                                        _vjoy.SL0 = newValue;
-                                        break;
-                                    case JoystickOffset.Slider1:
-                                        _vjoy.SL1 = newValue;
-                                        break;
-                                }
+                                case JoystickOffset.X:
+                                    _vjoy.X = newValue;
+                                    break;
+                                case JoystickOffset.Y:
+                                    _vjoy.Y = newValue;
+                                    break;
+                                case JoystickOffset.Z:
+                                    _vjoy.Z = newValue;
+                                    break;
+                                case JoystickOffset.RX:
+                                    _vjoy.RX = newValue;
+                                    break;
+                                case JoystickOffset.RY:
+                                    _vjoy.RY = newValue;
+                                    break;
+                                case JoystickOffset.RZ:
+                                    _vjoy.RZ = newValue;
+                                    break;
+                                case JoystickOffset.Slider0:
+                                    _vjoy.SL0 = newValue;
+                                    break;
+                                case JoystickOffset.Slider1:
+                                    _vjoy.SL1 = newValue;
+                                    break;
                             }
                         }
                     }
+                }
                 
             }
 
@@ -664,8 +563,11 @@ namespace JoystickCurves
 
         private void contextMenuTabPage_ItemClicked(object sender, ToolStripItemClickedEventArgs e)
         {
-            if (e.ClickedItem.Name == "deleteAxis" && tabAxis.SelectedTab != null )
+            if (e.ClickedItem.Name == "deleteAxis" && tabAxis.SelectedTab != null)
+            {
                 tabAxis.TabPages.Remove(tabAxis.SelectedTab);
+                _currentProfile = GetCurrentProfile();
+            }
         }
 
         private void copyCurveToToolStripMenuItem_DropDownItemClicked(object sender, ToolStripItemClickedEventArgs e)
@@ -721,18 +623,43 @@ namespace JoystickCurves
 
         private void comboProfiles_SelectionChangeCommitted(object sender, EventArgs e)
         {
-            if (((String)comboProfiles.SelectedItem) == NEWPROFILE)
-                return;
-
             SetCurrentProfile((String)Utils.GetProperty<ComboBox>( comboProfiles, "SelectedItem"));
         }
         private void SetCurrentProfile(String title)
-        {           
+        {
+            if (((String)comboProfiles.SelectedItem) == _currentProfile.Title && _currentProfile == title)
+                return;
+
             if (string.IsNullOrEmpty(title))
             {
                 Utils.SetProperty<ComboBox, String>(comboProfiles, "SelectedItem", _currentProfile.Title);
                 return;
             }
+
+            if (title == NEWPROFILE)
+            {
+                String profName = PROFILEDEFNAME;
+                for (var i = 0; i <= _profileManager.Profiles.Count + 1; i++)
+                {
+                    profName = String.Format(String.Format("{0}{1}", PROFILEDEFNAME, i == 0 ? "" : " #" + i));
+                    if (!_profileManager.Profiles.Exists(p => p.Title == profName))
+                        break;
+                }
+                var newProfile = new Profile(profName);
+                newProfile.Tabs.Add(new ProfileTab()
+                {
+                    CurvePoints = new BezierCurvePoints(),
+                    TabTitle = "Axis 1"
+                });
+                newProfile.Tabs[0].CurvePoints.PointsCount = DEFPOINTSCOUNT;
+                newProfile.Tabs[0].CurvePoints.Reset();
+
+                _profileManager.Profiles.Add(newProfile);
+                SetupProfileCombo();
+                title = newProfile.Title;
+            }
+
+
 
             if (_profileManager.Profiles.Exists(p => p.Title == _currentProfile.Title))
             {
@@ -745,6 +672,8 @@ namespace JoystickCurves
                 _currentProfile = selectedProfile;
             else
                 _currentProfile.Title = title;
+
+            this.tabAxis.SelectedIndexChanged -= tabAxis_SelectedIndexChanged;
 
             while (tabAxis.TabPages.Count > 1)
                 tabAxis.TabPages.RemoveAt(0);
@@ -760,23 +689,86 @@ namespace JoystickCurves
                 axisEditor.CurrentDestDevice = p.DestinationDevice;
                 axisEditor.CurrentSourceAxis = p.SourceAxis;
                 axisEditor.CurrentSourceDevice = p.SourceDevice;
-                axisEditor.Title = p.TabTitle;
+                axisEditor.Title = String.IsNullOrEmpty(p.TabTitle)||p.TabTitle == NOTSET?String.Format("Axis {0}",_currentProfile.Tabs.IndexOf(p)+1):p.TabTitle;
                 tabPage.Text = axisEditor.Title;
             }
+            this.tabAxis.SelectedIndexChanged += new EventHandler(tabAxis_SelectedIndexChanged);
+
             tabAxis.SelectedIndex = 0;
             Utils.SetProperty<ComboBox, String>(comboProfiles, "SelectedItem", _currentProfile.Title);
+
+            if (!profilesToolStripMenuItem.Items.Contains(_currentProfile.Title))
+            {
+                var items = _profileManager.Profiles.Select(p => new ToolStripMenuItem(p.Title)
+                {
+                    Name = "profileItem",
+                }
+                ).ToArray();
+
+                profilesToolStripMenuItem.SelectedIndexChanged -= profilesToolStripMenuItem_SelectedIndexChanged;
+                profilesToolStripMenuItem.Items.Clear();
+                profilesToolStripMenuItem.Items.AddRange(items);
+                profilesToolStripMenuItem.Text = _currentProfile.Title;
+                profilesToolStripMenuItem.SelectedItem = _currentProfile.Title;
+                profilesToolStripMenuItem.SelectedIndexChanged +=new EventHandler(profilesToolStripMenuItem_SelectedIndexChanged); 
+            }
 
         }
 
         private void SetupProfileCombo()
         {
-            var profileTitles = _profileManager.Profiles.Select(p => p.Title).ToArray();
+            var profileTitles = _profileManager.Profiles.Select(p => p.Title).OrderBy( p => p).ToArray();
+            comboProfiles.Items.Clear();
             comboProfiles.Items.AddRange(profileTitles);
             comboProfiles.Items.Insert(0, NEWPROFILE);
             Utils.SetProperty<ComboBox, String>(comboProfiles, "SelectedItem", _currentProfile.Title);
+        }
         public static void ThreadException(object sender, System.Threading.ThreadExceptionEventArgs e)
         {
             var errorMsg = e.Exception.Message + "\n\nStack Trace:\n" + e.Exception.StackTrace;
+        }
+
+        private void streightenUpCurveToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            var axisEditor = tabAxis.SelectedTab.Controls[0] as AxisEditor;
+            axisEditor.CurrentCurve.Streighten();
+        }
+
+        private void trayIcon_DoubleClick(object sender, EventArgs e)
+        {
+            this.Show();
+            this.WindowState = FormWindowState.Normal;
+        }
+        private void Exit()
+        {
+            isExit = true;
+            SaveSettings();
+            UnacquireDevices();
+            Application.Exit();
+        }
+        private void exitToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            Exit();   
+        }
+
+        private void showToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            this.Show();
+            this.WindowState = FormWindowState.Normal;
+        }
+
+        private void MainForm_Resize(object sender, EventArgs e)
+        {
+            MinimizeToTray();
+        }
+
+        private void profilesToolStripMenuItem_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            SetCurrentProfile(((ToolStripMenuItem)profilesToolStripMenuItem.SelectedItem).Text);
+        }
+
+        private void comboProfiles_Validated(object sender, EventArgs e)
+        {
         }
     }
 

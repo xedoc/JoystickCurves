@@ -31,9 +31,15 @@ namespace JoystickCurves
             _tooltip.UseAnimation = false;
 
             _points = new BezierCurvePoints();
+            _points.OnChange += new EventHandler<EventArgs>(_points_OnChange);
 
             this.HandleCreated += new EventHandler(BezierCurve_HandleCreated);
             //this.SetStyle( ControlStyles.UserPaint | ControlStyles.OptimizedDoubleBuffer, true);
+        }
+
+        void _points_OnChange(object sender, EventArgs e)
+        {
+            InitDragPoints();           
         }
 
         void BezierCurve_HandleCreated(object sender, EventArgs e)
@@ -54,7 +60,6 @@ namespace JoystickCurves
         }
         void BezierCurve_Resize(object sender, EventArgs e)
         {
-            Invalidate();
 
         }
 
@@ -70,6 +75,7 @@ namespace JoystickCurves
             get { return _points; }
             set {                 
                 _points = value;
+                _points.OnChange += new EventHandler<EventArgs>(_points_OnChange);
                 _points.ScaleDrawPoints();
                 InitCurve();
             }
@@ -85,12 +91,13 @@ namespace JoystickCurves
             if (_drawRectangle.Width == 0 || _drawRectangle.Height == 0)
                 return;
 
-            _points.DrawWidth = _drawRectangle.Width;
-            _points.DrawHeight = _drawRectangle.Height;
+            if (_points.DrawWidth != _drawRectangle.Width || _points.DrawHeight != _drawRectangle.Height)
+            {
+                _points.DrawWidth = _drawRectangle.Width;
+                _points.DrawHeight = _drawRectangle.Height;
+            }
 
             InitDragPoints();
-
-            Invalidate();
 
         }
         

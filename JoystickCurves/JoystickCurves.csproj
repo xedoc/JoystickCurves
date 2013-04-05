@@ -139,12 +139,14 @@
     <Compile Include="VirtualJoystick.cs" />
     <EmbeddedResource Include="AxisEditor.resx">
       <DependentUpon>AxisEditor.cs</DependentUpon>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="DebugForm.resx">
       <DependentUpon>DebugForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="MainForm.resx">
       <DependentUpon>MainForm.cs</DependentUpon>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
@@ -194,6 +196,8 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
+    <None Include="Resources\appicon.ico" />
+    <None Include="Resources\joystickcurve.ico" />
     <Content Include="vJoyInterface.dll" />
   </ItemGroup>
   <ItemGroup>

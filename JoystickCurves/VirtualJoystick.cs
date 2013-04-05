@@ -105,7 +105,7 @@ namespace JoystickCurves
                     var val = (value + AXISLIMIT) / 2;
                     if (!lastValue.Keys.Contains(axis))
                         lastValue.Add(axis, val);
-
+                    
                     if (val != lastValue[axis])
                         _joystick.SetAxis(val, _deviceid, axis);
                 }

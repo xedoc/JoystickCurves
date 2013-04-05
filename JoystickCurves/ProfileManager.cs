@@ -29,7 +29,7 @@ namespace JoystickCurves
         {
             get;
             set;
-        }
+        }        
 
     }
 }
