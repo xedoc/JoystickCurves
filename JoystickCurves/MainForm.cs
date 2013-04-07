@@ -12,8 +12,10 @@ using System.Threading;
 using Microsoft.DirectX.DirectInput;
 using System.IO;
 using System.Xml;
+
 namespace JoystickCurves
 {
+
     public partial class MainForm : Form
     {
         private VirtualJoystick _vjoy;
@@ -22,7 +24,9 @@ namespace JoystickCurves
         private ProfileManager _profileManager;
         private BindingSource _axisNamesPhysPitch, _axisNamesVirtPitch, _axisNamesPhysYaw, _axisNamesVirtYaw, _virtualDeviceNames, _physicalDeviceNames;
         private Dictionary<String, Dictionary<JoystickOffset, Axis>> _axisBinding;
+        private List<VirtualJoystick> _virtualJoysticks;
         private Profile _currentProfile;
+        private bool _vjoyIsSet = false;
         private String _currentContextMenu;
         private object lockAxisBinding = new object();
         private bool closeTesterContextMenu = true;
@@ -32,15 +36,23 @@ namespace JoystickCurves
         private const string NEWPROFILE = "<New profile...>";
         private const string PROFILEDEFNAME = "New Profile";
         private bool isExit = false;
-
+        private Mutex appMutex;
+        private const string INSTANCENAME = "JoystickCurvesInstance";
         private Form debugForm;
 
         public MainForm()
         {
 
-           
-            InitializeComponent();
+            if (CheckRunningInstances())
+            {
+                this.Close();
+                return;
+            }
 
+            _vjoy = new VirtualJoystick(1);
+
+            InitializeComponent();
+            _virtualJoysticks = new List<VirtualJoystick>();
             _axisBinding = new Dictionary<string, Dictionary<JoystickOffset, Axis>>();
             _axisNamesPhysPitch = new BindingSource();
             _axisNamesPhysYaw = new BindingSource();
@@ -53,11 +65,39 @@ namespace JoystickCurves
             debugForm = new DebugForm();
         }
 
+        private bool CheckRunningInstances()
+        {
+            try
+            {
+                appMutex = Mutex.OpenExisting(INSTANCENAME);
+                if (appMutex != null)
+                {
+                    return true;
+                }
+                return false;
+            }
+            catch (WaitHandleCannotBeOpenedException ex)
+            {
+                appMutex = new Mutex(true, INSTANCENAME);
+                GC.KeepAlive(appMutex);
+                return false;
+            }
 
+
+        }
 
         private void LoadSettings()
         {
             _settings = Properties.Settings.Default;
+            _settings.PropertyChanged += new PropertyChangedEventHandler(_settings_PropertyChanged);
+            if (!_settings.generalStartMinimized)
+            {
+                this.WindowState = FormWindowState.Normal;
+            }
+            else
+            {
+                MinimizeToTray();
+            }
 
             if (_settings.Profiles != null)
                 _profileManager = _settings.Profiles;
@@ -115,6 +155,27 @@ namespace JoystickCurves
 
         }
 
+        void _settings_PropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == "generalAutoStart")
+            {
+                if (_settings.generalAutoStart)
+                {
+                    Utils.AddToStartup();
+                }
+                else
+                {
+                    Utils.RemoveFromStartup();
+                }
+            }
+        }
+
+        void ShowSettings()
+        {
+            SettingsForm settingsForm = new SettingsForm();
+            settingsForm.Show();
+        }
+
         private Profile GetCurrentProfile()
         {
             Profile profile = new Profile(_currentProfile.Title);
@@ -167,11 +228,16 @@ namespace JoystickCurves
             {
                 e.Cancel = false;
             }
-            else
+            else if (_settings.generalMinimizeOnClose)
             {
                 this.WindowState = FormWindowState.Minimized;
                 MinimizeToTray();
                 e.Cancel = true;
+            }
+            else
+            {
+                e.Cancel = false;
+                Exit();
             }
             
         }
@@ -180,6 +246,8 @@ namespace JoystickCurves
             if (FormWindowState.Minimized == this.WindowState)
             {
                 this.Hide();
+                trayIcon.BalloonTipText = "JoystickCurves is running!";
+                trayIcon.ShowBalloonTip(2000);
             }
         }
         private void MainForm_Shown(object sender, EventArgs e)
@@ -188,7 +256,8 @@ namespace JoystickCurves
 
             try
             {
-                _vjoy = new VirtualJoystick(1);
+                
+                //var _vjoy2 = new VirtualJoystick(2);
             }
             catch (Exception ex)
             {
@@ -207,7 +276,7 @@ namespace JoystickCurves
             var physicalDevices = Utils.SetDeviceContextMenuItems( 
                     _deviceManager.Devices.Where(d => d.Type == GameControllerType.Physical).Select(d => new ToolStripMenuItem(d.Name) { CheckOnClick = true, Name = "physicalDevice" }).ToList(),
                     "PhysicalDevice", 
-                    joystickTester.CurrentPhysicalDevice, 
+                    _settings.TesterPhysicalJoystick, 
                     testerContextDevices_Click, 
                     testerContextDevices_MouseDown
                );
@@ -215,21 +284,13 @@ namespace JoystickCurves
             var virtualDevices = Utils.SetDeviceContextMenuItems( 
                     _deviceManager.Devices.Where(d => d.Type == GameControllerType.Virtual).Select(d => new ToolStripMenuItem(d.Name) { CheckOnClick = true, Name = "virtualDevice" }).ToList(),
                     "VirtualDevice", 
-                    joystickTester.CurrentVirtualDevice,
+                    _settings.TesterVirtualJoystick,
                     testerContextDevices_Click, 
                     testerContextDevices_MouseDown
                );
-           
-            if (string.IsNullOrEmpty(_settings.TesterPhysicalJoystick))
-            {
-                _settings.TesterPhysicalJoystick = physicalDevices.Count > 0?physicalDevices[0].Text:ANY;
-                joystickTester.CurrentPhysicalDevice = _settings.TesterPhysicalJoystick;
-            }
-            if (string.IsNullOrEmpty(_settings.TesterVirtualJoystick))
-            {
-                _settings.TesterVirtualJoystick = virtualDevices.Count > 0?virtualDevices[0].Text:ANY;
-                joystickTester.CurrentVirtualDevice = _settings.TesterVirtualJoystick;
-            }
+
+            joystickTester.CurrentPhysicalDevice = physicalDevices.Where(p => p.Checked).FirstOrDefault().Text;
+            joystickTester.CurrentVirtualDevice = virtualDevices.Where(p => p.Checked).FirstOrDefault().Text;
 
             var axisListVirtX = Utils.SetAxisContextMenuItems( "VirtAxisX", joystickTester.CurrentVirtualX, testerContextDevices_Click, testerContextDevices_MouseDown);
             var axisListVirtY = Utils.SetAxisContextMenuItems( "VirtAxisY", joystickTester.CurrentVirtualY, testerContextDevices_Click, testerContextDevices_MouseDown);
@@ -424,8 +485,32 @@ namespace JoystickCurves
             SetupTesterContextMenus();
             SetupEditorComboBoxes();
             UpdateAxisBindings();
+            //SetupVirtualJoysticks();
         }
 
+        private void SetupVirtualJoysticks()
+        {
+            _vjoyIsSet = false;
+            _virtualJoysticks = new List<VirtualJoystick>();
+            for (uint i = 1; i <= 16; i++)
+            {
+                _virtualJoysticks.Add(new VirtualJoystick(i));
+
+            }
+            while (_virtualJoysticks.Where(v => !String.IsNullOrEmpty(v.Name)).Count() < _deviceManager.Devices.Where(d => d.Type == GameControllerType.Virtual).Count())
+            {
+                for (int i = 0; i < 16; i++)
+                {
+                    _virtualJoysticks[(int)i].X = i;
+                    Thread.Sleep(100);
+                    _virtualJoysticks[(int)i].X = 0;
+                }
+
+                Application.DoEvents();
+                Thread.Sleep(10);
+            }
+            _vjoyIsSet = true;
+        }
         private void dev_OnButtonChange(object sender, CustomEventArgs<Button> e)
         {
         }
@@ -433,6 +518,18 @@ namespace JoystickCurves
         private void dev_OnAxisChange(object sender, CustomEventArgs<Axis> e)
         {
             var devName = e.Data.DeviceName;
+            //if (!_vjoyIsSet)
+            //{
+            //    if (devName.ToLower().Contains("vjoy") && !_virtualJoysticks.Exists( p => p.Name == devName))
+            //    {
+            //        Debug.Print("{0} {1} {2}", devName, e.Data.DirectInputID.ToString(), e.Data.Value);
+            //        if (e.Data.DirectInputID == JoystickOffset.X && e.Data.Value > 0 & e.Data.Value <= 16)
+            //            _virtualJoysticks[e.Data.Value].Name = devName;
+            //    }
+            //    return;
+            //}
+            //return;
+
             var axisName = DIUtils.Name(e.Data.DirectInputID);
             lock (lockAxisBinding)
             {
@@ -440,7 +537,7 @@ namespace JoystickCurves
                 if (bindParams != null)
                 {
                     
-                    BezierCurvePoints curvePoints = _currentProfile.Tabs.Where(t => t.SourceDevice == devName && t.SourceAxis == axisName).Select(t => t.CurvePoints).FirstOrDefault();
+                    BezierCurvePoints curvePoints = _currentProfile.Tabs.ToList().Where(t => t.SourceDevice == devName && t.SourceAxis == axisName).Select(t => t.CurvePoints).FirstOrDefault();
                     int newValue = e.Data.Value;
 
                     if (curvePoints != null)
@@ -582,7 +679,7 @@ namespace JoystickCurves
                 {
                     if (tp.Text == title)
                     {
-                        ((AxisEditor)tp.Controls[0]).CurrentCurve = axisEditor.CurrentCurve;
+                        ((AxisEditor)tp.Controls[0]).CurrentCurve = axisEditor.CurrentCurve.GetCopy();
                         break;
                     }
                 }
@@ -593,7 +690,7 @@ namespace JoystickCurves
                 var newTab = AddNewProfileTab(tabAxis, true);
                 var newAxisEditor = newTab.Controls[0] as AxisEditor;
                 newAxisEditor.CurrentSourceAxis = e.ClickedItem.Text;
-                newAxisEditor.CurrentCurve = axisEditor.CurrentCurve;
+                newAxisEditor.CurrentCurve = axisEditor.CurrentCurve.GetCopy();
                 SetupEditorComboBoxes();
                 SetupTabContextMenu();
 
@@ -713,6 +810,8 @@ namespace JoystickCurves
                 profilesToolStripMenuItem.SelectedIndexChanged +=new EventHandler(profilesToolStripMenuItem_SelectedIndexChanged); 
             }
 
+            SetupEditorComboBoxes();
+
         }
 
         private void SetupProfileCombo()
@@ -769,6 +868,53 @@ namespace JoystickCurves
 
         private void comboProfiles_Validated(object sender, EventArgs e)
         {
+
+            var comboText = comboProfiles.Text;
+            if (String.IsNullOrEmpty(comboText))
+                return;
+
+            if (!_profileManager.Profiles.Exists( p => p.Title == comboText ) )
+            {
+                _profileManager.Profiles.ForEach(p => { if (p.Title == _currentProfile.Title) { p.Title = comboText; } });
+                _currentProfile.Title = comboText;
+                SetupProfileCombo();
+
+            }
+        }
+
+        private void buttonSettings_Click(object sender, EventArgs e)
+        {
+            SettingsForm settingsForm = new SettingsForm();
+            settingsForm.Show();
+        }
+
+        private void deleteCurrentProfileToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            var nextProfile = _profileManager.Profiles.SkipWhile(p => p == _currentProfile).FirstOrDefault();
+            if (nextProfile == null)
+                nextProfile = _profileManager.Profiles.FirstOrDefault();
+
+            if (nextProfile != null)
+            {
+                _profileManager.Profiles.Remove(_currentProfile);
+                _currentProfile = nextProfile;
+            }
+
+            if (_profileManager.Profiles.Count <= 0)
+            {
+                _currentProfile = new Profile("Default");
+                _currentProfile.Tabs.Add(new ProfileTab()
+                {
+                    CurvePoints = new BezierCurvePoints(),
+                    TabTitle = "Axis 1"
+                });
+                _currentProfile.Tabs[0].CurvePoints.PointsCount = DEFPOINTSCOUNT;
+                _currentProfile.Tabs[0].CurvePoints.Reset();
+                _profileManager.Profiles.Add(_currentProfile);
+            }
+            SetCurrentProfile(_currentProfile.Title);
+            SetupProfileCombo();
+
         }
     }
 

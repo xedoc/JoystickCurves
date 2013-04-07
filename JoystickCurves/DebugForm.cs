@@ -40,7 +40,7 @@ namespace JoystickCurves
             base.WriteLine(value);
             _textbox.Text = _textbox.Text + value + Environment.NewLine;
 
-            _textbox.Parent.Show();
+            //_textbox.Parent.Show();
         }
         public override Encoding Encoding
         {

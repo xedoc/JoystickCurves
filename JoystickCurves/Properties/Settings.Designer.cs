@@ -140,5 +140,41 @@ namespace JoystickCurves.Properties {
                 this["TesterPhysicalJoystickRZ"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool generalMinimizeOnClose {
+            get {
+                return ((bool)(this["generalMinimizeOnClose"]));
+            }
+            set {
+                this["generalMinimizeOnClose"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool generalAutoStart {
+            get {
+                return ((bool)(this["generalAutoStart"]));
+            }
+            set {
+                this["generalAutoStart"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool generalStartMinimized {
+            get {
+                return ((bool)(this["generalStartMinimized"]));
+            }
+            set {
+                this["generalStartMinimized"] = value;
+            }
+        }
     }
 }

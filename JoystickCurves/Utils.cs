@@ -8,6 +8,7 @@ using System.Xml.Serialization;
 using System.Xml;
 using System.IO;
 using Microsoft.DirectX.DirectInput;
+using Microsoft.Win32;
 
 namespace JoystickCurves
 {
@@ -28,9 +29,7 @@ namespace JoystickCurves
             else
             {
                 Type t = ctrl.GetType();
-                var curVal = t.InvokeMember(propName, BindingFlags.Instance | BindingFlags.GetProperty | BindingFlags.Public, null, ctrl, null);
-                if( curVal == null || !curVal.Equals( value ) )
-                    t.InvokeMember(propName, BindingFlags.Instance | BindingFlags.SetProperty | BindingFlags.Public, null, ctrl, new object[] { value });
+                t.InvokeMember(propName, BindingFlags.Instance | BindingFlags.SetProperty | BindingFlags.Public, null, ctrl, new object[] { value });
             }
 
         }
@@ -108,7 +107,12 @@ namespace JoystickCurves
 
 
         public static List<ToolStripMenuItem> SetDeviceContextMenuItems(List<ToolStripMenuItem> items, String itemName, String currentDevice, EventHandler<EventArgs> clickHandler, MouseEventHandler mouseDownHandler)
-        {            
+        {
+            if (string.IsNullOrEmpty(currentDevice))
+            {
+                currentDevice = items.Count > 0 ? items[0].Text : ANY;
+            }
+
             items.Insert(0, new ToolStripMenuItem(NOTSET) { CheckOnClick = true });
             items.Insert(1, new ToolStripMenuItem(ANY) { CheckOnClick = true });
 
@@ -123,6 +127,25 @@ namespace JoystickCurves
                     d.Checked = false;
             }
             return items;
+        }
+
+        public static void AddToStartup()
+        {
+            RegistryKey regKey = Registry.CurrentUser.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", true);
+            regKey.SetValue(Application.ProductName, Application.ExecutablePath.ToString());
+            if (regKey.GetValue(Application.ProductName) == null)
+            {
+                MessageBox.Show("Registry write error!");
+            }
+        }
+        public static void RemoveFromStartup()
+        {
+            RegistryKey regKey = Registry.CurrentUser.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", true);
+            regKey.DeleteValue(Application.ProductName, false);
+            if (regKey.GetValue(Application.ProductName) != null)
+            {
+                MessageBox.Show("Registry write error!");
+            }
         }
 
     }

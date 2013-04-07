@@ -3,6 +3,8 @@ Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual Studio 2010
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JoystickCurves", "JoystickCurves\JoystickCurves.csproj", "{2A7DE555-193C-46B4-8E0E-3E5F120C2943}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "mycontrol", "mycontrol\mycontrol.csproj", "{3E26D5F2-9EFF-4F76-9711-79E611F61ACB}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -23,6 +25,16 @@ Global
 		{2A7DE555-193C-46B4-8E0E-3E5F120C2943}.Release|Mixed Platforms.Build.0 = Release|x86
 		{2A7DE555-193C-46B4-8E0E-3E5F120C2943}.Release|x86.ActiveCfg = Release|x86
 		{2A7DE555-193C-46B4-8E0E-3E5F120C2943}.Release|x86.Build.0 = Release|x86
+		{3E26D5F2-9EFF-4F76-9711-79E611F61ACB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3E26D5F2-9EFF-4F76-9711-79E611F61ACB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3E26D5F2-9EFF-4F76-9711-79E611F61ACB}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{3E26D5F2-9EFF-4F76-9711-79E611F61ACB}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{3E26D5F2-9EFF-4F76-9711-79E611F61ACB}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{3E26D5F2-9EFF-4F76-9711-79E611F61ACB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3E26D5F2-9EFF-4F76-9711-79E611F61ACB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3E26D5F2-9EFF-4F76-9711-79E611F61ACB}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{3E26D5F2-9EFF-4F76-9711-79E611F61ACB}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{3E26D5F2-9EFF-4F76-9711-79E611F61ACB}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

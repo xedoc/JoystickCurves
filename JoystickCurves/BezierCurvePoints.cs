@@ -102,9 +102,20 @@ namespace JoystickCurves
                     return;
                 if (value.Count == 0)
                     return;
+                
+                _rawPoints = value;
                 ScaleDrawPoints();
             }
 
+        }
+
+        public BezierCurvePoints GetCopy()
+        {
+            var newBezier = new BezierCurvePoints(PointsCount);
+            newBezier.DrawWidth = DrawWidth;
+            newBezier.DrawHeight = DrawHeight;
+            newBezier.RawPoints = RawPoints.ToList();
+            return newBezier;
         }
         public void ScaleRawPoints(int index = -1)
         {

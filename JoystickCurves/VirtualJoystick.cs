@@ -24,11 +24,20 @@ namespace JoystickCurves
             minMaxAxis = new Dictionary<HID_USAGES, int[]>();
             lastValue = new Dictionary<HID_USAGES, int>();
             _joystick = new vJoy();
+            
             if (!Enabled)
                 throw new Exception("VJoy isn't enabled! Check driver installation!");
 
-
             Acquire(id);
+        }
+        public void Unacquire()
+        {
+            
+        }
+        public String Name
+        {
+            get;
+            set;
         }
         public void Reset()
         {
@@ -38,7 +47,7 @@ namespace JoystickCurves
         {
             get { return _joystick; }
         }
-        public void Acquire(uint id)
+        public bool Acquire(uint id)
         {
             var status = _joystick.GetVJDStatus(id);
             switch (status)
@@ -48,16 +57,15 @@ namespace JoystickCurves
                 case VjdStat.VJD_STAT_FREE:
                     break;
                 case VjdStat.VJD_STAT_BUSY:
-                    throw new Exception(String.Format("vJoy Device {0} is already owned by another feeder. Cannot continue", id));
+                    return false; 
                 case VjdStat.VJD_STAT_MISS:
-                    throw new Exception(String.Format("vJoy Device {0} is not installed or disabled. Cannot continue.", id));
+                    return false;
                 default:
-                    throw new Exception(String.Format("vJoy Device {0} general error. Cannot continue.", id));
+                    return false;
             };
             _deviceid = id;
             _joystick.AcquireVJD(_deviceid);
-            _joystick.ResetVJD(_deviceid);
-
+            
             state = new vJoy.JoystickState();
 
             var axisList = new HID_USAGES[] { HID_USAGES.HID_USAGE_X, HID_USAGES.HID_USAGE_Y, HID_USAGES.HID_USAGE_RZ };
@@ -67,7 +75,7 @@ namespace JoystickCurves
                 v = AxisMinValue(a);
                 SetAxis(0, a);
             }
-
+            return true;
 
         }
         private int AxisMaxValue(HID_USAGES hidusage)
@@ -104,7 +112,10 @@ namespace JoystickCurves
                 {
                     var val = (value + AXISLIMIT) / 2;
                     if (!lastValue.Keys.Contains(axis))
+                    {
                         lastValue.Add(axis, val);
+                        _joystick.SetAxis(val, _deviceid, axis);
+                    }
                     
                     if (val != lastValue[axis])
                         _joystick.SetAxis(val, _deviceid, axis);
