@@ -110,12 +110,10 @@ namespace JoystickCurves
         {
             if (string.IsNullOrEmpty(currentDevice))
             {
-                currentDevice = items.Count > 0 ? items[0].Text : ANY;
+                currentDevice = items.Count > 0 ? items[0].Text : NOTSET;
             }
 
             items.Insert(0, new ToolStripMenuItem(NOTSET) { CheckOnClick = true });
-            items.Insert(1, new ToolStripMenuItem(ANY) { CheckOnClick = true });
-
             foreach (var d in items)
             {
                 d.Click += new EventHandler(clickHandler);

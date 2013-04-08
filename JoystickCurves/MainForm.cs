@@ -23,7 +23,7 @@ namespace JoystickCurves
         private Properties.Settings _settings;
         private ProfileManager _profileManager;
         private BindingSource _axisNamesPhysPitch, _axisNamesVirtPitch, _axisNamesPhysYaw, _axisNamesVirtYaw, _virtualDeviceNames, _physicalDeviceNames;
-        private Dictionary<String, Dictionary<JoystickOffset, Axis>> _axisBinding;
+        private Dictionary<String, Dictionary<JoystickOffset, JoystickData>> _axisBinding;
         private List<VirtualJoystick> _virtualJoysticks;
         private Profile _currentProfile;
         private bool _vjoyIsSet = false;
@@ -39,6 +39,7 @@ namespace JoystickCurves
         private Mutex appMutex;
         private const string INSTANCENAME = "JoystickCurvesInstance";
         private Form debugForm;
+        
 
         public MainForm()
         {
@@ -53,7 +54,7 @@ namespace JoystickCurves
 
             InitializeComponent();
             _virtualJoysticks = new List<VirtualJoystick>();
-            _axisBinding = new Dictionary<string, Dictionary<JoystickOffset, Axis>>();
+            _axisBinding = new Dictionary<string, Dictionary<JoystickOffset, JoystickData>>();
             _axisNamesPhysPitch = new BindingSource();
             _axisNamesPhysYaw = new BindingSource();
             _axisNamesVirtPitch = new BindingSource();
@@ -81,6 +82,109 @@ namespace JoystickCurves
                 appMutex = new Mutex(true, INSTANCENAME);
                 GC.KeepAlive(appMutex);
                 return false;
+            }
+
+
+        }
+        private void emptyAction(JoystickData d) { }
+
+        private void ActionSetVJoy(JoystickData data)
+        {
+            var sourceDeviceName = data.DeviceName;
+            var sourceAxisName = data.Name;
+            var pTab = _currentProfile.Tabs.ToList().Where(t => t.SourceDevice == sourceDeviceName && t.SourceAxis == sourceAxisName).FirstOrDefault();
+
+            if (pTab == null)
+                return;
+
+            var virtualDevice = _deviceManager.Devices.ToList().FirstOrDefault(
+                gc => gc.Type == GameControllerType.Virtual && gc.Name == pTab.DestinationDevice);
+
+            var sourceAxis = DIUtils.ID( sourceAxisName);
+
+            BezierCurvePoints curvePoints = pTab.CurvePoints;
+            int newValue = data.Value;
+
+            if (curvePoints != null)
+                newValue = (int)((float)data.Value * curvePoints.GetY(Utils.PTop(1, Math.Abs(data.Value), 32767)));
+
+            virtualDevice.Set(sourceAxis, newValue);           
+        }
+        private void UpdateCurveActions()
+        {
+            var srcDeviceNames = _currentProfile.SourceDeviceList;
+            foreach (var srcDevName in srcDeviceNames)
+            {
+                var actionMap = _currentProfile.Tabs.Where(
+                    t => t.SourceAxis != NOTSET && t.DestinationAxis != NOTSET).Select(
+                    t => new KeyValuePair<JoystickOffset, Action<JoystickData>>(DIUtils.ID(t.SourceAxis), ActionSetVJoy)).ToDictionary(
+                    t => t.Key, t => t.Value);
+
+                var srcDevice = _deviceManager.Devices.Where(d => d.Name == srcDevName).FirstOrDefault();
+                if (srcDevice != null)
+                {
+                    srcDevice.SetActions(actionMap);
+                }
+            }
+        }
+
+        private void ActionSetTesterVirtualX(JoystickData data)
+        {
+            Utils.SetProperty<JoystickTester, JoystickData>(joystickTester, "VirtualAxisRoll", data);
+            Utils.SetProperty<Label, String>(labelPitchPercent, "Text", data.PercentValue.ToString() + "%");
+        }
+        private void ActionSetTesterVirtualY(JoystickData data)
+        {
+            Utils.SetProperty<JoystickTester, JoystickData>(joystickTester, "VirtualAxisPitch", data);
+            Utils.SetProperty<Label, String>(labelPitchPercent, "Text", data.PercentValue.ToString() + "%");
+        }
+        private void ActionSetTesterVirtualRZ(JoystickData data)
+        {
+            Utils.SetProperty<JoystickTester, JoystickData>(joystickTester, "VirtualAxisRudder", data);
+            Utils.SetProperty<Label, String>(labelYawPercent, "Text", data.PercentValue.ToString() + "%");
+        }
+
+        private void ActionSetTesterPhysicalX(JoystickData data)
+        {
+            Utils.SetProperty<JoystickTester, JoystickData>(joystickTester, "PhysicalAxisRoll", data);
+        }
+        private void ActionSetTesterPhysicalY(JoystickData data)
+        {
+            Utils.SetProperty<JoystickTester, JoystickData>(joystickTester, "PhysicalAxisPitch", data);
+        }
+        private void ActionSetTesterPhysicalRZ(JoystickData data)
+        {
+            Utils.SetProperty<JoystickTester, JoystickData>(joystickTester, "PhysicalAxisRudder", data);
+        }
+        private void UpdateTesterActions()
+        {
+            var virtualDev = _deviceManager.Devices.Where(d => d.Name == joystickTester.CurrentVirtualDevice && d.Type == GameControllerType.Virtual).FirstOrDefault();
+            if (virtualDev != null)
+            {
+                var actionMap = new Dictionary<JoystickOffset, Action<JoystickData>>()
+                {
+                    { joystickTester.CurrentVirtualRZ, 
+                      _settings.TesterVirtualJoystickRZ != NOTSET?new Action<JoystickData>( ActionSetTesterVirtualRZ):emptyAction },
+                    { joystickTester.CurrentVirtualX, 
+                      _settings.TesterVirtualJoystickX != NOTSET?new Action<JoystickData>( ActionSetTesterVirtualX):emptyAction },
+                    { joystickTester.CurrentVirtualY, 
+                      _settings.TesterVirtualJoystickY != NOTSET?new Action<JoystickData>( ActionSetTesterVirtualY):emptyAction }
+                };
+                virtualDev.SetActions(actionMap);
+            }
+
+            var physicalDev = _deviceManager.Devices.Where(d => d.Name == joystickTester.CurrentPhysicalDevice && d.Type == GameControllerType.Physical ).FirstOrDefault();
+            if (physicalDev != null)
+            {
+                var actionMap = new Dictionary<JoystickOffset, Action<JoystickData>>()
+                {
+                    { joystickTester.CurrentPhysicalRZ, 
+                      _settings.TesterPhysicalJoystickRZ != NOTSET?new Action<JoystickData>( ActionSetTesterPhysicalRZ):emptyAction },
+                    { joystickTester.CurrentPhysicalX, 
+                      _settings.TesterPhysicalJoystickX != NOTSET?new Action<JoystickData>( ActionSetTesterPhysicalX):emptyAction },
+                    { joystickTester.CurrentPhysicalY, 
+                      _settings.TesterPhysicalJoystickY != NOTSET?new Action<JoystickData>( ActionSetTesterPhysicalY):emptyAction }
+                };
             }
 
 
@@ -324,54 +428,58 @@ namespace JoystickCurves
                     if( !item.Equals(currentItem) )
                         item.Checked = false;
 
-            switch (currentItem.Name.ToLower())
+            var selName = currentItem.Name.ToLower();
+            var selText = currentItem.Text;
+            var selOffset = DIUtils.ID(selText);
+
+            switch (selName)
             {
                 case "virtaxisy":
-                    {
-                        joystickTester.CurrentVirtualY = DIUtils.ID(currentItem.Text);
-                        _settings.TesterVirtualJoystickY = currentItem.Text;
+                    {                        
+                        joystickTester.CurrentVirtualY = selOffset;
+                        _settings.TesterVirtualJoystickY = selText;
                     }
                     break;
                 case "virtaxisx":
                     {
-                        joystickTester.CurrentVirtualX = DIUtils.ID(currentItem.Text);
-                        _settings.TesterVirtualJoystickX = currentItem.Text;
+                        joystickTester.CurrentVirtualX = selOffset;
+                        _settings.TesterVirtualJoystickX = selText;
                     }
                     break;
                 case "virtaxisrz":
                     {
-                        joystickTester.CurrentVirtualRZ = DIUtils.ID(currentItem.Text);
-                        _settings.TesterVirtualJoystickRZ = currentItem.Text;
+                        joystickTester.CurrentVirtualRZ = selOffset;
+                        _settings.TesterVirtualJoystickRZ = selText;
                     }
                     break;
                 case "physaxisy":
                     {
-                        joystickTester.CurrentPhysicalY = DIUtils.ID(currentItem.Text);
-                        _settings.TesterPhysicalJoystickY = currentItem.Text;
+                        joystickTester.CurrentPhysicalY = selOffset;
+                        _settings.TesterPhysicalJoystickY = selText;
                     }
                     break;
                 case "physzxisx":
                     {
-                        joystickTester.CurrentPhysicalX = DIUtils.ID(currentItem.Text);
-                        _settings.TesterPhysicalJoystickX = currentItem.Text;
+                        joystickTester.CurrentPhysicalX = selOffset;
+                        _settings.TesterPhysicalJoystickX = selText;
                     }
                     break;
                 case "physaxisrz":
                     {
-                        joystickTester.CurrentPhysicalRZ = DIUtils.ID(currentItem.Text);
-                        _settings.TesterPhysicalJoystickRZ = currentItem.Text;
+                        joystickTester.CurrentPhysicalRZ = selOffset;
+                        _settings.TesterPhysicalJoystickRZ = selText;
                     }
                     break;
                 case "virtualdevice":
                     {
-                        joystickTester.CurrentVirtualDevice = currentItem.Text;
-                        _settings.TesterVirtualJoystick = currentItem.Text;
+                        joystickTester.CurrentVirtualDevice = selText;
+                        _settings.TesterVirtualJoystick = selText;
                     }
                     break;
                 case "physicaldevice":
                     {
-                        joystickTester.CurrentPhysicalDevice = currentItem.Text;
-                        _settings.TesterPhysicalJoystick = currentItem.Text;
+                        joystickTester.CurrentPhysicalDevice = selText;
+                        _settings.TesterPhysicalJoystick = selText;
                     }
 
                     break;
@@ -420,7 +528,7 @@ namespace JoystickCurves
                             {
                                 if (!_axisBinding[axisEditor.CurrentSourceDevice].ContainsKey(DIUtils.ID(axisEditor.CurrentSourceAxis)))
                                 {
-                                    _axisBinding[axisEditor.CurrentSourceDevice].Add(DIUtils.ID(axisEditor.CurrentSourceAxis), new Axis()
+                                    _axisBinding[axisEditor.CurrentSourceDevice].Add(DIUtils.ID(axisEditor.CurrentSourceAxis), new JoystickData()
                                     {
                                         DirectInputID = DIUtils.ID(axisEditor.CurrentDestAxis),
                                         DeviceName = axisEditor.CurrentDestDevice,
@@ -434,10 +542,10 @@ namespace JoystickCurves
                             else
                             {
                             
-                                _axisBinding.Add(axisEditor.CurrentSourceDevice, new Dictionary<JoystickOffset, Axis>{
+                                _axisBinding.Add(axisEditor.CurrentSourceDevice, new Dictionary<JoystickOffset, JoystickData>{
                                 {
                                     DIUtils.ID(axisEditor.CurrentSourceAxis),
-                                    new Axis() { 
+                                    new JoystickData() { 
                                         DirectInputID = DIUtils.ID(axisEditor.CurrentDestAxis),
                                         DeviceName = axisEditor.CurrentDestDevice,
                                         Min = -32767,
@@ -470,6 +578,7 @@ namespace JoystickCurves
             _currentProfile.Tabs[axisEditor.Index] = axisEditor;
 
             UpdateAxisBindings();
+            UpdateCurveActions();
 
         }
 
@@ -477,14 +586,15 @@ namespace JoystickCurves
         {
             foreach (var dev in _deviceManager.Devices)
             {
-                dev.OnAxisChange += new EventHandler<CustomEventArgs<Axis>>(dev_OnAxisChange);
-                dev.OnButtonChange += new EventHandler<CustomEventArgs<Button>>(dev_OnButtonChange);
+                dev.OnAxisChange += new EventHandler<CustomEventArgs<JoystickData>>(dev_OnAxisChange);
                 dev.Acquire();
             }
 
             SetupTesterContextMenus();
             SetupEditorComboBoxes();
             UpdateAxisBindings();
+            UpdateCurveActions();
+            UpdateTesterActions();
             //SetupVirtualJoysticks();
         }
 
@@ -511,12 +621,10 @@ namespace JoystickCurves
             }
             _vjoyIsSet = true;
         }
-        private void dev_OnButtonChange(object sender, CustomEventArgs<Button> e)
-        {
-        }
 
-        private void dev_OnAxisChange(object sender, CustomEventArgs<Axis> e)
+        private void dev_OnAxisChange(object sender, CustomEventArgs<JoystickData> e)
         {
+            return;
             var devName = e.Data.DeviceName;
             //if (!_vjoyIsSet)
             //{
@@ -533,7 +641,7 @@ namespace JoystickCurves
             var axisName = DIUtils.Name(e.Data.DirectInputID);
             lock (lockAxisBinding)
             {
-                Dictionary<JoystickOffset, Axis> bindParams = _axisBinding.FirstOrDefault(x => x.Key == devName).Value;
+                Dictionary<JoystickOffset, JoystickData> bindParams = _axisBinding.FirstOrDefault(x => x.Key == devName).Value;
                 if (bindParams != null)
                 {
                     
@@ -586,17 +694,17 @@ namespace JoystickCurves
             {
                 if (e.Data.DirectInputID == joystickTester.CurrentVirtualX )
                 {
-                    Utils.SetProperty<JoystickTester, Axis>(joystickTester, "VirtualAxisRoll", e.Data);
+                    Utils.SetProperty<JoystickTester, JoystickData>(joystickTester, "VirtualAxisRoll", e.Data);
                     Utils.SetProperty<Label, String>(labelRollPercent, "Text", e.Data.PercentValue.ToString() + "%");
                 }
                 else if (e.Data.DirectInputID == joystickTester.CurrentVirtualY)
                 {
-                    Utils.SetProperty<JoystickTester, Axis>(joystickTester, "VirtualAxisPitch", e.Data);
+                    Utils.SetProperty<JoystickTester, JoystickData>(joystickTester, "VirtualAxisPitch", e.Data);
                     Utils.SetProperty<Label, String>(labelPitchPercent, "Text", e.Data.PercentValue.ToString() + "%");
                 }
                 else if (e.Data.DirectInputID == joystickTester.CurrentVirtualRZ)
                 {
-                    Utils.SetProperty<JoystickTester, Axis>(joystickTester, "VirtualAxisRudder", e.Data);
+                    Utils.SetProperty<JoystickTester, JoystickData>(joystickTester, "VirtualAxisRudder", e.Data);
                     Utils.SetProperty<Label,String>(labelYawPercent,"Text", e.Data.PercentValue.ToString() + "%");
                 }
                 return;
@@ -606,15 +714,15 @@ namespace JoystickCurves
             {
                 if (e.Data.DirectInputID == joystickTester.CurrentPhysicalX)
                 {
-                    Utils.SetProperty<JoystickTester, Axis>(joystickTester, "PhysicalAxisRoll", e.Data);
+                    Utils.SetProperty<JoystickTester, JoystickData>(joystickTester, "PhysicalAxisRoll", e.Data);
                 }
                 else if (e.Data.DirectInputID == joystickTester.CurrentPhysicalY)
                 {
-                    Utils.SetProperty<JoystickTester, Axis>(joystickTester, "PhysicalAxisPitch", e.Data);
+                    Utils.SetProperty<JoystickTester, JoystickData>(joystickTester, "PhysicalAxisPitch", e.Data);
                 }
                 else if (e.Data.DirectInputID == joystickTester.CurrentPhysicalRZ)
                 {
-                    Utils.SetProperty<JoystickTester, Axis>(joystickTester, "PhysicalAxisRudder", e.Data);
+                    Utils.SetProperty<JoystickTester, JoystickData>(joystickTester, "PhysicalAxisRudder", e.Data);
                 }
             }
 
@@ -825,6 +933,7 @@ namespace JoystickCurves
         public static void ThreadException(object sender, System.Threading.ThreadExceptionEventArgs e)
         {
             var errorMsg = e.Exception.Message + "\n\nStack Trace:\n" + e.Exception.StackTrace;
+            Debug.Print(errorMsg);
         }
 
         private void streightenUpCurveToolStripMenuItem_Click(object sender, EventArgs e)

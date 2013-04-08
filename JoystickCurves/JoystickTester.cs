@@ -60,7 +60,7 @@ namespace JoystickCurves
         {
 
             Paint += new PaintEventHandler(JoystickTester_Paint);
-            var defaultAxis = new Axis();
+            var defaultAxis = new JoystickData();
             PhysicalAxisPitch = defaultAxis;
             PhysicalAxisRoll = defaultAxis;
             PhysicalAxisRudder = defaultAxis;
@@ -126,7 +126,7 @@ namespace JoystickCurves
             }
 
         }
-        public Axis PhysicalAxisRoll
+        public JoystickData PhysicalAxisRoll
         {
             set {
                 PhysicalHandleLocation = new Point(
@@ -134,7 +134,7 @@ namespace JoystickCurves
                     PhysicalHandleLocation.Y);
             }
         }
-        public Axis PhysicalAxisPitch
+        public JoystickData PhysicalAxisPitch
         {
             set
             {
@@ -145,7 +145,7 @@ namespace JoystickCurves
             }
         }
 
-        public Axis PhysicalAxisRudder
+        public JoystickData PhysicalAxisRudder
         {
             set {
                 PhysicalRudderLocation = new Point(
@@ -154,7 +154,7 @@ namespace JoystickCurves
                     );
             }
         }
-        public Axis VirtualAxisRoll
+        public JoystickData VirtualAxisRoll
         {
             set
             {
@@ -164,7 +164,7 @@ namespace JoystickCurves
                     );
             }
         }
-        public Axis VirtualAxisPitch
+        public JoystickData VirtualAxisPitch
         {
             set
             {
@@ -175,7 +175,7 @@ namespace JoystickCurves
             }
         }
 
-        public Axis VirtualAxisRudder
+        public JoystickData VirtualAxisRudder
         {
             set
             {
@@ -186,7 +186,7 @@ namespace JoystickCurves
             }
         }
 
-        private int CoordByAxisValue(Axis value, int coord, int bound)
+        private int CoordByAxisValue(JoystickData value, int coord, int bound)
         {
             int newCoord = (int)Utils.PTop(bound, value.Value - value.Min, value.Max - value.Min);
             return newCoord;
@@ -316,7 +316,7 @@ namespace JoystickCurves
                 gridPen.Dispose();
 
                 var centerPoint = new Point(center.X - RETICLE_SIZE / 2, center.Y - RETICLE_SIZE / 2);
-                var centerAxis = new Axis() {Max = 1000, Min = -1000, Value = 0};
+                var centerAxis = new JoystickData() {Max = 1000, Min = -1000, Value = 0};
                 PhysicalAxisPitch = centerAxis;
                 PhysicalAxisRoll = centerAxis;
                 PhysicalAxisRudder = centerAxis;

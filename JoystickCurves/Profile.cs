@@ -8,6 +8,8 @@ namespace JoystickCurves
 {
     public class Profile
     {
+        private const string NOTSET = "Not set";
+
         public Profile()
         {
             Title = "New Profile";
@@ -42,6 +44,39 @@ namespace JoystickCurves
         {
             return Title;
         }
+
+        [XmlIgnore]
+        public List<String> SourceDeviceList
+        {
+            get {
+                return Tabs.Select(t => t.SourceDevice).Distinct().Where( sd => sd != NOTSET).ToList();
+            }
+        }
+        [XmlIgnore]
+        public List<String> DestinationDeviceList
+        {
+            get
+            {
+                return Tabs.Select(t => t.DestinationDevice).Distinct().Where(sd => sd != NOTSET).ToList();
+            }
+        }
+        [XmlIgnore]
+        public List<String> SourceAxisList
+        {
+            get
+            {
+                return Tabs.Select(t => t.SourceAxis).Distinct().Where(sd => sd != NOTSET).ToList();
+            }
+        }
+        [XmlIgnore]
+        public List<String> DestinationAxisList
+        {
+            get
+            {
+                return Tabs.Select(t => t.DestinationAxis).Distinct().Where(sd => sd != NOTSET).ToList();
+            }
+        }
+
 
     }
     public class ProfileTab

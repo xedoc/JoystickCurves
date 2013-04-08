@@ -7,20 +7,20 @@ using Microsoft.DirectX.DirectInput;
 namespace JoystickCurves
 {
     
-    public class Axis
+    public class JoystickData
     {
         private JoystickOffset _joystickOffset;
 
         private const string UNKNOWN = "Unknown";
         private string _name;
         private HID_USAGES _virtualID;
-        public Axis()
+        public JoystickData()
         {
             Min = -1;
             Max = 1;
             Value = 0;
         }        
-        public Axis(int min, int max)
+        public JoystickData(int min, int max)
         {
             if (min == max)
                 throw new Exception("Minimum and maximum value of axies should not be equal!");
@@ -83,13 +83,13 @@ namespace JoystickCurves
                 _virtualID = DIUtils.VirtualID(_name);
             }        
         }
-        public static implicit operator String(Axis ax)
+        public static implicit operator String(JoystickData ax)
         {
             return ax == null ? String.Empty : ax.Name;
         }
-        public static implicit operator Axis(String name)
+        public static implicit operator JoystickData(String name)
         {
-            return new Axis() { Name = name };
+            return new JoystickData() { Name = name };
         }
     }
 }

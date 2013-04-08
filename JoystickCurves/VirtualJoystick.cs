@@ -15,20 +15,31 @@ namespace JoystickCurves
         private Dictionary<HID_USAGES, int[]> minMaxAxis;
         private Dictionary<HID_USAGES, int> lastValue;
         private object lockSetAxis = new object();
-        vJoy.JoystickState state;
+        private vJoy.JoystickState state;
         #endregion
 
         #region Public accessors/methods/properties
+        public event EventHandler<EventArgs> OnAcquire;
+
+        public VirtualJoystick()
+        {
+            minMaxAxis = new Dictionary<HID_USAGES, int[]>();
+            lastValue = new Dictionary<HID_USAGES, int>();
+            _joystick = new vJoy();
+            if (!Enabled) 
+                return;
+        }
         public VirtualJoystick(uint id)
         {
             minMaxAxis = new Dictionary<HID_USAGES, int[]>();
             lastValue = new Dictionary<HID_USAGES, int>();
             _joystick = new vJoy();
-            
-            if (!Enabled)
-                throw new Exception("VJoy isn't enabled! Check driver installation!");
 
-            Acquire(id);
+            if (!Enabled)
+                return;
+            _deviceid = id;
+
+            Acquire();
         }
         public void Unacquire()
         {
@@ -47,9 +58,9 @@ namespace JoystickCurves
         {
             get { return _joystick; }
         }
-        public bool Acquire(uint id)
+        public bool Acquire()
         {
-            var status = _joystick.GetVJDStatus(id);
+            var status = _joystick.GetVJDStatus(_deviceid);
             switch (status)
             {
                 case VjdStat.VJD_STAT_OWN:
@@ -63,7 +74,6 @@ namespace JoystickCurves
                 default:
                     return false;
             };
-            _deviceid = id;
             _joystick.AcquireVJD(_deviceid);
             
             state = new vJoy.JoystickState();
@@ -75,6 +85,14 @@ namespace JoystickCurves
                 v = AxisMinValue(a);
                 SetAxis(0, a);
             }
+            
+            var btnNumber = _joystick.GetVJDButtonNumber( _deviceid );
+            for (uint i = 0; i < btnNumber; i++)
+                _joystick.SetBtn(false, _deviceid, i);
+
+            if (OnAcquire != null)
+                OnAcquire(this, EventArgs.Empty);
+
             return true;
 
         }
@@ -313,6 +331,10 @@ namespace JoystickCurves
             get { return _joystick.GetvJoySerialNumberString(); }
         }
 
+        public void SetButton(uint number, bool btnDown)
+        {
+            _joystick.SetBtn(btnDown, _deviceid, number);
+        }
         #endregion
 
         #region Private methods/accessors

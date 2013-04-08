@@ -98,7 +98,7 @@
     <Reference Include="WindowsFormsIntegration" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Axis.cs" />
+    <Compile Include="JoystickData.cs" />
     <Compile Include="Button.cs" />
     <Compile Include="DebugForm.cs">
       <SubType>Form</SubType>

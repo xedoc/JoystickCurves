@@ -51,7 +51,7 @@ namespace JoystickCurves
             this.Resize += new EventHandler(BezierCurve_Resize);
             this.SetStyle(ControlStyles.AllPaintingInWmPaint | ControlStyles.ResizeRedraw | ControlStyles.UserPaint | ControlStyles.DoubleBuffer, true);
 
-            frameUpdateTimer = new System.Threading.Timer(new TimerCallback(frameUpdate_Tick), null, 0, 16);
+            frameUpdateTimer = new System.Threading.Timer(new TimerCallback(frameUpdate_Tick), null, 0, 33);
         }
 
         private void frameUpdate_Tick(object o)

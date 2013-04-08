@@ -17,11 +17,11 @@ namespace JoystickCurves
     {
 
         public event EventHandler<EventArgs> OnAcquire;
-        public event EventHandler<CustomEventArgs<Axis>> OnAxisChange;
-        public event EventHandler<CustomEventArgs<Button>> OnButtonChange;
+        public event EventHandler<CustomEventArgs<JoystickData>> OnAxisChange;
+        public event EventHandler<CustomEventArgs<JoystickData>> OnButtonChange;
         private const int POLL_INTERVAL = 10;
         private const int AXIS_RANGE = 32767;
-        private JoystickOffset[] JoystickAxes = new JoystickOffset[] { JoystickOffset.X, 
+        private JoystickOffset[] JoystickAxis = new JoystickOffset[] { JoystickOffset.X, 
                                                      JoystickOffset.Y, 
                                                      JoystickOffset.Z, 
                                                      JoystickOffset.RX, 
@@ -34,6 +34,10 @@ namespace JoystickCurves
         private Device _device;
         private DeviceInstance _devInstance;
         private string _name;
+        private Dictionary<JoystickOffset, Action<JoystickData>> _actionMap = new Dictionary<JoystickOffset,Action<JoystickData>>();
+        private VirtualJoystick _virtualJoystick;
+        private void emptyAction(JoystickData joyData) {}
+
         public GameController(String name)
         {
             Name = name;
@@ -62,43 +66,57 @@ namespace JoystickCurves
             get;
             set;
         }
+
+        public VirtualJoystick VirtualJoystick
+        {
+            get;
+            set;
+        }
         private void poll_Tick(object o)
         {
+            Action<JoystickData> action;
+
             _pollTimer.Change(Timeout.Infinite, Timeout.Infinite);
 
             _device.Poll();
 
             var queue = _device.GetBufferedData();
-            if (queue == null)
+            if (queue != null)
             {
-                _pollTimer.Change(POLL_INTERVAL, POLL_INTERVAL);
-                return;
-            }
-            foreach (BufferedData data in queue)
-            {
-                CustomEventArgs<int> param = new CustomEventArgs<int>(data.Data);
-                JoystickOffset dataType = (JoystickOffset)data.Offset;
-
-                if (JoystickAxes.Contains(dataType))
+                foreach (BufferedData data in queue)
                 {
-                    Axis axis = new Axis(MinAxisValue, MaxAxisValue) {
-                        Value = data.Data,
-                        DirectInputID = dataType,
-                        DeviceName = Name
+                    CustomEventArgs<int> param = new CustomEventArgs<int>(data.Data);
+                    JoystickOffset dataType = (JoystickOffset)data.Offset;
 
-                    };
-                    if (OnAxisChange != null) 
-                        OnAxisChange(_device, new CustomEventArgs<Axis>(axis));
-                }
-                else if (dataType >= JoystickOffset.Button0 && dataType <= JoystickOffset.Button128)
-                {
-                    Button button = new Button()
+                    _actionMap.TryGetValue(dataType, out action);
+                    if (JoystickAxis.Contains(dataType))
                     {
-                        Value = data.Data,
-                        DirectInputID = dataType
-                    };
-                    if (OnButtonChange != null)
-                        OnButtonChange(_device, new CustomEventArgs<Button>(button));
+                        JoystickData joyData = new JoystickData(MinAxisValue, MaxAxisValue)
+                        {
+                            Value = data.Data,
+                            DirectInputID = dataType,
+                            DeviceName = Name
+
+                        };
+                        if (action != null)
+                        {
+                            action(joyData);
+                        }
+                        if (OnAxisChange != null)
+                            OnAxisChange(_device, new CustomEventArgs<JoystickData>(joyData));
+                    }
+                    else if (dataType >= JoystickOffset.Button0 && dataType <= JoystickOffset.Button128)
+                    {
+                        JoystickData joyData = new JoystickData()
+                        {
+                            Value = data.Data,
+                            DirectInputID = dataType,
+                            DeviceName = Name
+
+                        };
+                        if (OnButtonChange != null)
+                            OnButtonChange(_device, new CustomEventArgs<JoystickData>(joyData));
+                    }
                 }
             }
             _pollTimer.Change(POLL_INTERVAL, POLL_INTERVAL);                
@@ -107,6 +125,7 @@ namespace JoystickCurves
         {
             Acquired = true;
         }
+
         public int Index
         {
             get;
@@ -194,6 +213,80 @@ namespace JoystickCurves
             
             if (OnAcquire != null)
                 OnAcquire(this, EventArgs.Empty);
+        }
+        public void CleanActions(Action<JoystickData> action)
+        {
+            foreach (var k in _actionMap.Keys)
+            {
+                if (_actionMap[k] == action)
+                    _actionMap.Remove(k);
+            }
+        }
+        public void SetActions(Dictionary<JoystickOffset, Action<JoystickData>> actions)
+        {
+            if (actions == null || actions.Count <= 0)
+                return;
+
+            foreach (var v in actions.Values.Distinct())
+            {
+                if (_actionMap.ContainsValue(v))
+                {
+                    foreach (var k in _actionMap.Keys)
+                    {
+                        if (_actionMap[k] == v)
+                            _actionMap.Remove(k);
+                    }
+                }
+            }
+            foreach (var k in actions.Keys)
+            {
+                if (_actionMap.Keys.Contains(k))
+                    _actionMap[k] = actions[k];
+                else
+                    _actionMap.Add(k, actions[k]);
+            }
+        }
+       
+        public void Set(JoystickOffset offset, int value)
+        {
+            if (Type != GameControllerType.Virtual)
+                return;
+
+            if (offset >= JoystickOffset.Button0 && offset <= JoystickOffset.Button128)
+            {
+                _virtualJoystick.SetButton((uint)(offset - JoystickOffset.Button0), value == 128 ? true : false);
+                return;
+            }
+
+            switch (offset)
+            {
+                case JoystickOffset.X:
+                    _virtualJoystick.X = value;
+                    break;
+                case JoystickOffset.Y:
+                    _virtualJoystick.Y = value;
+                    break;
+                case JoystickOffset.Z:
+                    _virtualJoystick.Z = value;
+                    break;
+                case JoystickOffset.RX:
+                    _virtualJoystick.RX = value;
+                    break;
+                case JoystickOffset.RY:
+                    _virtualJoystick.RY = value;
+                    break;
+                case JoystickOffset.RZ:
+                    _virtualJoystick.RZ = value;
+                    break;
+                case JoystickOffset.Slider0:
+                    _virtualJoystick.SL0 = value;
+                    break;
+                case JoystickOffset.Slider1:
+                    _virtualJoystick.SL1 = value;
+                    break;
+            }
+
+
         }
 
     }
