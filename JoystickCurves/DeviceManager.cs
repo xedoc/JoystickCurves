@@ -85,9 +85,9 @@ namespace JoystickCurves
 
             var devName = device.Name;
 
-            Devices[i].VirtualJoystick = new VirtualJoystick((uint)e.Data.DirectInputID - (uint)JoystickOffset.Button0 + 1);            
-
-
+            var deviceId = (uint)e.Data.DirectInputID - (uint)JoystickOffset.Button0 + 1;
+            Devices[i].VirtualJoystick = new VirtualJoystick(deviceId);
+            var b = Devices[i].VirtualJoystick.SetButton(deviceId, false);
         }
 
         private GameControllerType GetDeviceType( string name )

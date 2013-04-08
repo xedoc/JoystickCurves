@@ -113,6 +113,8 @@ namespace JoystickCurves
         private void UpdateCurveActions()
         {
             var srcDeviceNames = _currentProfile.SourceDeviceList;
+            var dstDeviceNames = _currentProfile.DestinationDeviceList;
+
             foreach (var srcDevName in srcDeviceNames)
             {
                 var actionMap = _currentProfile.Tabs.Where(
@@ -126,6 +128,23 @@ namespace JoystickCurves
                     srcDevice.SetActions(actionMap);
                 }
             }
+
+            var restOfSourceDeviceNames = _currentProfile.SourceDeviceList.Except(srcDeviceNames);
+            var restOfDestinationDeviceNames = _currentProfile.DestinationDeviceList.Except(dstDeviceNames);
+
+            _deviceManager.Devices.ForEach(d =>
+            {
+                if (restOfDestinationDeviceNames.Contains(d.Name))
+                {
+                    //How to unacquire vJoy ?!
+                }
+                else
+                {
+                    //Acquire if it isn't acquired yet
+                }
+            });
+
+
         }
 
         private void ActionSetTesterVirtualX(JoystickData data)
@@ -313,15 +332,6 @@ namespace JoystickCurves
 
         private void UnacquireDevices()
         {
-            if (_vjoy == null)
-                return;
-
-            if (!_vjoy.Enabled)
-                return;
-
-            _vjoy.Reset();
-
-
             foreach (var d in _deviceManager.Devices)
                 d.Unacquire();
         }

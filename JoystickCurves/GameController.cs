@@ -69,8 +69,8 @@ namespace JoystickCurves
 
         public VirtualJoystick VirtualJoystick
         {
-            get;
-            set;
+            get { return _virtualJoystick; }
+            set { _virtualJoystick = value; }
         }
         private void poll_Tick(object o)
         {
@@ -189,8 +189,9 @@ namespace JoystickCurves
         public void Unacquire()
         {
             _pollTimer.Change(Timeout.Infinite, Timeout.Infinite);
-            Thread.Sleep(100);
+            Thread.Sleep(50);
             _device.Unacquire();
+            _virtualJoystick = null;
         }
 
         public void Acquire()

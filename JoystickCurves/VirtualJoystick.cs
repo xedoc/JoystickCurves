@@ -23,17 +23,14 @@ namespace JoystickCurves
 
         public VirtualJoystick()
         {
-            minMaxAxis = new Dictionary<HID_USAGES, int[]>();
-            lastValue = new Dictionary<HID_USAGES, int>();
-            _joystick = new vJoy();
+            Init();
+
             if (!Enabled) 
                 return;
         }
         public VirtualJoystick(uint id)
         {
-            minMaxAxis = new Dictionary<HID_USAGES, int[]>();
-            lastValue = new Dictionary<HID_USAGES, int>();
-            _joystick = new vJoy();
+            Init();
 
             if (!Enabled)
                 return;
@@ -41,10 +38,14 @@ namespace JoystickCurves
 
             Acquire();
         }
-        public void Unacquire()
+        private void Init()
         {
-            
+            minMaxAxis = new Dictionary<HID_USAGES, int[]>();
+            lastValue = new Dictionary<HID_USAGES, int>();
+            isAcquired = false;
+            _joystick = new vJoy();
         }
+
         public String Name
         {
             get;
@@ -93,6 +94,7 @@ namespace JoystickCurves
             if (OnAcquire != null)
                 OnAcquire(this, EventArgs.Empty);
 
+            isAcquired = true;
             return true;
 
         }
@@ -331,10 +333,17 @@ namespace JoystickCurves
             get { return _joystick.GetvJoySerialNumberString(); }
         }
 
-        public void SetButton(uint number, bool btnDown)
+        public bool SetButton(uint number, bool btnDown)
         {
-            _joystick.SetBtn(btnDown, _deviceid, number);
+            return _joystick.SetBtn(btnDown, _deviceid, number);
         }
+
+        public bool isAcquired
+        {
+            get;
+            set;
+        }
+
         #endregion
 
         #region Private methods/accessors
