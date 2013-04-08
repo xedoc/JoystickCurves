@@ -34,7 +34,7 @@ namespace JoystickCurves
         private Device _device;
         private DeviceInstance _devInstance;
         private string _name;
-        private Dictionary<JoystickOffset, Action<JoystickData>> _actionMap = new Dictionary<JoystickOffset,Action<JoystickData>>();
+        private Dictionary<JoystickOffset, List<Action<JoystickData>>> _actionMap = new Dictionary<JoystickOffset,List<Action<JoystickData>>>();
         private VirtualJoystick _virtualJoystick;
         private void emptyAction(JoystickData joyData) {}
 
@@ -74,49 +74,50 @@ namespace JoystickCurves
         }
         private void poll_Tick(object o)
         {
-            Action<JoystickData> action;
+            List<Action<JoystickData>> action;
+            BufferedDataCollection queue = null;
 
             _pollTimer.Change(Timeout.Infinite, Timeout.Infinite);
 
-            _device.Poll();
+            try
+            {
+                _device.Poll();
+                queue = _device.GetBufferedData();
+            }
+            catch {
+                Debug.Print("Error reading device data");
+            }
 
-            var queue = _device.GetBufferedData();
             if (queue != null)
             {
                 foreach (BufferedData data in queue)
                 {
-                    CustomEventArgs<int> param = new CustomEventArgs<int>(data.Data);
+                    // CustomEventArgs<int> param = new CustomEventArgs<int>(data.Data);
                     JoystickOffset dataType = (JoystickOffset)data.Offset;
 
+                    JoystickData joyData = new JoystickData()
+                    {
+                        Value = data.Data,
+                        DirectInputID = dataType,
+                        DeviceName = Name
+                    };
+                    if( Name.ToLower().Contains("vjoy") )
+                        Debug.Print("{0} {1} {2}", joyData.Value, joyData.DirectInputID.ToString(), Name);
+
                     _actionMap.TryGetValue(dataType, out action);
-                    if (JoystickAxis.Contains(dataType))
-                    {
-                        JoystickData joyData = new JoystickData(MinAxisValue, MaxAxisValue)
-                        {
-                            Value = data.Data,
-                            DirectInputID = dataType,
-                            DeviceName = Name
 
-                        };
-                        if (action != null)
-                        {
-                            action(joyData);
-                        }
-                        if (OnAxisChange != null)
-                            OnAxisChange(_device, new CustomEventArgs<JoystickData>(joyData));
+                    if (dataType <= JoystickOffset.PointOfView3)
+                    {
+                        joyData.Min = MinAxisValue;
+                        joyData.Max = MaxAxisValue;
                     }
-                    else if (dataType >= JoystickOffset.Button0 && dataType <= JoystickOffset.Button128)
+                    else
                     {
-                        JoystickData joyData = new JoystickData()
-                        {
-                            Value = data.Data,
-                            DirectInputID = dataType,
-                            DeviceName = Name
-
-                        };
                         if (OnButtonChange != null)
-                            OnButtonChange(_device, new CustomEventArgs<JoystickData>(joyData));
+                            OnButtonChange(this, new CustomEventArgs<JoystickData>(joyData));
                     }
+                    if (action != null)
+                        action.ForEach(a => a(joyData));
                 }
             }
             _pollTimer.Change(POLL_INTERVAL, POLL_INTERVAL);                
@@ -208,49 +209,38 @@ namespace JoystickCurves
                     _device.Properties.SetRange(ParameterHow.ById, d.ObjectId, new InputRange(MinAxisValue, MaxAxisValue));
             }
             _device.Acquire();
-
            
             _pollTimer.Change(0, POLL_INTERVAL);
             
             if (OnAcquire != null)
                 OnAcquire(this, EventArgs.Empty);
         }
-        public void CleanActions(Action<JoystickData> action)
-        {
-            foreach (var k in _actionMap.Keys)
-            {
-                if (_actionMap[k] == action)
-                    _actionMap.Remove(k);
-            }
-        }
         public void SetActions(Dictionary<JoystickOffset, Action<JoystickData>> actions)
         {
             if (actions == null || actions.Count <= 0)
                 return;
 
-            foreach (var v in actions.Values.Distinct())
+            foreach (var inAction in actions.Values.Distinct())
             {
-                if (_actionMap.ContainsValue(v))
+                foreach (var perKeyActions in _actionMap.Values)
                 {
-                    foreach (var k in _actionMap.Keys)
-                    {
-                        if (_actionMap[k] == v)
-                            _actionMap.Remove(k);
-                    }
+                    perKeyActions.RemoveAll( a => a == inAction);
+                    Debug.Print("{0} Remove method: {1}",Name, inAction.Method.ToString());
                 }
             }
             foreach (var k in actions.Keys)
             {
-                if (_actionMap.Keys.Contains(k))
-                    _actionMap[k] = actions[k];
-                else
-                    _actionMap.Add(k, actions[k]);
+                if (!_actionMap.Keys.Contains(k))
+                    _actionMap.Add(k, new List<Action<JoystickData>>());
+
+                _actionMap[k].Add(actions[k]);
+                Debug.Print("{0} Add method: {1}",Name, actions[k].Method.ToString());
             }
         }
        
         public void Set(JoystickOffset offset, int value)
         {
-            if (Type != GameControllerType.Virtual)
+            if (Type != GameControllerType.Virtual || _virtualJoystick == null)
                 return;
 
             if (offset >= JoystickOffset.Button0 && offset <= JoystickOffset.Button128)
