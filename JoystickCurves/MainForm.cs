@@ -26,6 +26,7 @@ namespace JoystickCurves
         private List<VirtualJoystick> _virtualJoysticks;
         private Profile _currentProfile;
         private bool _vjoyIsSet = false;
+        private bool _suspendTabActions = false;
         private String _currentContextMenu;
         private object lockAxisBinding = new object();
         private bool closeTesterContextMenu = true;
@@ -41,7 +42,7 @@ namespace JoystickCurves
         
 
         public MainForm()
-        {
+        {         
 
             if (CheckRunningInstances())
             {
@@ -331,27 +332,21 @@ namespace JoystickCurves
 
         private void UnacquireDevices()
         {
-            foreach (var d in _deviceManager.Devices)
+            foreach (var d in _deviceManager.Devices.ToList())
                 d.Unacquire();
         }
 
         private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
         {
-            if (isExit)
-            {
-                e.Cancel = false;
-            }
-            else if (_settings.generalMinimizeOnClose)
+
+            if (_settings.generalMinimizeOnClose && !isExit)
             {
                 this.WindowState = FormWindowState.Minimized;
                 MinimizeToTray();
                 e.Cancel = true;
             }
-            else
-            {
-                e.Cancel = false;
-                Exit();
-            }
+
+            Exit();
             
         }
         private void MinimizeToTray()
@@ -361,6 +356,11 @@ namespace JoystickCurves
                 this.Hide();
                 trayIcon.BalloonTipText = "JoystickCurves is running!";
                 trayIcon.ShowBalloonTip(2000);
+            }
+            else
+            {
+                if( _currentProfile != null )
+                    SetCurrentProfile(_currentProfile.Title,true);
             }
         }
         private void MainForm_Shown(object sender, EventArgs e)
@@ -584,7 +584,6 @@ namespace JoystickCurves
         {
             foreach (var dev in _deviceManager.Devices)
             {
-                dev.OnAxisChange += new EventHandler<CustomEventArgs<JoystickData>>(dev_OnAxisChange);
                 dev.Acquire();
             }
 
@@ -596,13 +595,10 @@ namespace JoystickCurves
 
         }
 
-        private void dev_OnAxisChange(object sender, CustomEventArgs<JoystickData> e)
-        {
-            return;
-        }
-
         private void tabAxis_SelectedIndexChanged(object sender, EventArgs e)
         {
+            if (_suspendTabActions)
+                return;
 
             var tab = sender as TabControl;
             if (tab.SelectedTab.Name == "tabAddNew")
@@ -625,8 +621,9 @@ namespace JoystickCurves
 
             var newAxisEditor = new AxisEditor() { 
                 Location = new Point( templateTab.Padding.Left, templateTab.Padding.Top ), 
-                Size = new Size(templateTab.Width - Padding.Left - Padding.Right, templateTab.Height - Padding.Top - Padding.Bottom),
-                Index = tabAxis.TabPages.Count - 1
+                Size = new Size(templateTab.Width - Padding.Left - Padding.Right, templateTab.Height - Padding.Top - Padding.Bottom),               
+                Index = tabAxis.TabPages.Count - 1,
+                Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right | AnchorStyles.Top
             };
             newAxisEditor.ResetCurve();
             newTabPage.Controls.Add( newAxisEditor );
@@ -702,9 +699,9 @@ namespace JoystickCurves
         {
             SetCurrentProfile((String)Utils.GetProperty<ComboBox>( comboProfiles, "SelectedItem"));
         }
-        private void SetCurrentProfile(String title)
+        private void SetCurrentProfile(String title, bool force = false)
         {
-            if (((String)comboProfiles.SelectedItem) == _currentProfile.Title && _currentProfile == title)
+            if (((String)comboProfiles.SelectedItem) == _currentProfile.Title && _currentProfile == title && !force)
                 return;
 
             if (string.IsNullOrEmpty(title))
@@ -712,6 +709,7 @@ namespace JoystickCurves
                 Utils.SetProperty<ComboBox, String>(comboProfiles, "SelectedItem", _currentProfile.Title);
                 return;
             }
+            _suspendTabActions = true;
 
             if (title == NEWPROFILE)
             {
@@ -736,6 +734,8 @@ namespace JoystickCurves
                 title = newProfile.Title;
             }
 
+            while (tabAxis.TabPages.Count > 1)
+                tabAxis.TabPages.RemoveAt(0);
 
 
             if (_profileManager.Profiles.Exists(p => p.Title == _currentProfile.Title))
@@ -744,16 +744,13 @@ namespace JoystickCurves
             }
             _profileManager.Profiles.Add(_currentProfile);
 
+
             var selectedProfile = _profileManager.Profiles.FirstOrDefault(p => p.Title == title);
+            
             if (selectedProfile != null)
                 _currentProfile = selectedProfile;
             else
                 _currentProfile.Title = title;
-
-            this.tabAxis.SelectedIndexChanged -= tabAxis_SelectedIndexChanged;
-
-            while (tabAxis.TabPages.Count > 1)
-                tabAxis.TabPages.RemoveAt(0);
 
             foreach (var p in _currentProfile.Tabs)
             {
@@ -769,7 +766,8 @@ namespace JoystickCurves
                 axisEditor.Title = String.IsNullOrEmpty(p.TabTitle)||p.TabTitle == NOTSET?String.Format("Axis {0}",_currentProfile.Tabs.IndexOf(p)+1):p.TabTitle;
                 tabPage.Text = axisEditor.Title;
             }
-            this.tabAxis.SelectedIndexChanged += new EventHandler(tabAxis_SelectedIndexChanged);
+
+            _suspendTabActions = false;
 
             tabAxis.SelectedIndex = 0;
             Utils.SetProperty<ComboBox, String>(comboProfiles, "SelectedItem", _currentProfile.Title);
@@ -821,14 +819,12 @@ namespace JoystickCurves
         }
         private void Exit()
         {
-            isExit = true;
             SaveSettings();
-            UnacquireDevices();
-            Application.Exit();
         }
         private void exitToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            Exit();   
+            isExit = true;
+            Close();
         }
 
         private void showToolStripMenuItem_Click(object sender, EventArgs e)

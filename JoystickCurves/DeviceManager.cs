@@ -12,27 +12,42 @@ namespace JoystickCurves
     public class DeviceManager
     {
         public event EventHandler<EventArgs> OnDeviceList;
-        private DeviceList _gameControllers;
-        private String[] virtualTags = new String[] { "vjoy" };      
-
+        private String[] virtualTags = new String[] { "vjoy" };
+        private Timer _pollTimer;
+        private const int POLLINTERVAL = 1000;
         public DeviceManager()
         {
-            ThreadPool.QueueUserWorkItem(f => RefreshDeviceList());
+            _pollTimer = new Timer(new TimerCallback(poll_Tick), null, 0, POLLINTERVAL);           
+        }
+
+        private void poll_Tick(object o)
+        {
+            _pollTimer.Change(Timeout.Infinite, Timeout.Infinite);
+            RefreshDeviceList();
+            _pollTimer.Change(POLLINTERVAL, POLLINTERVAL);
         }
 
         public void RefreshDeviceList()
         {
-            _gameControllers= Manager.GetDevices(DeviceClass.GameControl, EnumDevicesFlags.AttachedOnly);
+            List<DeviceInstance> deviceInstances;
+            deviceInstances= Utils.DevList(Manager.GetDevices(DeviceClass.GameControl, EnumDevicesFlags.AttachedOnly));
 
             if (Devices == null)
                 Devices = new List<GameController>();
-            else
-                Devices.Clear();
 
-            foreach (DeviceInstance dev in _gameControllers)
-            {
+            Devices.Where(dev => !deviceInstances.Exists(d => dev.Guid == d.InstanceGuid)).ToList().ForEach(
+                gc => { gc.Unacquire(); Devices.Remove(gc); }
+            );
+           
+            var addList = deviceInstances.Where(d => !Devices.Exists(dev => dev.Guid == d.InstanceGuid));
+            
+            if (addList == null || addList.Count() <= 0)
+                return;
+
+            foreach (DeviceInstance dev in addList)
+            {                
                 var gameController = new GameController(dev, GetDeviceType(dev.ProductName));
-
+                
                 if (gameController.Type == GameControllerType.Virtual)
                 {
                     gameController.OnButtonChange += new EventHandler<CustomEventArgs<JoystickData>>(gameController_OnButtonChange);
@@ -47,26 +62,21 @@ namespace JoystickCurves
                 }
             }
 
-            if (OnDeviceList != null)
-                OnDeviceList(this, EventArgs.Empty);
-
             for (uint i = 1; i <= 16; i++)
             {
                 var vjoy = new VirtualJoystick(i);
                 vjoy.OnAcquire += new EventHandler<EventArgs>(vjoy_OnAcquire);
                 vjoy.Acquire();
             }
+
+            if (OnDeviceList != null)
+                OnDeviceList(this, EventArgs.Empty);
         }
 
         void vjoy_OnAcquire(object sender, EventArgs e)
         {
             VirtualJoystick vjoy = sender as VirtualJoystick;
             vjoy.SetButton(vjoy.DeviceID, true);
-        }
-
-        void gameController_OnAcquire(object sender, EventArgs e)
-        {
-            throw new NotImplementedException();
         }
 
         void gameController_OnButtonChange(object sender, CustomEventArgs<JoystickData> e)
@@ -76,18 +86,13 @@ namespace JoystickCurves
                 return;
 
             var i = Devices.IndexOf(device);
-
-            if (device.VirtualJoystick != null)
-            {
-                Devices[i].OnButtonChange -= gameController_OnButtonChange;
-                return;
-            }
-
             var devName = device.Name;
-
             var deviceId = (uint)e.Data.DirectInputID - (uint)JoystickOffset.Button0 + 1;
+            
             Devices[i].VirtualJoystick = new VirtualJoystick(deviceId);
-            var b = Devices[i].VirtualJoystick.SetButton(deviceId, false);
+
+            device.OnButtonChange -= gameController_OnButtonChange;
+            device.VirtualJoystick.SetButton(device.VirtualJoystick.DeviceID, false);           
         }
 
         private GameControllerType GetDeviceType( string name )

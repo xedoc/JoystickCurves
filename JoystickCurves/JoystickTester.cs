@@ -399,7 +399,8 @@ namespace JoystickCurves
 
         public void StopUpdates()
         {
-            Paint -= new PaintEventHandler(JoystickTester_Paint);
+            SuspendLayout();
+            Paint -= JoystickTester_Paint;
             frameUpdateTimer.Change(Timeout.Infinite, Timeout.Infinite);
         }
 

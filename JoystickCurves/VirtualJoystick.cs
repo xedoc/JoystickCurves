@@ -53,11 +53,20 @@ namespace JoystickCurves
         }
         public void Reset()
         {
-            _joystick.ResetVJD(_deviceid);
+            _joystick.ResetAll();
         }
         public vJoy Joystick
         {
             get { return _joystick; }
+            set { _joystick = value; }
+        }
+        public void Unacquire()
+        {
+            try
+            {
+                _joystick.RelinquishVJD(_deviceid);
+            }
+            catch { }
         }
         public bool Acquire()
         {

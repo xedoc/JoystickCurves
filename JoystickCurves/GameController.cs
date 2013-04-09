@@ -92,7 +92,6 @@ namespace JoystickCurves
             {
                 foreach (BufferedData data in queue)
                 {
-                    // CustomEventArgs<int> param = new CustomEventArgs<int>(data.Data);
                     JoystickOffset dataType = (JoystickOffset)data.Offset;
 
                     JoystickData joyData = new JoystickData()
@@ -190,9 +189,22 @@ namespace JoystickCurves
         public void Unacquire()
         {
             _pollTimer.Change(Timeout.Infinite, Timeout.Infinite);
-            Thread.Sleep(50);
-            _device.Unacquire();
-            _virtualJoystick = null;
+            _actionMap.Clear();
+            try
+            {
+                _device.Unacquire();
+            }
+            catch { }
+
+            if (Type == GameControllerType.Virtual)
+            {
+                try
+                {
+                    _virtualJoystick.Reset();
+                    _virtualJoystick.Unacquire();
+                }
+                catch { }
+            }
         }
 
         public void Acquire()

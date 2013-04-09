@@ -98,8 +98,6 @@
             // 
             // groupBox2
             // 
-            this.groupBox2.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
             this.groupBox2.Controls.Add(this.label2);
             this.groupBox2.Controls.Add(this.comboDestDevice);
             this.groupBox2.Controls.Add(this.label4);
@@ -122,8 +120,6 @@
             // 
             // comboDestDevice
             // 
-            this.comboDestDevice.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
             this.comboDestDevice.FormattingEnabled = true;
             this.comboDestDevice.Location = new System.Drawing.Point(75, 15);
             this.comboDestDevice.Name = "comboDestDevice";
@@ -142,8 +138,6 @@
             // 
             // comboDestAxis
             // 
-            this.comboDestAxis.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
             this.comboDestAxis.FormattingEnabled = true;
             this.comboDestAxis.Location = new System.Drawing.Point(75, 41);
             this.comboDestAxis.Name = "comboDestAxis";
@@ -153,9 +147,9 @@
             // 
             // groupBox3
             // 
-            this.groupBox3.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-                        | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.groupBox3.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.groupBox3.Controls.Add(this.curveResponse);
             this.groupBox3.Location = new System.Drawing.Point(5, 92);
             this.groupBox3.Name = "groupBox3";
@@ -166,9 +160,9 @@
             // 
             // curveResponse
             // 
-            this.curveResponse.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-                        | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.curveResponse.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.curveResponse.BackColor = System.Drawing.Color.White;
             this.curveResponse.HorizontalLines = 5;
             this.curveResponse.Location = new System.Drawing.Point(6, 19);

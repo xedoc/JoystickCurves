@@ -20,7 +20,6 @@ namespace JoystickCurves
         public delegate void SetPropCallback(Control ctrl, string propName, object value);
         public static void SetProperty<TControl, TValue>(this TControl ctrl, string propName, TValue value) where TControl : Control
         {
-
             if (ctrl.InvokeRequired)
             {
                 var d = new SetPropCallback(SetProperty);
@@ -146,6 +145,16 @@ namespace JoystickCurves
             }
         }
 
+        public static List<DeviceInstance> DevList(DeviceList devList)
+        {
+            var result = new List<DeviceInstance>();
+            foreach (DeviceInstance dev in devList)
+            {
+                result.Add(dev);
+            }
+            return result;
+        }
+
     }
     public class XmlSerializableBase<T> where T : XmlSerializableBase<T>
     {
@@ -157,6 +166,35 @@ namespace JoystickCurves
         public void SerializeTo(StringWriter sw) { serializer.Serialize(sw, this); }
     }
 
+    public class LambdaComparer<T> : IEqualityComparer<T>
+    {
+        private readonly Func<T, T, bool> _lambdaComparer;
+        private readonly Func<T, int> _lambdaHash;
 
+        public LambdaComparer(Func<T, T, bool> lambdaComparer) :
+            this(lambdaComparer, o => 0)
+        {
+        }
 
+        public LambdaComparer(Func<T, T, bool> lambdaComparer, Func<T, int> lambdaHash)
+        {
+            if (lambdaComparer == null)
+                throw new ArgumentNullException("lambdaComparer");
+            if (lambdaHash == null)
+                throw new ArgumentNullException("lambdaHash");
+
+            _lambdaComparer = lambdaComparer;
+            _lambdaHash = lambdaHash;
+        }
+
+        public bool Equals(T x, T y)
+        {
+            return _lambdaComparer(x, y);
+        }
+
+        public int GetHashCode(T obj)
+        {
+            return _lambdaHash(obj);
+        }
+    }
 }
