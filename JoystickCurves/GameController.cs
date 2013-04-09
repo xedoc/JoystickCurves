@@ -85,7 +85,8 @@ namespace JoystickCurves
                 queue = _device.GetBufferedData();
             }
             catch {
-                Debug.Print("Error reading device data");
+                _pollTimer.Change(Timeout.Infinite, Timeout.Infinite);
+                return;
             }
 
             if (queue != null)
@@ -100,8 +101,6 @@ namespace JoystickCurves
                         DirectInputID = dataType,
                         DeviceName = Name
                     };
-                    if( Name.ToLower().Contains("vjoy") )
-                        Debug.Print("{0} {1} {2}", joyData.Value, joyData.DirectInputID.ToString(), Name);
 
                     _actionMap.TryGetValue(dataType, out action);
 
@@ -237,7 +236,6 @@ namespace JoystickCurves
                 foreach (var perKeyActions in _actionMap.Values)
                 {
                     perKeyActions.RemoveAll( a => a == inAction);
-                    Debug.Print("{0} Remove method: {1}",Name, inAction.Method.ToString());
                 }
             }
             foreach (var k in actions.Keys)
@@ -246,7 +244,6 @@ namespace JoystickCurves
                     _actionMap.Add(k, new List<Action<JoystickData>>());
 
                 _actionMap[k].Add(actions[k]);
-                Debug.Print("{0} Add method: {1}",Name, actions[k].Method.ToString());
             }
         }
        

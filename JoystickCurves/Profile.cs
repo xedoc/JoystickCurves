@@ -76,8 +76,30 @@ namespace JoystickCurves
                 return Tabs.Select(t => t.DestinationAxis).Distinct().Where(sd => sd != NOTSET).ToList();
             }
         }
-
-
+        [XmlElement]
+        public String JoystickHotKey
+        {
+            get;
+            set;
+        }
+        [XmlElement]
+        public String KeyboardHotKey
+        {
+            get;
+            set;
+        }
+        [XmlElement]
+        public String MouseHotKey
+        {
+            get;
+            set;
+        }
+        [XmlElement]
+        public String HotKeyJoystickName
+        {
+            get;
+            set;
+        }
     }
     public class ProfileTab
     {
@@ -130,6 +152,7 @@ namespace JoystickCurves
                 }
             }
         }
+
 
     }
 }

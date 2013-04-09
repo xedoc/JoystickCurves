@@ -404,9 +404,18 @@ namespace JoystickCurves
             virtualDeviceLightGreenToolStripMenuItem.DropDownItems.Clear();
             physicalDeviceDarkGreenToolStripMenuItem.DropDownItems.Clear();
 
+            contextMenuVirtualDevices.Items.Clear();
+            contextMenuPhysicalDevices.Items.Clear();
+            contextMenuAxisListVirtualX.Items.Clear();
+            contextMenuAxisListVirtualY.Items.Clear();
+            contextMenuAxisListVirtualRZ.Items.Clear();
+            contextMenuAxisListPhysX.Items.Clear();
+            contextMenuAxisListPhysY.Items.Clear();
+            contextMenuAxisListPhysRZ.Items.Clear();
+
             contextMenuVirtualDevices.Items.AddRange(virtualDevices.ToArray());
             contextMenuPhysicalDevices.Items.AddRange(physicalDevices.ToArray());
-            
+
             contextMenuAxisListVirtualX.Items.AddRange(axisListVirtX.ToArray());
             contextMenuAxisListVirtualY.Items.AddRange(axisListVirtY.ToArray());
             contextMenuAxisListVirtualRZ.Items.AddRange(axisListVirtRZ.ToArray());
@@ -892,6 +901,31 @@ namespace JoystickCurves
             SetCurrentProfile(_currentProfile.Title);
             SetupProfileCombo();
 
+        }
+
+        private void buttonHotKey_Click(object sender, EventArgs e)
+        {
+            foreach (var dev in _deviceManager.Devices.Where(d => d.Type == GameControllerType.Virtual))
+            {
+                dev.OnButtonChange += new EventHandler<CustomEventArgs<JoystickData>>(dev_OnButtonChange);
+            }
+
+            buttonHotKey.Text = "Press Key";
+
+        }
+
+        void dev_OnButtonChange(object sender, CustomEventArgs<JoystickData> e)
+        {
+            GameController gController = sender as GameController;
+           
+            var buttonName = DIUtils.AllNames.Where(btn => btn.Key == e.Data.DirectInputID).Select( keyvalue => keyvalue.Value).FirstOrDefault();
+
+            if (buttonName != null)
+            {
+                gController.OnButtonChange -= dev_OnButtonChange;
+                _currentProfile.JoystickHotKey = buttonName;
+                _currentProfile.JoystickHotKeyna
+            }
         }
     }
 

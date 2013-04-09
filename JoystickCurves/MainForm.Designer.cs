@@ -102,9 +102,9 @@
             // 
             // tabAxis
             // 
-            this.tabAxis.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
+            this.tabAxis.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+                        | System.Windows.Forms.AnchorStyles.Left)
+                        | System.Windows.Forms.AnchorStyles.Right)));
             this.tabAxis.ContextMenuStrip = this.contextMenuTabPage;
             this.tabAxis.Controls.Add(this.tabAddNew);
             this.tabAxis.ImageList = this.imageList;
@@ -124,40 +124,40 @@
             this.deleteAxis,
             this.deleteCurrentProfileToolStripMenuItem});
             this.contextMenuTabPage.Name = "contextMenuTabPage";
-            this.contextMenuTabPage.Size = new System.Drawing.Size(177, 114);
+            this.contextMenuTabPage.Size = new System.Drawing.Size(186, 114);
             this.contextMenuTabPage.ItemClicked += new System.Windows.Forms.ToolStripItemClickedEventHandler(this.contextMenuTabPage_ItemClicked);
             // 
             // copyCurveToToolStripMenuItem
             // 
             this.copyCurveToToolStripMenuItem.Name = "copyCurveToToolStripMenuItem";
-            this.copyCurveToToolStripMenuItem.Size = new System.Drawing.Size(176, 22);
+            this.copyCurveToToolStripMenuItem.Size = new System.Drawing.Size(185, 22);
             this.copyCurveToToolStripMenuItem.Text = "Copy curve to...";
             this.copyCurveToToolStripMenuItem.DropDownItemClicked += new System.Windows.Forms.ToolStripItemClickedEventHandler(this.copyCurveToToolStripMenuItem_DropDownItemClicked);
             // 
             // resetCurveToolStripMenuItem
             // 
             this.resetCurveToolStripMenuItem.Name = "resetCurveToolStripMenuItem";
-            this.resetCurveToolStripMenuItem.Size = new System.Drawing.Size(176, 22);
+            this.resetCurveToolStripMenuItem.Size = new System.Drawing.Size(185, 22);
             this.resetCurveToolStripMenuItem.Text = "Reset curve";
             this.resetCurveToolStripMenuItem.Click += new System.EventHandler(this.resetCurveToolStripMenuItem_Click);
             // 
             // streightenUpCurveToolStripMenuItem
             // 
             this.streightenUpCurveToolStripMenuItem.Name = "streightenUpCurveToolStripMenuItem";
-            this.streightenUpCurveToolStripMenuItem.Size = new System.Drawing.Size(176, 22);
+            this.streightenUpCurveToolStripMenuItem.Size = new System.Drawing.Size(185, 22);
             this.streightenUpCurveToolStripMenuItem.Text = "Streighten curve";
             this.streightenUpCurveToolStripMenuItem.Click += new System.EventHandler(this.streightenUpCurveToolStripMenuItem_Click);
             // 
             // deleteAxis
             // 
             this.deleteAxis.Name = "deleteAxis";
-            this.deleteAxis.Size = new System.Drawing.Size(176, 22);
+            this.deleteAxis.Size = new System.Drawing.Size(185, 22);
             this.deleteAxis.Text = "Delete tab";
             // 
             // deleteCurrentProfileToolStripMenuItem
             // 
             this.deleteCurrentProfileToolStripMenuItem.Name = "deleteCurrentProfileToolStripMenuItem";
-            this.deleteCurrentProfileToolStripMenuItem.Size = new System.Drawing.Size(176, 22);
+            this.deleteCurrentProfileToolStripMenuItem.Size = new System.Drawing.Size(185, 22);
             this.deleteCurrentProfileToolStripMenuItem.Text = "Delete current profile";
             this.deleteCurrentProfileToolStripMenuItem.Click += new System.EventHandler(this.deleteCurrentProfileToolStripMenuItem_Click);
             // 
@@ -182,13 +182,13 @@
             // 
             // buttonHotKey
             // 
-            this.buttonHotKey.Enabled = false;
             this.buttonHotKey.Location = new System.Drawing.Point(329, 4);
             this.buttonHotKey.Name = "buttonHotKey";
             this.buttonHotKey.Size = new System.Drawing.Size(75, 23);
             this.buttonHotKey.TabIndex = 8;
             this.buttonHotKey.Text = "Hot key";
             this.buttonHotKey.UseVisualStyleBackColor = true;
+            this.buttonHotKey.Click += new System.EventHandler(this.buttonHotKey_Click);
             // 
             // checkHoldActivate
             // 
@@ -214,14 +214,14 @@
             this.physicalRollToolStripMenuItem,
             this.physicalYawToolStripMenuItem});
             this.contextMenuTester.Name = "contextMenuTester";
-            this.contextMenuTester.Size = new System.Drawing.Size(217, 180);
+            this.contextMenuTester.Size = new System.Drawing.Size(229, 180);
             this.contextMenuTester.Closing += new System.Windows.Forms.ToolStripDropDownClosingEventHandler(this.contextMenuTester_Closing);
             // 
             // virtualDeviceLightGreenToolStripMenuItem
             // 
             this.virtualDeviceLightGreenToolStripMenuItem.DropDown = this.contextMenuVirtualDevices;
             this.virtualDeviceLightGreenToolStripMenuItem.Name = "virtualDeviceLightGreenToolStripMenuItem";
-            this.virtualDeviceLightGreenToolStripMenuItem.Size = new System.Drawing.Size(216, 22);
+            this.virtualDeviceLightGreenToolStripMenuItem.Size = new System.Drawing.Size(228, 22);
             this.virtualDeviceLightGreenToolStripMenuItem.Text = "Virtual device ( Light green )";
             this.virtualDeviceLightGreenToolStripMenuItem.Click += new System.EventHandler(this.testerRootMenuItem_Click);
             // 
@@ -237,7 +237,7 @@
             // 
             this.physicalDeviceDarkGreenToolStripMenuItem.DropDown = this.contextMenuPhysicalDevices;
             this.physicalDeviceDarkGreenToolStripMenuItem.Name = "physicalDeviceDarkGreenToolStripMenuItem";
-            this.physicalDeviceDarkGreenToolStripMenuItem.Size = new System.Drawing.Size(216, 22);
+            this.physicalDeviceDarkGreenToolStripMenuItem.Size = new System.Drawing.Size(228, 22);
             this.physicalDeviceDarkGreenToolStripMenuItem.Text = "Physical device ( Dark green )";
             this.physicalDeviceDarkGreenToolStripMenuItem.Click += new System.EventHandler(this.testerRootMenuItem_Click);
             // 
@@ -253,7 +253,7 @@
             // 
             this.virtualPitchToolStripMenuItem.DropDown = this.contextMenuAxisListVirtualY;
             this.virtualPitchToolStripMenuItem.Name = "virtualPitchToolStripMenuItem";
-            this.virtualPitchToolStripMenuItem.Size = new System.Drawing.Size(216, 22);
+            this.virtualPitchToolStripMenuItem.Size = new System.Drawing.Size(228, 22);
             this.virtualPitchToolStripMenuItem.Text = "Virtual Pitch";
             this.virtualPitchToolStripMenuItem.Click += new System.EventHandler(this.testerRootMenuItem_Click);
             // 
@@ -269,7 +269,7 @@
             // 
             this.virtualRollToolStripMenuItem.DropDown = this.contextMenuAxisListVirtualX;
             this.virtualRollToolStripMenuItem.Name = "virtualRollToolStripMenuItem";
-            this.virtualRollToolStripMenuItem.Size = new System.Drawing.Size(216, 22);
+            this.virtualRollToolStripMenuItem.Size = new System.Drawing.Size(228, 22);
             this.virtualRollToolStripMenuItem.Text = "Virtual Roll";
             this.virtualRollToolStripMenuItem.Click += new System.EventHandler(this.testerRootMenuItem_Click);
             // 
@@ -285,7 +285,7 @@
             // 
             this.virtualYawToolStripMenuItem.DropDown = this.contextMenuAxisListVirtualRZ;
             this.virtualYawToolStripMenuItem.Name = "virtualYawToolStripMenuItem";
-            this.virtualYawToolStripMenuItem.Size = new System.Drawing.Size(216, 22);
+            this.virtualYawToolStripMenuItem.Size = new System.Drawing.Size(228, 22);
             this.virtualYawToolStripMenuItem.Text = "Virtual Yaw";
             this.virtualYawToolStripMenuItem.Click += new System.EventHandler(this.testerRootMenuItem_Click);
             // 
@@ -301,7 +301,7 @@
             // 
             this.physicalPitchToolStripMenuItem.DropDown = this.contextMenuAxisListPhysY;
             this.physicalPitchToolStripMenuItem.Name = "physicalPitchToolStripMenuItem";
-            this.physicalPitchToolStripMenuItem.Size = new System.Drawing.Size(216, 22);
+            this.physicalPitchToolStripMenuItem.Size = new System.Drawing.Size(228, 22);
             this.physicalPitchToolStripMenuItem.Text = "Physical Pitch";
             this.physicalPitchToolStripMenuItem.Click += new System.EventHandler(this.testerRootMenuItem_Click);
             // 
@@ -317,7 +317,7 @@
             // 
             this.physicalRollToolStripMenuItem.DropDown = this.contextMenuAxisListPhysX;
             this.physicalRollToolStripMenuItem.Name = "physicalRollToolStripMenuItem";
-            this.physicalRollToolStripMenuItem.Size = new System.Drawing.Size(216, 22);
+            this.physicalRollToolStripMenuItem.Size = new System.Drawing.Size(228, 22);
             this.physicalRollToolStripMenuItem.Text = "Physical Roll";
             this.physicalRollToolStripMenuItem.Click += new System.EventHandler(this.testerRootMenuItem_Click);
             // 
@@ -333,7 +333,7 @@
             // 
             this.physicalYawToolStripMenuItem.DropDown = this.contextMenuAxisListPhysRZ;
             this.physicalYawToolStripMenuItem.Name = "physicalYawToolStripMenuItem";
-            this.physicalYawToolStripMenuItem.Size = new System.Drawing.Size(216, 22);
+            this.physicalYawToolStripMenuItem.Size = new System.Drawing.Size(228, 22);
             this.physicalYawToolStripMenuItem.Text = "Physical Yaw";
             this.physicalYawToolStripMenuItem.Click += new System.EventHandler(this.testerRootMenuItem_Click);
             // 
@@ -368,12 +368,12 @@
             this.profilesToolStripMenuItem,
             this.exitToolStripMenuItem});
             this.contextMenuTray.Name = "contextMenuTray";
-            this.contextMenuTray.Size = new System.Drawing.Size(213, 51);
+            this.contextMenuTray.Size = new System.Drawing.Size(213, 53);
             // 
             // profilesToolStripMenuItem
             // 
             this.profilesToolStripMenuItem.Name = "profilesToolStripMenuItem";
-            this.profilesToolStripMenuItem.Size = new System.Drawing.Size(152, 21);
+            this.profilesToolStripMenuItem.Size = new System.Drawing.Size(152, 23);
             this.profilesToolStripMenuItem.Text = "Profile";
             this.profilesToolStripMenuItem.SelectedIndexChanged += new System.EventHandler(this.profilesToolStripMenuItem_SelectedIndexChanged);
             // 
