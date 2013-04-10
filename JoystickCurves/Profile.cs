@@ -100,6 +100,18 @@ namespace JoystickCurves
             get;
             set;
         }
+        [XmlElement]
+        public String HotKeyMouseName
+        {
+            get;
+            set;
+        }
+        [XmlElement]
+        public String HotKeyKeyboardName
+        {
+            get;
+            set;
+        }
     }
     public class ProfileTab
     {

@@ -61,7 +61,7 @@ namespace JoystickCurves
             {
                 if (value == null)
                     return;
-                value.Insert(0, new GameController(NOTSET));
+                value.Insert(0, new DirectInputJoystick(NOTSET));
                 if (_sourceContrBSource == null)
                 {
                     _sourceContrBSource = new BindingSource();
@@ -87,7 +87,7 @@ namespace JoystickCurves
             {
                 if (value == null)
                     return;
-                value.Insert(0, new GameController(NOTSET));
+                value.Insert(0, new DirectInputJoystick(NOTSET));
                 if (_destContrBSource == null)
                 {
                     _destContrBSource = new BindingSource();

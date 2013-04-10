@@ -98,7 +98,7 @@
     <Reference Include="WindowsFormsIntegration" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="JoystickData.cs" />
+    <Compile Include="DirectInputData.cs" />
     <Compile Include="Button.cs" />
     <Compile Include="DebugForm.cs">
       <SubType>Form</SubType>
@@ -106,7 +106,10 @@
     <Compile Include="DebugForm.Designer.cs">
       <DependentUpon>DebugForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="DirectInputWrap.cs" />
+    <Compile Include="DirectInputDevice.cs" />
+    <Compile Include="DirectInputMouse.cs" />
+    <Compile Include="DIUtils.cs" />
+    <Compile Include="DirectInputKeyboard.cs" />
     <Compile Include="Settings.cs" />
     <Compile Include="SettingsForm.cs">
       <SubType>Form</SubType>
@@ -130,7 +133,7 @@
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="Events.cs" />
-    <Compile Include="GameController.cs" />
+    <Compile Include="DirectInputJoystick.cs" />
     <Compile Include="JoystickTester.cs">
       <SubType>Component</SubType>
     </Compile>

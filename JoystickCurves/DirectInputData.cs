@@ -7,20 +7,22 @@ using Microsoft.DirectX.DirectInput;
 namespace JoystickCurves
 {
     
-    public class JoystickData
+    public class DirectInputData
     {
         private JoystickOffset _joystickOffset;
+        private MouseOffset _mouseOffset;
+        private Key _key;
 
         private const string UNKNOWN = "Unknown";
         private string _name;
         private HID_USAGES _virtualID;
-        public JoystickData()
+        public DirectInputData()
         {
             Min = -1;
             Max = 1;
             Value = 0;
         }        
-        public JoystickData(int min, int max)
+        public DirectInputData(int min, int max)
         {
             if (min == max)
                 throw new Exception("Minimum and maximum value of axies should not be equal!");
@@ -73,7 +75,7 @@ namespace JoystickCurves
                 _joystickOffset = DIUtils.ID(_name);
             }
         }
-        public JoystickOffset DirectInputID
+        public JoystickOffset JoystickOffset
         {
             get { return _joystickOffset; }
             set
@@ -83,13 +85,34 @@ namespace JoystickCurves
                 _virtualID = DIUtils.VirtualID(_name);
             }        
         }
-        public static implicit operator String(JoystickData ax)
+
+        public MouseOffset MouseOffset
+        {
+            get { return _mouseOffset; }
+            set
+            {
+                _name = value.ToString();
+                _mouseOffset = value;
+            }
+        }
+
+        public Key KeyboardKey
+        {
+            get { return _key; }
+            set
+            {
+                _name = value.ToString();
+                _key = value;
+            }
+        }
+
+        public static implicit operator String(DirectInputData ax)
         {
             return ax == null ? String.Empty : ax.Name;
         }
-        public static implicit operator JoystickData(String name)
+        public static implicit operator DirectInputData(String name)
         {
-            return new JoystickData() { Name = name };
+            return new DirectInputData() { Name = name };
         }
     }
 }

@@ -16,16 +16,16 @@ using System.Xml;
 namespace JoystickCurves
 {
 
-    public partial class MainForm : Form
+    public partial class MainForm : Form, INotifyPropertyChanged
     {
         private DeviceManager _deviceManager;
         private Properties.Settings _settings;
         private ProfileManager _profileManager;
         private BindingSource _axisNamesPhysPitch, _axisNamesVirtPitch, _axisNamesPhysYaw, _axisNamesVirtYaw, _virtualDeviceNames, _physicalDeviceNames;
-        private Dictionary<String, Dictionary<JoystickOffset, JoystickData>> _axisBinding;
+        private Dictionary<String, Dictionary<JoystickOffset, DirectInputData>> _axisBinding;
         private List<VirtualJoystick> _virtualJoysticks;
         private Profile _currentProfile;
-        private bool _vjoyIsSet = false;
+        private bool waitingHotkey = false;
         private bool _suspendTabActions = false;
         private String _currentContextMenu;
         private object lockAxisBinding = new object();
@@ -35,6 +35,7 @@ namespace JoystickCurves
         private const string NOTSET = "Not set";
         private const string NEWPROFILE = "<New profile...>";
         private const string PROFILEDEFNAME = "New Profile";
+        private const string PRESSKEY = "Press Key";
         private bool isExit = false;
         private Mutex appMutex;
         private const string INSTANCENAME = "JoystickCurvesInstance";
@@ -50,9 +51,13 @@ namespace JoystickCurves
                 return;
             }
 
+
             InitializeComponent();
+            
+            checkBoxHotKey.DataBindings.Add(new Binding("Checked", this, "WaitingHotKey",false,DataSourceUpdateMode.OnPropertyChanged,null));
+
             _virtualJoysticks = new List<VirtualJoystick>();
-            _axisBinding = new Dictionary<string, Dictionary<JoystickOffset, JoystickData>>();
+            _axisBinding = new Dictionary<string, Dictionary<JoystickOffset, DirectInputData>>();
             _axisNamesPhysPitch = new BindingSource();
             _axisNamesPhysYaw = new BindingSource();
             _axisNamesVirtPitch = new BindingSource();
@@ -84,19 +89,19 @@ namespace JoystickCurves
 
 
         }
-        private void emptyAction(JoystickData d) { }
+        private void emptyAction(DirectInputData d) { }
 
-        private void ActionSetVJoy(JoystickData data)
+        private void ActionSetVJoy(DirectInputData data)
         {
             var sourceDeviceName = data.DeviceName;
-            var sourceAxisName = DIUtils.Name(data.DirectInputID);
+            var sourceAxisName = DIUtils.Name(data.JoystickOffset);
             var pTab = _currentProfile.Tabs.ToList().Where(t => t.SourceDevice == sourceDeviceName && t.SourceAxis == sourceAxisName).FirstOrDefault();
 
             if (pTab == null)
                 return;
 
-            var virtualDevice = _deviceManager.Devices.ToList().FirstOrDefault(
-                gc => gc.Type == GameControllerType.Virtual && gc.Name == pTab.DestinationDevice);
+            var virtualDevice = _deviceManager.Joysticks.ToList().FirstOrDefault(
+                gc => gc.Type == DeviceType.Virtual && gc.Name == pTab.DestinationDevice);
 
             var sourceAxis = DIUtils.ID( sourceAxisName);
 
@@ -117,10 +122,10 @@ namespace JoystickCurves
             {
                 var actionMap = _currentProfile.Tabs.Where(
                     t => t.SourceAxis != NOTSET && t.DestinationAxis != NOTSET).Select(
-                    t => new KeyValuePair<JoystickOffset, Action<JoystickData>>(DIUtils.ID(t.SourceAxis), ActionSetVJoy)).ToDictionary(
+                    t => new KeyValuePair<JoystickOffset, Action<DirectInputData>>(DIUtils.ID(t.SourceAxis), ActionSetVJoy)).ToDictionary(
                     t => t.Key, t => t.Value);
 
-                var srcDevice = _deviceManager.Devices.Where(d => d.Name == srcDevName).FirstOrDefault();
+                var srcDevice = _deviceManager.Joysticks.Where(d => d.Name == srcDevName).FirstOrDefault();
                 if (srcDevice != null)
                 {
                     srcDevice.SetActions(actionMap);
@@ -130,7 +135,7 @@ namespace JoystickCurves
             var restOfSourceDeviceNames = _currentProfile.SourceDeviceList.Except(srcDeviceNames);
             var restOfDestinationDeviceNames = _currentProfile.DestinationDeviceList.Except(dstDeviceNames);
 
-            _deviceManager.Devices.ForEach(d =>
+            _deviceManager.Joysticks.ForEach(d =>
             {
                 if (restOfDestinationDeviceNames.Contains(d.Name))
                 {
@@ -145,62 +150,62 @@ namespace JoystickCurves
 
         }
 
-        private void ActionSetTesterVirtualX(JoystickData data)
+        private void ActionSetTesterVirtualX(DirectInputData data)
         {
-            Utils.SetProperty<JoystickTester, JoystickData>(joystickTester, "VirtualAxisRoll", data);
+            Utils.SetProperty<JoystickTester, DirectInputData>(joystickTester, "VirtualAxisRoll", data);
             Utils.SetProperty<Label, String>(labelPitchPercent, "Text", data.PercentValue.ToString() + "%");
         }
-        private void ActionSetTesterVirtualY(JoystickData data)
+        private void ActionSetTesterVirtualY(DirectInputData data)
         {
-            Utils.SetProperty<JoystickTester, JoystickData>(joystickTester, "VirtualAxisPitch", data);
+            Utils.SetProperty<JoystickTester, DirectInputData>(joystickTester, "VirtualAxisPitch", data);
             Utils.SetProperty<Label, String>(labelPitchPercent, "Text", data.PercentValue.ToString() + "%");
         }
-        private void ActionSetTesterVirtualRZ(JoystickData data)
+        private void ActionSetTesterVirtualRZ(DirectInputData data)
         {
-            Utils.SetProperty<JoystickTester, JoystickData>(joystickTester, "VirtualAxisRudder", data);
+            Utils.SetProperty<JoystickTester, DirectInputData>(joystickTester, "VirtualAxisRudder", data);
             Utils.SetProperty<Label, String>(labelYawPercent, "Text", data.PercentValue.ToString() + "%");
         }
 
-        private void ActionSetTesterPhysicalX(JoystickData data)
+        private void ActionSetTesterPhysicalX(DirectInputData data)
         {
-            Utils.SetProperty<JoystickTester, JoystickData>(joystickTester, "PhysicalAxisRoll", data);
+            Utils.SetProperty<JoystickTester, DirectInputData>(joystickTester, "PhysicalAxisRoll", data);
         }
-        private void ActionSetTesterPhysicalY(JoystickData data)
+        private void ActionSetTesterPhysicalY(DirectInputData data)
         {
-            Utils.SetProperty<JoystickTester, JoystickData>(joystickTester, "PhysicalAxisPitch", data);
+            Utils.SetProperty<JoystickTester, DirectInputData>(joystickTester, "PhysicalAxisPitch", data);
         }
-        private void ActionSetTesterPhysicalRZ(JoystickData data)
+        private void ActionSetTesterPhysicalRZ(DirectInputData data)
         {
-            Utils.SetProperty<JoystickTester, JoystickData>(joystickTester, "PhysicalAxisRudder", data);
+            Utils.SetProperty<JoystickTester, DirectInputData>(joystickTester, "PhysicalAxisRudder", data);
         }
         private void UpdateTesterActions()
         {
-            var virtualDev = _deviceManager.Devices.Where(d => d.Name == joystickTester.CurrentVirtualDevice && d.Type == GameControllerType.Virtual).FirstOrDefault();
+            var virtualDev = _deviceManager.Joysticks.Where(d => d.Name == joystickTester.CurrentVirtualDevice && d.Type == DeviceType.Virtual).FirstOrDefault();
             if (virtualDev != null)
             {
-                var virtualActionMap = new Dictionary<JoystickOffset, Action<JoystickData>>()
+                var virtualActionMap = new Dictionary<JoystickOffset, Action<DirectInputData>>()
                 {
                     { joystickTester.CurrentVirtualRZ, 
-                      _settings.TesterVirtualJoystickRZ != NOTSET?new Action<JoystickData>( ActionSetTesterVirtualRZ):emptyAction },
+                      _settings.TesterVirtualJoystickRZ != NOTSET?new Action<DirectInputData>( ActionSetTesterVirtualRZ):emptyAction },
                     { joystickTester.CurrentVirtualX, 
-                      _settings.TesterVirtualJoystickX != NOTSET?new Action<JoystickData>( ActionSetTesterVirtualX):emptyAction },
+                      _settings.TesterVirtualJoystickX != NOTSET?new Action<DirectInputData>( ActionSetTesterVirtualX):emptyAction },
                     { joystickTester.CurrentVirtualY, 
-                      _settings.TesterVirtualJoystickY != NOTSET?new Action<JoystickData>( ActionSetTesterVirtualY):emptyAction }
+                      _settings.TesterVirtualJoystickY != NOTSET?new Action<DirectInputData>( ActionSetTesterVirtualY):emptyAction }
                 };
                 virtualDev.SetActions(virtualActionMap);
             }
 
-            var physicalDev = _deviceManager.Devices.Where(d => d.Name == joystickTester.CurrentPhysicalDevice && d.Type == GameControllerType.Physical ).FirstOrDefault();
+            var physicalDev = _deviceManager.Joysticks.Where(d => d.Name == joystickTester.CurrentPhysicalDevice && d.Type == DeviceType.Physical ).FirstOrDefault();
             if (physicalDev != null)
             {
-                var physicalActionMap = new Dictionary<JoystickOffset, Action<JoystickData>>()
+                var physicalActionMap = new Dictionary<JoystickOffset, Action<DirectInputData>>()
                 {
                     { joystickTester.CurrentPhysicalRZ, 
-                      _settings.TesterPhysicalJoystickRZ != NOTSET?new Action<JoystickData>( ActionSetTesterPhysicalRZ):emptyAction },
+                      _settings.TesterPhysicalJoystickRZ != NOTSET?new Action<DirectInputData>( ActionSetTesterPhysicalRZ):emptyAction },
                     { joystickTester.CurrentPhysicalX, 
-                      _settings.TesterPhysicalJoystickX != NOTSET?new Action<JoystickData>( ActionSetTesterPhysicalX):emptyAction },
+                      _settings.TesterPhysicalJoystickX != NOTSET?new Action<DirectInputData>( ActionSetTesterPhysicalX):emptyAction },
                     { joystickTester.CurrentPhysicalY, 
-                      _settings.TesterPhysicalJoystickY != NOTSET?new Action<JoystickData>( ActionSetTesterPhysicalY):emptyAction }
+                      _settings.TesterPhysicalJoystickY != NOTSET?new Action<DirectInputData>( ActionSetTesterPhysicalY):emptyAction }
                 };
                 physicalDev.SetActions(physicalActionMap);
             }
@@ -315,10 +320,17 @@ namespace JoystickCurves
                         DestinationDevice = axisEditor.CurrentDestDevice,
                         SourceAxis = axisEditor.CurrentSourceAxis,
                         SourceDevice = axisEditor.CurrentSourceDevice,
-                        TabTitle = axisEditor.Title
+                        TabTitle = axisEditor.Title,                                                
                     });
                 }
             }
+            profile.HotKeyJoystickName = _currentProfile.HotKeyJoystickName;
+            profile.HotKeyKeyboardName = _currentProfile.HotKeyKeyboardName;
+            profile.HotKeyMouseName = _currentProfile.HotKeyMouseName;
+            profile.JoystickHotKey = _currentProfile.JoystickHotKey;
+            profile.MouseHotKey = _currentProfile.MouseHotKey;
+            profile.KeyboardHotKey = _currentProfile.KeyboardHotKey;
+
             return profile;
         }
 
@@ -332,7 +344,7 @@ namespace JoystickCurves
 
         private void UnacquireDevices()
         {
-            foreach (var d in _deviceManager.Devices.ToList())
+            foreach (var d in _deviceManager.Joysticks.ToList())
                 d.Unacquire();
         }
 
@@ -368,15 +380,37 @@ namespace JoystickCurves
             LoadSettings();
 
             _deviceManager = new DeviceManager();
-            _deviceManager.OnDeviceList += new EventHandler<EventArgs>(deviceManager_OnDeviceList);
+            _deviceManager.OnJoystickList += new EventHandler<EventArgs>(deviceManager_OnJoystickList);
+            _deviceManager.OnKeyboardList += new EventHandler<EventArgs>(deviceManager_OnKeyboardList);
+            _deviceManager.OnMouseList += new EventHandler<EventArgs>(deviceManager_OnMouseList);
 
 
+        }
+
+        private void deviceManager_OnJoystickList(object sender, EventArgs e)
+        {
+            _deviceManager.Joysticks.ForEach(j => j.Acquire());
+            SetupTesterContextMenus();
+            SetupEditorComboBoxes();
+            UpdateAxisBindings();
+            UpdateCurveActions();
+            UpdateTesterActions();
+        }
+
+        void deviceManager_OnMouseList(object sender, EventArgs e)
+        {
+            _deviceManager.Mouses.ForEach(m => m.Acquire());
+        }
+
+        void deviceManager_OnKeyboardList(object sender, EventArgs e)
+        {
+            _deviceManager.Keyboards.ForEach(k => k.Acquire());
         }
 
         private void SetupTesterContextMenus()
         {
             var physicalDevices = Utils.SetDeviceContextMenuItems( 
-                    _deviceManager.Devices.Where(d => d.Type == GameControllerType.Physical).Select(d => new ToolStripMenuItem(d.Name) { CheckOnClick = true, Name = "physicalDevice" }).ToList(),
+                    _deviceManager.Joysticks.Where(d => d.Type == DeviceType.Physical).Select(d => new ToolStripMenuItem(d.Name) { CheckOnClick = true, Name = "physicalDevice" }).ToList(),
                     "PhysicalDevice", 
                     _settings.TesterPhysicalJoystick, 
                     testerContextDevices_Click, 
@@ -384,7 +418,7 @@ namespace JoystickCurves
                );
 
             var virtualDevices = Utils.SetDeviceContextMenuItems( 
-                    _deviceManager.Devices.Where(d => d.Type == GameControllerType.Virtual).Select(d => new ToolStripMenuItem(d.Name) { CheckOnClick = true, Name = "virtualDevice" }).ToList(),
+                    _deviceManager.Joysticks.Where(d => d.Type == DeviceType.Virtual).Select(d => new ToolStripMenuItem(d.Name) { CheckOnClick = true, Name = "virtualDevice" }).ToList(),
                     "VirtualDevice", 
                     _settings.TesterVirtualJoystick,
                     testerContextDevices_Click, 
@@ -509,8 +543,8 @@ namespace JoystickCurves
                 if (tp.Controls.Count > 0)
                 {
                     AxisEditor axisEditor = tp.Controls[0] as AxisEditor;
-                    axisEditor.SourceControllers = _deviceManager.Devices.Where(d => d.Type == GameControllerType.Physical).Select(d => d.Name).ToList();
-                    axisEditor.DestinationControllers = _deviceManager.Devices.Where(d => d.Type == GameControllerType.Virtual).Select(d => d.Name).ToList();
+                    axisEditor.SourceControllers = _deviceManager.Joysticks.Where(d => d.Type == DeviceType.Physical).Select(d => d.Name).ToList();
+                    axisEditor.DestinationControllers = _deviceManager.Joysticks.Where(d => d.Type == DeviceType.Virtual).Select(d => d.Name).ToList();
                     axisEditor.SourceAxis = DIUtils.AxisNames.ToList();
                     axisEditor.DestinationAxis = DIUtils.AxisNames.ToList();
                     axisEditor.OnChange += new EventHandler<EventArgs>(axisEditor_OnChange);
@@ -535,9 +569,9 @@ namespace JoystickCurves
                             {
                                 if (!_axisBinding[axisEditor.CurrentSourceDevice].ContainsKey(DIUtils.ID(axisEditor.CurrentSourceAxis)))
                                 {
-                                    _axisBinding[axisEditor.CurrentSourceDevice].Add(DIUtils.ID(axisEditor.CurrentSourceAxis), new JoystickData()
+                                    _axisBinding[axisEditor.CurrentSourceDevice].Add(DIUtils.ID(axisEditor.CurrentSourceAxis), new DirectInputData()
                                     {
-                                        DirectInputID = DIUtils.ID(axisEditor.CurrentDestAxis),
+                                        JoystickOffset = DIUtils.ID(axisEditor.CurrentDestAxis),
                                         DeviceName = axisEditor.CurrentDestDevice,
                                         Min = -32767,
                                         Max = 32767,
@@ -549,11 +583,11 @@ namespace JoystickCurves
                             else
                             {
                             
-                                _axisBinding.Add(axisEditor.CurrentSourceDevice, new Dictionary<JoystickOffset, JoystickData>{
+                                _axisBinding.Add(axisEditor.CurrentSourceDevice, new Dictionary<JoystickOffset, DirectInputData>{
                                 {
                                     DIUtils.ID(axisEditor.CurrentSourceAxis),
-                                    new JoystickData() { 
-                                        DirectInputID = DIUtils.ID(axisEditor.CurrentDestAxis),
+                                    new DirectInputData() { 
+                                        JoystickOffset = DIUtils.ID(axisEditor.CurrentDestAxis),
                                         DeviceName = axisEditor.CurrentDestDevice,
                                         Min = -32767,
                                         Max = 32767,
@@ -589,20 +623,6 @@ namespace JoystickCurves
 
         }
 
-        private void deviceManager_OnDeviceList(object sender, EventArgs e)
-        {
-            foreach (var dev in _deviceManager.Devices)
-            {
-                dev.Acquire();
-            }
-
-            SetupTesterContextMenus();
-            SetupEditorComboBoxes();
-            UpdateAxisBindings();
-            UpdateCurveActions();
-            UpdateTesterActions();
-
-        }
 
         private void tabAxis_SelectedIndexChanged(object sender, EventArgs e)
         {
@@ -775,6 +795,20 @@ namespace JoystickCurves
                 axisEditor.Title = String.IsNullOrEmpty(p.TabTitle)||p.TabTitle == NOTSET?String.Format("Axis {0}",_currentProfile.Tabs.IndexOf(p)+1):p.TabTitle;
                 tabPage.Text = axisEditor.Title;
             }
+            var hotkey = "Hot Key";
+            if( !String.IsNullOrEmpty(_currentProfile.HotKeyJoystickName))
+            {
+                hotkey = "Joy: " + _currentProfile.JoystickHotKey;
+            }
+            else if( !String.IsNullOrEmpty(_currentProfile.HotKeyKeyboardName))
+            {
+                hotkey = "Key: " + _currentProfile.KeyboardHotKey;
+            }
+            else if( !String.IsNullOrEmpty(_currentProfile.HotKeyMouseName))
+            {
+                hotkey = "Mouse: " + _currentProfile.MouseHotKey;
+            }
+            checkBoxHotKey.Text = hotkey;
 
             _suspendTabActions = false;
 
@@ -903,29 +937,106 @@ namespace JoystickCurves
 
         }
 
-        private void buttonHotKey_Click(object sender, EventArgs e)
+        void dev_OnButtonChange(object sender, CustomEventArgs<DirectInputData> e)
         {
-            foreach (var dev in _deviceManager.Devices.Where(d => d.Type == GameControllerType.Virtual))
-            {
-                dev.OnButtonChange += new EventHandler<CustomEventArgs<JoystickData>>(dev_OnButtonChange);
-            }
+            DirectInputJoystick gController = sender as DirectInputJoystick;
 
-            buttonHotKey.Text = "Press Key";
+            _currentProfile.JoystickHotKey = e.Data.JoystickOffset.ToString();
+            _currentProfile.HotKeyJoystickName = e.Data.DeviceName;
 
+            Utils.SetProperty<CheckBox, String>(checkBoxHotKey, "Text", "Joy: " + e.Data.JoystickOffset.ToString());
+            Utils.SetProperty<Form, bool>(this, "WaitingHotKey", false);
         }
 
-        void dev_OnButtonChange(object sender, CustomEventArgs<JoystickData> e)
-        {
-            GameController gController = sender as GameController;
-           
-            var buttonName = DIUtils.AllNames.Where(btn => btn.Key == e.Data.DirectInputID).Select( keyvalue => keyvalue.Value).FirstOrDefault();
 
-            if (buttonName != null)
+        void mouse_OnButtonDown(object sender, CustomEventArgs<DirectInputData> e)
+        {
+            DirectInputMouse mouse = sender as DirectInputMouse;
+            _currentProfile.MouseHotKey = e.Data.MouseOffset.ToString();
+            _currentProfile.HotKeyMouseName = e.Data.DeviceName;
+            Utils.SetProperty<CheckBox, String>(checkBoxHotKey, "Text", "Mouse: " + e.Data.MouseOffset.ToString());
+            Utils.SetProperty<Form, bool>(this, "WaitingHotKey", false);
+        }
+
+        void keyboard_OnKeyDown(object sender, CustomEventArgs<DirectInputData> e)
+        {
+            DirectInputKeyboard keyboard = sender as DirectInputKeyboard;
+            _currentProfile.KeyboardHotKey = e.Data.KeyboardKey.ToString();
+            _currentProfile.HotKeyKeyboardName = e.Data.DeviceName;
+            Utils.SetProperty<CheckBox, String>(checkBoxHotKey, "Text", "Key: " + e.Data.KeyboardKey.ToString());
+            Utils.SetProperty<Form, bool>(this, "WaitingHotKey", false);
+        }
+
+        private void SetupWaitHotKeyHandlers()
+        {
+            _currentProfile.KeyboardHotKey = String.Empty;
+            _currentProfile.HotKeyKeyboardName = String.Empty;
+            _currentProfile.MouseHotKey = String.Empty;
+            _currentProfile.HotKeyMouseName = String.Empty;
+            _currentProfile.JoystickHotKey = String.Empty;
+            _currentProfile.HotKeyJoystickName = String.Empty;
+
+            checkBoxHotKey.Text = PRESSKEY;
+
+            foreach (var joy in _deviceManager.Joysticks.Where(d => d.Type == DeviceType.Physical))
             {
-                gController.OnButtonChange -= dev_OnButtonChange;
-                _currentProfile.JoystickHotKey = buttonName;
-                _currentProfile.JoystickHotKeyna
+                joy.OnButtonChange += new EventHandler<CustomEventArgs<DirectInputData>>(dev_OnButtonChange);
             }
+            _deviceManager.Keyboards.ForEach(keyboard => keyboard.OnKeyDown += new EventHandler<CustomEventArgs<DirectInputData>>(keyboard_OnKeyDown));
+            _deviceManager.Mouses.ForEach(mouse => mouse.OnButtonDown += new EventHandler<CustomEventArgs<DirectInputData>>(mouse_OnButtonDown));
+        }
+        private void RemoveWaitHotKeyHandlers()
+        {
+            foreach (var joy in _deviceManager.Joysticks.Where(d => d.Type == DeviceType.Physical))
+            {
+                joy.OnButtonChange -= dev_OnButtonChange;
+            }
+            _deviceManager.Keyboards.ForEach(keyboard => keyboard.OnKeyDown -= keyboard_OnKeyDown);
+            _deviceManager.Mouses.ForEach(mouse => mouse.OnButtonDown -= mouse_OnButtonDown);            
+        }
+
+        public bool WaitingHotKey
+        {
+            get { return waitingHotkey; }
+            set
+            {
+                waitingHotkey = value;
+                if (waitingHotkey)
+                {
+                    SetupWaitHotKeyHandlers();                    
+                    checkBoxHotKey.Enabled = false;
+                    tabAxis.Focus();
+                }
+                else
+                {
+                    RemoveWaitHotKeyHandlers();
+                    checkBoxHotKey.Enabled = true;
+                }
+                OnPropertyChanged("WaitingHotKey");
+            }
+        }
+
+
+        protected virtual void OnPropertyChanged(string property)
+        {
+            if (PropertyChanged != null)
+                PropertyChanged(this, new PropertyChangedEventArgs(property));
+        }
+
+        #region INotifyPropertyChanged Members
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        #endregion
+
+        private void tabAxis_KeyUp(object sender, KeyEventArgs e)
+        {
+            if (WaitingHotKey) e.SuppressKeyPress = true;
+        }
+
+        private void tabAxis_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (WaitingHotKey) e.SuppressKeyPress = true;
         }
     }
 

@@ -7,18 +7,12 @@ using System.Threading;
 using System.Diagnostics;
 namespace JoystickCurves
 {
-    public enum GameControllerType
-    {
-        Virtual,
-        Physical,
-        NotSet
-    }
-    public class GameController
+    public class DirectInputJoystick : DirectInputDevice
     {
 
         public event EventHandler<EventArgs> OnAcquire;
-        public event EventHandler<CustomEventArgs<JoystickData>> OnAxisChange;
-        public event EventHandler<CustomEventArgs<JoystickData>> OnButtonChange;
+        public event EventHandler<CustomEventArgs<DirectInputData>> OnAxisChange;
+        public event EventHandler<CustomEventArgs<DirectInputData>> OnButtonChange;
         private const int POLL_INTERVAL = 10;
         private const int AXIS_RANGE = 32767;
         private JoystickOffset[] JoystickAxis = new JoystickOffset[] { JoystickOffset.X, 
@@ -32,39 +26,24 @@ namespace JoystickCurves
 
         private Timer _pollTimer;
         private Device _device;
-        private DeviceInstance _devInstance;
-        private string _name;
-        private Dictionary<JoystickOffset, List<Action<JoystickData>>> _actionMap = new Dictionary<JoystickOffset,List<Action<JoystickData>>>();
+        private Dictionary<JoystickOffset, List<Action<DirectInputData>>> _actionMap = new Dictionary<JoystickOffset,List<Action<DirectInputData>>>();
         private VirtualJoystick _virtualJoystick;
-        private void emptyAction(JoystickData joyData) {}
+        private void emptyAction(DirectInputData joyData) {}
 
-        public GameController(String name)
+        public DirectInputJoystick(String name)
         {
             Name = name;
-            Type = GameControllerType.NotSet;
+            Type = DeviceType.NotSet;
             Acquired = false;
         }
-        public GameController( DeviceInstance dev, GameControllerType type )
+        public DirectInputJoystick( DeviceInstance dev, DeviceType type )
         {
-            _devInstance = dev;
+            DeviceInstance = dev;
             Type = type;
             Acquired = false;
             
             _pollTimer = new Timer(new TimerCallback(poll_Tick), null, Timeout.Infinite, Timeout.Infinite);
-            OnAcquire += new EventHandler<EventArgs>(GameController_OnAcquire);
-        }
-        public static implicit operator String(GameController gc)
-        {
-            return gc == null ? String.Empty : gc.Name;
-        }
-        public override string ToString()
-        {
-            return Name;
-        }
-        public bool Acquired
-        {
-            get;
-            set;
+            OnAcquire += new EventHandler<EventArgs>(Joystick_OnAcquire);
         }
 
         public VirtualJoystick VirtualJoystick
@@ -74,7 +53,7 @@ namespace JoystickCurves
         }
         private void poll_Tick(object o)
         {
-            List<Action<JoystickData>> action;
+            List<Action<DirectInputData>> action;
             BufferedDataCollection queue = null;
 
             _pollTimer.Change(Timeout.Infinite, Timeout.Infinite);
@@ -95,10 +74,10 @@ namespace JoystickCurves
                 {
                     JoystickOffset dataType = (JoystickOffset)data.Offset;
 
-                    JoystickData joyData = new JoystickData()
+                    DirectInputData joyData = new DirectInputData()
                     {
                         Value = data.Data,
-                        DirectInputID = dataType,
+                        JoystickOffset = dataType,
                         DeviceName = Name
                     };
 
@@ -108,11 +87,14 @@ namespace JoystickCurves
                     {
                         joyData.Min = MinAxisValue;
                         joyData.Max = MaxAxisValue;
+
+                        if (OnAxisChange != null)
+                            OnAxisChange(this, new CustomEventArgs<DirectInputData>(joyData));
                     }
                     else
                     {
                         if (OnButtonChange != null)
-                            OnButtonChange(this, new CustomEventArgs<JoystickData>(joyData));
+                            OnButtonChange(this, new CustomEventArgs<DirectInputData>(joyData));
                     }
                     if (action != null)
                         action.ForEach(a => a(joyData));
@@ -120,33 +102,11 @@ namespace JoystickCurves
             }
             _pollTimer.Change(POLL_INTERVAL, POLL_INTERVAL);                
         }
-        private void GameController_OnAcquire(object sender, EventArgs e)
+        private void Joystick_OnAcquire(object sender, EventArgs e)
         {
             Acquired = true;
         }
 
-        public int Index
-        {
-            get;
-            set;
-        }
-        public string Name
-        {
-            get
-            {
-                if (Type == GameControllerType.NotSet)
-                    return _name;
-
-                if (Index > 0)
-                    return String.Format("{0} #{1}", _devInstance.InstanceName, Index);
-                else
-                    return _devInstance.InstanceName;
-            }
-            set
-            {
-                _name = value;
-            }
-        }
         public int MinAxisValue
         {
             get { return -AXIS_RANGE; }
@@ -154,24 +114,6 @@ namespace JoystickCurves
         public int MaxAxisValue
         {
             get { return AXIS_RANGE; }
-        }
-        public string ProductName
-        {
-            get { return _devInstance.ProductName; }
-        }
-        public Guid ProductGuid
-        {
-            get { return _devInstance.ProductGuid; }
-        }
-        public Guid Guid
-        {
-            get { return _devInstance.InstanceGuid; }
-        }
-  
-        public GameControllerType Type
-        {
-            get;
-            set;
         }
         public int NumberAxes
         {
@@ -195,7 +137,7 @@ namespace JoystickCurves
             }
             catch { }
 
-            if (Type == GameControllerType.Virtual)
+            if (Type == DeviceType.Virtual)
             {
                 try
                 {
@@ -226,7 +168,7 @@ namespace JoystickCurves
             if (OnAcquire != null)
                 OnAcquire(this, EventArgs.Empty);
         }
-        public void SetActions(Dictionary<JoystickOffset, Action<JoystickData>> actions)
+        public void SetActions(Dictionary<JoystickOffset, Action<DirectInputData>> actions)
         {
             if (actions == null || actions.Count <= 0)
                 return;
@@ -241,7 +183,7 @@ namespace JoystickCurves
             foreach (var k in actions.Keys)
             {
                 if (!_actionMap.Keys.Contains(k))
-                    _actionMap.Add(k, new List<Action<JoystickData>>());
+                    _actionMap.Add(k, new List<Action<DirectInputData>>());
 
                 _actionMap[k].Add(actions[k]);
             }
@@ -249,7 +191,7 @@ namespace JoystickCurves
        
         public void Set(JoystickOffset offset, int value)
         {
-            if (Type != GameControllerType.Virtual || _virtualJoystick == null)
+            if (Type != DeviceType.Virtual || _virtualJoystick == null)
                 return;
 
             if (offset >= JoystickOffset.Button0 && offset <= JoystickOffset.Button128)
