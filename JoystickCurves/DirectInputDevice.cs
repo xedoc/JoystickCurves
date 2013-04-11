@@ -8,6 +8,7 @@ using System.Diagnostics;
 
 namespace JoystickCurves
 {
+
     public enum KeyState
     {
         Up = 0,
@@ -21,6 +22,9 @@ namespace JoystickCurves
     }
     public class DirectInputDevice
     {
+
+        
+
         private const int POLL_INTERVAL = 10;
         private string _name;
 

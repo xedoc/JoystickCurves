@@ -14,8 +14,11 @@ namespace JoystickCurves
         public event EventHandler<CustomEventArgs<DirectInputData>> OnButtonDown;
         public event EventHandler<CustomEventArgs<DirectInputData>> OnButtonUp;
         public event EventHandler<CustomEventArgs<DirectInputData>> OnButtonPress;
-        private const int POLL_INTERVAL = 10;
+        public event EventHandler<EventArgs> OnError;
+        public event EventHandler<EventArgs> OnUnacquire;
 
+        private const int POLL_INTERVAL = 10;
+        private object pollLock = new object();
         private Timer _pollTimer;
         private Device _device;
         private Dictionary<MouseOffset, List<Action<DirectInputData>>> _actionMap = new Dictionary<MouseOffset,List<Action<DirectInputData>>>();
@@ -31,63 +34,68 @@ namespace JoystickCurves
         }
         private void poll_Tick(object o)
         {
-            List<Action<DirectInputData>> action;
-            BufferedDataCollection queue = null;
-
-            _pollTimer.Change(Timeout.Infinite, Timeout.Infinite);
-
-            try
+            lock (pollLock)
             {
-                _device.Poll();
-                queue = _device.GetBufferedData();
-            }
-            catch {
-                _pollTimer.Change(Timeout.Infinite, Timeout.Infinite);
-                return;
-            }
+                List<Action<DirectInputData>> action;
+                BufferedDataCollection queue = null;
 
-            if (queue != null)
-            {
-                foreach (BufferedData data in queue)
+                try
                 {
-                    MouseOffset dataType = (MouseOffset)data.Offset;
+                    _device.Poll();
+                    queue = _device.GetBufferedData();
+                }
+                catch
+                {
+                    _pollTimer.Change(Timeout.Infinite, Timeout.Infinite);
+                    if (OnError != null)
+                        OnError(this, EventArgs.Empty);
 
-                    DirectInputData mouseData = new DirectInputData()
+                    return;
+                }
+
+                if (queue != null)
+                {
+                    foreach (BufferedData data in queue)
                     {
-                        Value = data.Data,
-                        MouseOffset = dataType
-                    };
+                        MouseOffset dataType = (MouseOffset)data.Offset;
 
-                    CustomEventArgs<DirectInputData> eventArg = new CustomEventArgs<DirectInputData>(mouseData);
-
-                    _actionMap.TryGetValue(dataType, out action);
-
-                    if (action != null)
-                        action.ForEach(a => a(mouseData));
-
-                    if (dataType >= MouseOffset.Button0)
-                    {
-                        if ((KeyState)data.Data == KeyState.Down && OnButtonDown != null)
-                            OnButtonDown(this, eventArg);
-
-                        if ((KeyState)data.Data == KeyState.Up)
+                        DirectInputData mouseData = new DirectInputData()
                         {
-                            if (OnButtonUp != null)
-                                OnButtonUp(this, eventArg);
-                            if (OnButtonPress != null)
-                                OnButtonPress(this, eventArg);
+                            Value = data.Data,
+                            MouseOffset = dataType,
+                            DeviceName = Name
+                        };
+
+                        CustomEventArgs<DirectInputData> eventArg = new CustomEventArgs<DirectInputData>(mouseData);
+
+                        _actionMap.TryGetValue(dataType, out action);
+
+                        if (action != null)
+                            action.ForEach(a => a(mouseData));
+
+                        if (dataType >= MouseOffset.Button0)
+                        {
+                            if ((KeyState)data.Data == KeyState.Down && OnButtonDown != null)
+                                OnButtonDown(this, eventArg);
+
+                            if ((KeyState)data.Data == KeyState.Up)
+                            {
+                                if (OnButtonUp != null)
+                                    OnButtonUp(this, eventArg);
+                                if (OnButtonPress != null)
+                                    OnButtonPress(this, eventArg);
+                            }
+
+                        }
+                        else
+                        {
+                            //Mouse axis
                         }
 
-                    }
-                    else
-                    {
-                        //Mouse axis
-                    }
 
-
+                    }
                 }
             }
-            _pollTimer.Change(POLL_INTERVAL, POLL_INTERVAL);                
         }
         private void Mouse_OnAcquire(object sender, EventArgs e)
         {
@@ -103,7 +111,8 @@ namespace JoystickCurves
                 _device.Unacquire();
             }
             catch { }
-
+            if (OnUnacquire != null)
+                OnUnacquire(this, EventArgs.Empty);
         }
 
         public void Acquire()
@@ -127,6 +136,32 @@ namespace JoystickCurves
             
             if (OnAcquire != null)
                 OnAcquire(this, EventArgs.Empty);
+        }
+        public void DeleteAction(Action<DirectInputData> action)
+        {
+            if (action == null)
+                return;
+
+            foreach (var perKeyActions in _actionMap.Values)
+            {
+                perKeyActions.RemoveAll(a => a == action);
+            }
+
+        }
+
+        public void DeleteActions(MouseOffset key)
+        {
+            _actionMap.Remove(key);
+        }
+        public void AddAction(MouseOffset key, Action<DirectInputData> action)
+        {
+            if (action == null)
+                return;
+
+            if (!_actionMap.Keys.Contains(key))
+                _actionMap.Add(key, new List<Action<DirectInputData>>());
+
+            _actionMap[key].Add(action);
         }
         public void SetActions(Dictionary<MouseOffset, Action<DirectInputData>> actions)
         {

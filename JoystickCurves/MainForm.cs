@@ -41,6 +41,9 @@ namespace JoystickCurves
         private Mutex appMutex;
         private const string INSTANCENAME = "JoystickCurvesInstance";
         private Form debugForm;
+        private object lockSetProfile = new object();
+        private Steam _steam;
+        private SaitekMFD _saitek;
         
 
         public MainForm()
@@ -51,10 +54,11 @@ namespace JoystickCurves
                 this.Close();
                 return;
             }
-
-
-            InitializeComponent();
             
+            InitializeComponent();
+
+            ConnectSteam();
+
             checkBoxHotKey.DataBindings.Add(new Binding("Checked", this, "WaitingHotKey",false,DataSourceUpdateMode.OnPropertyChanged,null));
 
             _virtualJoysticks = new List<VirtualJoystick>();
@@ -69,7 +73,53 @@ namespace JoystickCurves
 
             debugForm = new DebugForm();
         }
+        private void ConnectSaitek()
+        {
+            if (_settings.saitekX52ProEnable)
+            {
+                _saitek = new SaitekMFD();
+                _saitek.Acquire();
+            }
+        }
 
+        private void SendSteamMessage( String text)
+        {
+            if (_settings.globalSteamEnable && _steam.LoggedIn)
+            {
+                _steam.SendMessage(_currentProfile.Title);
+            }
+        }
+        private void ConnectSteam()
+        {
+            if( _settings.globalSteamEnable )
+            {
+                SteamAPI.LoginStatus result = SteamAPI.LoginStatus.LoginFailed;
+
+                if( !String.IsNullOrEmpty(_settings.steamToken))
+                    result = _steam.Connect(String.Empty,String.Empty,String.Empty,_settings.steamToken);
+
+                if( result != SteamAPI.LoginStatus.LoginSuccessful )
+                {
+                    if( !String.IsNullOrEmpty(_settings.steamLogin ) &&
+                        !String.IsNullOrEmpty(_settings.steamPassword) )
+                    {
+                        result = _steam.Connect(_settings.steamLogin, _settings.steamPassword, String.Empty, String.Empty);
+                        if (result == SteamAPI.LoginStatus.SteamGuard)
+                        {
+                            var code = InputBox.Show("Check your mail for Steam Guard Code and enter it here:");
+                            if (!string.IsNullOrEmpty(code))
+                            {
+                                result = _steam.Connect(_settings.steamLogin, _settings.steamPassword, code, String.Empty);
+                            }
+                        }
+                    }
+                }
+                if (result == SteamAPI.LoginStatus.LoginSuccessful)
+                    _settings.steamToken = _steam.Token;
+                else
+                    MessageBox.Show("Steam bot login failed! Check your settings and try again!");
+            }
+        }
         private bool CheckRunningInstances()
         {
             try
@@ -81,7 +131,7 @@ namespace JoystickCurves
                 }
                 return false;
             }
-            catch (WaitHandleCannotBeOpenedException ex)
+            catch 
             {
                 appMutex = new Mutex(true, INSTANCENAME);
                 GC.KeepAlive(appMutex);
@@ -406,6 +456,7 @@ namespace JoystickCurves
         }
         private void MainForm_Shown(object sender, EventArgs e)
         {
+            Text = String.Format("{0} Dev. ver: {1}", Text, GetRunningVersion());
             LoadSettings();
 
             _deviceManager = new DeviceManager();
@@ -430,6 +481,7 @@ namespace JoystickCurves
         {
             _deviceManager.Mouses.ForEach(m => m.Acquire());
             Utils.SetProperty<CheckBox,bool>(checkBoxHotKey, "Enabled", true);
+            SetupHotKeyActions();
         }
 
         void deviceManager_OnKeyboardList(object sender, EventArgs e)
@@ -665,7 +717,7 @@ namespace JoystickCurves
         private void axisEditor_OnChange(object sender, EventArgs e)
         {
             var axisEditor = sender as AxisEditor;
-            var curText = Utils.GetProperty<TabPage>((TabPage)axisEditor.Parent, "Text");
+            var curText = Utils.GetProperty<TabPage>((TabPage)axisEditor.Parent, "Text").ToString();
             if( curText != axisEditor.CurrentSourceAxis )
                 Utils.SetProperty<TabPage,String>( (TabPage)axisEditor.Parent, "Text",axisEditor.CurrentSourceAxis );
 
@@ -819,88 +871,97 @@ namespace JoystickCurves
             SetupProfileCombo();
             return newProfile;
         }
-        private void SetCurrentProfile(String title, bool force = false)
+        public void SetCurrentProfile(String title)
         {
-            if (((String)comboProfiles.SelectedItem) == _currentProfile.Title && _currentProfile == title && !force)
-                return;
-
-            if (string.IsNullOrEmpty(title))
+            SetCurrentProfile(title, false);
+        }
+        public void SetCurrentProfile(String title, bool force)
+        {
+            lock (lockSetProfile)
             {
-                Utils.SetProperty<ComboBox, String>(comboProfiles, "SelectedItem", _currentProfile.Title);
-                return;
-            }
-            _suspendTabActions = true;
+                var selectedItem = Utils.GetProperty<ComboBox>(comboProfiles, "SelectedItem");
 
-            while (tabAxis.TabPages.Count > 1)
-                tabAxis.TabPages.RemoveAt(0);
+                if (selectedItem != null && selectedItem.ToString() == _currentProfile.Title && _currentProfile == title && !force)
+                    return;
 
-
-            if (_profileManager.Profiles.Exists(p => p.Title == _currentProfile.Title))
-            {
-                _profileManager.Profiles.RemoveAll(p => p.Title == _currentProfile.Title);
-            }
-            _profileManager.Profiles.Add(_currentProfile);
-
-
-            var selectedProfile = _profileManager.Profiles.FirstOrDefault(p => p.Title == title);
-            
-            if (selectedProfile != null)
-                _currentProfile = selectedProfile;
-            else
-                _currentProfile.Title = title;
-
-            foreach (var p in _currentProfile.Tabs)
-            {
-                var tabPage = AddNewProfileTab(tabAxis);
-                var axisEditor = tabPage.Controls[0] as AxisEditor;
-
-                p.CurvePoints.ScaleDrawPoints();
-                axisEditor.CurrentCurve = p.CurvePoints;
-                axisEditor.CurrentDestAxis = p.DestinationAxis;
-                axisEditor.CurrentDestDevice = p.DestinationDevice;
-                axisEditor.CurrentSourceAxis = p.SourceAxis;
-                axisEditor.CurrentSourceDevice = p.SourceDevice;
-                axisEditor.Title = String.IsNullOrEmpty(p.TabTitle)||p.TabTitle == NOTSET?String.Format("Axis {0}",_currentProfile.Tabs.IndexOf(p)+1):p.TabTitle;
-                tabPage.Text = axisEditor.Title;
-            }
-            var hotkey = "Hot Key";
-            if( !String.IsNullOrEmpty(_currentProfile.HotKeyJoystickName))
-            {
-                hotkey = "Joy: " + _currentProfile.JoystickHotKey;
-            }
-            else if( !String.IsNullOrEmpty(_currentProfile.HotKeyKeyboardName))
-            {
-                hotkey = "Key: " + _currentProfile.KeyboardHotKey;
-            }
-            else if( !String.IsNullOrEmpty(_currentProfile.HotKeyMouseName))
-            {
-                hotkey = "Mouse: " + _currentProfile.MouseHotKey;
-            }
-            checkBoxHotKey.Text = hotkey;
-
-            _suspendTabActions = false;
-
-            tabAxis.SelectedIndex = 0;
-            Utils.SetProperty<ComboBox, String>(comboProfiles, "SelectedItem", _currentProfile.Title);
-
-            if (!profilesToolStripMenuItem.Items.Contains(_currentProfile.Title))
-            {
-                var items = _profileManager.Profiles.Select(p => new ToolStripMenuItem(p.Title)
+                if (string.IsNullOrEmpty(title))
                 {
-                    Name = "profileItem",
+                    Utils.SetProperty<ComboBox, String>(comboProfiles, "SelectedItem", _currentProfile.Title);
+                    return;
                 }
-                ).ToArray();
+                _suspendTabActions = true;
 
-                profilesToolStripMenuItem.SelectedIndexChanged -= profilesToolStripMenuItem_SelectedIndexChanged;
-                profilesToolStripMenuItem.Items.Clear();
-                profilesToolStripMenuItem.Items.AddRange(items);
-                profilesToolStripMenuItem.Text = _currentProfile.Title;
-                profilesToolStripMenuItem.SelectedItem = _currentProfile.Title;
-                profilesToolStripMenuItem.SelectedIndexChanged +=new EventHandler(profilesToolStripMenuItem_SelectedIndexChanged); 
+                while (tabAxis.TabPages.Count > 1)
+                    tabAxis.TabPages.RemoveAt(0);
+
+
+                if (_profileManager.Profiles.Exists(p => p.Title == _currentProfile.Title))
+                {
+                    _profileManager.Profiles.RemoveAll(p => p.Title == _currentProfile.Title);
+                }
+                _profileManager.Profiles.Add(_currentProfile);
+
+
+                var selectedProfile = _profileManager.Profiles.FirstOrDefault(p => p.Title == title);
+
+                if (selectedProfile != null)
+                    _currentProfile = selectedProfile;
+                else
+                    _currentProfile.Title = title;
+
+                foreach (var p in _currentProfile.Tabs)
+                {
+                    var tabPage = AddNewProfileTab(tabAxis);
+                    var axisEditor = tabPage.Controls[0] as AxisEditor;
+
+                    p.CurvePoints.ScaleDrawPoints();
+                    axisEditor.CurrentCurve = p.CurvePoints;
+                    axisEditor.CurrentDestAxis = p.DestinationAxis;
+                    axisEditor.CurrentDestDevice = p.DestinationDevice;
+                    axisEditor.CurrentSourceAxis = p.SourceAxis;
+                    axisEditor.CurrentSourceDevice = p.SourceDevice;
+                    axisEditor.Title = String.IsNullOrEmpty(p.TabTitle) || p.TabTitle == NOTSET ? String.Format("Axis {0}", _currentProfile.Tabs.IndexOf(p) + 1) : p.TabTitle;
+                    tabPage.Text = axisEditor.Title;
+                }
+                var hotkey = "Hot Key";
+                if (!String.IsNullOrEmpty(_currentProfile.HotKeyJoystickName))
+                {
+                    hotkey = "Joy: " + _currentProfile.JoystickHotKey;
+                }
+                else if (!String.IsNullOrEmpty(_currentProfile.HotKeyKeyboardName))
+                {
+                    hotkey = "Key: " + _currentProfile.KeyboardHotKey;
+                }
+                else if (!String.IsNullOrEmpty(_currentProfile.HotKeyMouseName))
+                {
+                    hotkey = "Mouse: " + _currentProfile.MouseHotKey;
+                }
+                checkBoxHotKey.Text = hotkey;
+
+                _suspendTabActions = false;
+
+                tabAxis.SelectedIndex = 0;
+                Utils.SetProperty<ComboBox, String>(comboProfiles, "SelectedItem", _currentProfile.Title);
+
+                if (!profilesToolStripMenuItem.Items.Contains(_currentProfile.Title))
+                {
+                    var items = _profileManager.Profiles.Select(p => new ToolStripMenuItem(p.Title)
+                    {
+                        Name = "profileItem",
+                    }
+                    ).ToArray();
+
+                    profilesToolStripMenuItem.SelectedIndexChanged -= profilesToolStripMenuItem_SelectedIndexChanged;
+                    profilesToolStripMenuItem.Items.Clear();
+                    profilesToolStripMenuItem.Items.AddRange(items);
+                    profilesToolStripMenuItem.Text = _currentProfile.Title;
+                    profilesToolStripMenuItem.SelectedItem = _currentProfile.Title;
+                    profilesToolStripMenuItem.SelectedIndexChanged += new EventHandler(profilesToolStripMenuItem_SelectedIndexChanged);
+                }
+
+                SendSteamMessage(_currentProfile.Title);
+                SetupEditorComboBoxes();
             }
-
-            SetupEditorComboBoxes();
-
         }
 
         private void SetupProfileCombo()
@@ -1007,7 +1068,84 @@ namespace JoystickCurves
 
         }
 
-        void dev_OnButtonChange(object sender, CustomEventArgs<DirectInputData> e)
+        private void ActionKeyboardProfileHotKey(DirectInputData data)
+        {
+            var profile = _profileManager.Profiles.FirstOrDefault(
+                p => p.HotKeyKeyboardName == data.DeviceName && p.KeyboardHotKey == data.KeyboardKey.ToString());
+
+            if (profile != null && _currentProfile.Title != profile.Title)
+                Utils.CallMethod<Form>(this, "SetCurrentProfile", profile.Title);
+        }
+        private void ActionJoystickProfileHotKey(DirectInputData data)
+        {
+
+            var profile = _profileManager.Profiles.FirstOrDefault(
+                p => p.HotKeyJoystickName == data.DeviceName && p.JoystickHotKey == data.JoystickOffset.ToString());
+
+            if (profile != null && _currentProfile.Title != profile.Title)
+                Utils.CallMethod<Form>(this, "SetCurrentProfile", profile.Title);
+
+        }
+        private void ActionMouseProfileHotKey(DirectInputData data)
+        {
+            var profile = _profileManager.Profiles.FirstOrDefault(
+                p => p.HotKeyMouseName == data.DeviceName && p.MouseHotKey == data.MouseOffset.ToString());
+
+            if (profile != null && _currentProfile.Title != profile.Title)
+                Utils.CallMethod<Form>(this, "SetCurrentProfile", profile.Title);
+        }
+
+        private void SetupProfileHotKeyActions(Profile profile)
+        {
+            if (!String.IsNullOrEmpty(profile.HotKeyKeyboardName) &&
+                !String.IsNullOrEmpty(profile.KeyboardHotKey))
+            {
+                var dev = _deviceManager.Keyboards.FirstOrDefault(d => d.Name == profile.HotKeyKeyboardName);
+                if (dev != null)
+                {
+                    Key key;
+                    Enum.TryParse<Key>(profile.KeyboardHotKey, out key);
+
+                    dev.DeleteActions( key );
+                    dev.AddAction( key, ActionKeyboardProfileHotKey);
+                }
+            }
+            else if (!String.IsNullOrEmpty(profile.HotKeyMouseName) &&
+                     !String.IsNullOrEmpty(profile.MouseHotKey))
+            {
+                var dev = _deviceManager.Mouses.FirstOrDefault(d => d.Name == profile.HotKeyMouseName);
+                if (dev != null)
+                {
+                    MouseOffset key;
+                    Enum.TryParse<MouseOffset>(profile.MouseHotKey, out key);
+
+                    dev.DeleteActions(key);
+                    dev.AddAction(key, ActionMouseProfileHotKey);
+                }
+            }
+            else if (!String.IsNullOrEmpty(profile.HotKeyJoystickName) &&
+                     !String.IsNullOrEmpty(profile.JoystickHotKey))
+            {
+                var dev = _deviceManager.Joysticks.FirstOrDefault(d => d.Name == profile.HotKeyJoystickName);
+                if (dev != null)
+                {
+                    JoystickOffset key;
+                    Enum.TryParse<JoystickOffset>(profile.JoystickHotKey, out key);
+
+                    dev.DeleteActions(key);
+                    dev.AddAction(key, ActionJoystickProfileHotKey);
+                }
+            }
+        }
+        private void SetupHotKeyActions()
+        {
+            foreach (var profile in _profileManager.Profiles)
+            {
+                SetupProfileHotKeyActions(profile);
+            }
+        }
+
+        void joystick_OnButtonDown(object sender, CustomEventArgs<DirectInputData> e)
         {
             DirectInputJoystick gController = sender as DirectInputJoystick;
 
@@ -1016,8 +1154,9 @@ namespace JoystickCurves
 
             Utils.SetProperty<CheckBox, String>(checkBoxHotKey, "Text", "Joy: " + e.Data.JoystickOffset.ToString());
             Utils.SetProperty<Form, bool>(this, "WaitingHotKey", false);
-        }
 
+            SetupProfileHotKeyActions(_currentProfile);
+        }
 
         void mouse_OnButtonDown(object sender, CustomEventArgs<DirectInputData> e)
         {
@@ -1026,6 +1165,8 @@ namespace JoystickCurves
             _currentProfile.HotKeyMouseName = e.Data.DeviceName;
             Utils.SetProperty<CheckBox, String>(checkBoxHotKey, "Text", "Mouse: " + e.Data.MouseOffset.ToString());
             Utils.SetProperty<Form, bool>(this, "WaitingHotKey", false);
+
+            SetupProfileHotKeyActions(_currentProfile);
         }
 
         void keyboard_OnKeyDown(object sender, CustomEventArgs<DirectInputData> e)
@@ -1035,34 +1176,40 @@ namespace JoystickCurves
             _currentProfile.HotKeyKeyboardName = e.Data.DeviceName;
             Utils.SetProperty<CheckBox, String>(checkBoxHotKey, "Text", "Key: " + e.Data.KeyboardKey.ToString());
             Utils.SetProperty<Form, bool>(this, "WaitingHotKey", false);
+
+            SetupProfileHotKeyActions(_currentProfile);
+        }
+
+        private void CleanUpProfileHotKeys(Profile profile)
+        {
+            if (profile != null)
+            {
+                profile.KeyboardHotKey = String.Empty;
+                profile.HotKeyKeyboardName = String.Empty;
+                profile.MouseHotKey = String.Empty;
+                profile.HotKeyMouseName = String.Empty;
+                profile.JoystickHotKey = String.Empty;
+                profile.HotKeyJoystickName = String.Empty;
+            }
         }
 
         private void SetupWaitHotKeyHandlers()
         {
-            if (_currentProfile != null)
-            {
-                _currentProfile.KeyboardHotKey = String.Empty;
-                _currentProfile.HotKeyKeyboardName = String.Empty;
-                _currentProfile.MouseHotKey = String.Empty;
-                _currentProfile.HotKeyMouseName = String.Empty;
-                _currentProfile.JoystickHotKey = String.Empty;
-                _currentProfile.HotKeyJoystickName = String.Empty;
-            }
+            CleanUpProfileHotKeys(_currentProfile);
+            CleanUpProfileHotKeys(_profileManager.Profiles.FirstOrDefault(p => p.Title == _currentProfile));
+
             checkBoxHotKey.Text = PRESSKEY;
 
             foreach (var joy in _deviceManager.Joysticks.Where(d => d.Type == DeviceType.Physical))
-            {
-                joy.OnButtonChange += new EventHandler<CustomEventArgs<DirectInputData>>(dev_OnButtonChange);
-            }
+                joy.OnButtonDown += new EventHandler<CustomEventArgs<DirectInputData>>(joystick_OnButtonDown);
             _deviceManager.Keyboards.ForEach(keyboard => keyboard.OnKeyDown += new EventHandler<CustomEventArgs<DirectInputData>>(keyboard_OnKeyDown));
             _deviceManager.Mouses.ForEach(mouse => mouse.OnButtonDown += new EventHandler<CustomEventArgs<DirectInputData>>(mouse_OnButtonDown));
         }
+
         private void RemoveWaitHotKeyHandlers()
         {
             foreach (var joy in _deviceManager.Joysticks.Where(d => d.Type == DeviceType.Physical))
-            {
-                joy.OnButtonChange -= dev_OnButtonChange;
-            }
+                joy.OnButtonDown -= joystick_OnButtonDown;
             _deviceManager.Keyboards.ForEach(keyboard => keyboard.OnKeyDown -= keyboard_OnKeyDown);
             _deviceManager.Mouses.ForEach(mouse => mouse.OnButtonDown -= mouse_OnButtonDown);            
         }
@@ -1088,7 +1235,6 @@ namespace JoystickCurves
             }
         }
 
-
         protected virtual void OnPropertyChanged(string property)
         {
             if (PropertyChanged != null)
@@ -1109,6 +1255,18 @@ namespace JoystickCurves
         private void tabAxis_KeyDown(object sender, KeyEventArgs e)
         {
             if (WaitingHotKey) e.SuppressKeyPress = true;
+        }
+
+        private Version GetRunningVersion()
+        {
+            if (System.Deployment.Application.ApplicationDeployment.IsNetworkDeployed)
+            {
+                return System.Deployment.Application.ApplicationDeployment.CurrentDeployment.CurrentVersion;
+            }
+            else
+            {
+                return Assembly.GetExecutingAssembly().GetName().Version;
+            }
         }
     }
 

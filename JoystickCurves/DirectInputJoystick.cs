@@ -10,9 +10,15 @@ namespace JoystickCurves
     public class DirectInputJoystick : DirectInputDevice
     {
 
-        public event EventHandler<EventArgs> OnAcquire;
+        public event EventHandler<EventArgs> OnUnacquire;
         public event EventHandler<CustomEventArgs<DirectInputData>> OnAxisChange;
-        public event EventHandler<CustomEventArgs<DirectInputData>> OnButtonChange;
+        public event EventHandler<CustomEventArgs<DirectInputData>> OnButtonPress;
+        public event EventHandler<CustomEventArgs<DirectInputData>> OnButtonDown;
+        public event EventHandler<CustomEventArgs<DirectInputData>> OnButtonUp;
+        public event EventHandler<EventArgs> OnError;
+        public event EventHandler<EventArgs> OnAcquire;
+
+        private object pollLock = new object();
         private const int POLL_INTERVAL = 10;
         private const int AXIS_RANGE = 32767;
         private JoystickOffset[] JoystickAxis = new JoystickOffset[] { JoystickOffset.X, 
@@ -53,54 +59,69 @@ namespace JoystickCurves
         }
         private void poll_Tick(object o)
         {
-            List<Action<DirectInputData>> action;
-            BufferedDataCollection queue = null;
-
-            _pollTimer.Change(Timeout.Infinite, Timeout.Infinite);
-
-            try
+            lock (pollLock)
             {
-                _device.Poll();
-                queue = _device.GetBufferedData();
-            }
-            catch {
-                _pollTimer.Change(Timeout.Infinite, Timeout.Infinite);
-                return;
-            }
+                List<Action<DirectInputData>> action;
+                BufferedDataCollection queue = null;
 
-            if (queue != null)
-            {
-                foreach (BufferedData data in queue)
+                try
                 {
-                    JoystickOffset dataType = (JoystickOffset)data.Offset;
+                    _device.Poll();
+                    queue = _device.GetBufferedData();
+                }
+                catch
+                {
+                    _pollTimer.Change(Timeout.Infinite, Timeout.Infinite);
+                    if (OnError != null)
+                        OnError(this, EventArgs.Empty); 
+                    return;
+                }
 
-                    DirectInputData joyData = new DirectInputData()
+                if (queue != null)
+                {
+                    foreach (BufferedData data in queue)
                     {
-                        Value = data.Data,
-                        JoystickOffset = dataType,
-                        DeviceName = Name
-                    };
+                        JoystickOffset dataType = (JoystickOffset)data.Offset;
 
-                    _actionMap.TryGetValue(dataType, out action);
+                        DirectInputData joyData = new DirectInputData()
+                        {
+                            Value = data.Data,
+                            JoystickOffset = dataType,
+                            DeviceName = Name
+                        };
 
-                    if (dataType <= JoystickOffset.PointOfView3)
-                    {
-                        joyData.Min = MinAxisValue;
-                        joyData.Max = MaxAxisValue;
+                        var eventArgs = new CustomEventArgs<DirectInputData>(joyData);
 
-                        if (OnAxisChange != null)
-                            OnAxisChange(this, new CustomEventArgs<DirectInputData>(joyData));
+                        _actionMap.TryGetValue(dataType, out action);
+
+                        if (dataType <= JoystickOffset.PointOfView3)
+                        {
+                            eventArgs.Data.Min = MinAxisValue;
+                            eventArgs.Data.Max = MaxAxisValue;
+
+                            if (OnAxisChange != null)
+                                OnAxisChange(this, eventArgs);
+                        }
+                        else
+                        {
+                            if (joyData.Value == (int)KeyState.Up)
+                            {
+                                if (OnButtonUp != null)
+                                    OnButtonUp(this, eventArgs);
+                                if (OnButtonPress != null)
+                                    OnButtonPress(this, eventArgs);
+                            }
+                            else if (joyData.Value == (int)KeyState.Down)
+                            {
+                                if (OnButtonDown != null)
+                                    OnButtonDown(this, eventArgs);
+                            }
+                        }
+                        if (action != null)
+                            action.ForEach(a => a(joyData));
                     }
-                    else
-                    {
-                        if (OnButtonChange != null)
-                            OnButtonChange(this, new CustomEventArgs<DirectInputData>(joyData));
-                    }
-                    if (action != null)
-                        action.ForEach(a => a(joyData));
                 }
             }
-            _pollTimer.Change(POLL_INTERVAL, POLL_INTERVAL);                
         }
         private void Joystick_OnAcquire(object sender, EventArgs e)
         {
@@ -129,6 +150,7 @@ namespace JoystickCurves
         }
         public void Unacquire()
         {
+            Acquired = false;
             _pollTimer.Change(Timeout.Infinite, Timeout.Infinite);
             _actionMap.Clear();
             try
@@ -146,6 +168,8 @@ namespace JoystickCurves
                 }
                 catch { }
             }
+            if (OnUnacquire != null)
+                OnUnacquire(this, EventArgs.Empty);
         }
 
         public void Acquire()
@@ -186,6 +210,20 @@ namespace JoystickCurves
                 perKeyActions.RemoveAll(a => a == action);
             }
 
+        }
+        public void DeleteActions(JoystickOffset key)
+        {
+            _actionMap.Remove(key);
+        }
+        public void AddAction(JoystickOffset key, Action<DirectInputData> action)
+        {
+            if (action == null)
+                return;
+
+            if (!_actionMap.Keys.Contains(key))
+                _actionMap.Add(key, new List<Action<DirectInputData>>());
+
+            _actionMap[key].Add(action);
         }
         public void SetActions(Dictionary<JoystickOffset, Action<DirectInputData>> actions)
         {

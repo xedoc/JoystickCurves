@@ -15,7 +15,6 @@ namespace JoystickCurves
         private Dictionary<HID_USAGES, int[]> minMaxAxis;
         private Dictionary<HID_USAGES, int> lastValue;
         private object lockSetAxis = new object();
-        private vJoy.JoystickState state;
         #endregion
 
         #region Public accessors/methods/properties
@@ -86,8 +85,6 @@ namespace JoystickCurves
             };
             _joystick.AcquireVJD(_deviceid);
             
-            state = new vJoy.JoystickState();
-
             var axisList = new HID_USAGES[] { HID_USAGES.HID_USAGE_X, HID_USAGES.HID_USAGE_Y, HID_USAGES.HID_USAGE_RZ };
             var v = 0;
             foreach (var a in axisList)

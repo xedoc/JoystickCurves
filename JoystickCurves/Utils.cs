@@ -17,6 +17,23 @@ namespace JoystickCurves
         private const string ANY = "Any";
         private const string NOTSET = "Not set";
 
+        public delegate void CallMethodCallback(Control ctrl, string methodName, object param);
+        public static void CallMethod<TControl>(this TControl ctrl, string methodName, object value) where TControl : Control
+        {
+            if (ctrl.InvokeRequired)
+            {
+                var d = new CallMethodCallback(CallMethod);
+                ctrl.Invoke(d, new object[] { ctrl, methodName, value });
+            }
+            else
+            {
+                Type t = ctrl.GetType();
+                t.InvokeMember(methodName, BindingFlags.Instance | BindingFlags.InvokeMethod| BindingFlags.Public, null, ctrl, new object[] { value });
+            }
+
+        }
+
+
         public delegate void SetPropCallback(Control ctrl, string propName, object value);
         public static void SetProperty<TControl, TValue>(this TControl ctrl, string propName, TValue value) where TControl : Control
         {
@@ -158,6 +175,14 @@ namespace JoystickCurves
                 result.Add(dev);
             }
             return result;
+        }
+
+        public static void AddEnvironmentPaths(string[] paths)
+        {
+            string path = Environment.GetEnvironmentVariable("PATH") ?? string.Empty;
+            path += ";" + string.Join(";", paths);
+
+            Environment.SetEnvironmentVariable("PATH", path);
         }
 
     }

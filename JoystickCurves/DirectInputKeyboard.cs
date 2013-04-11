@@ -14,9 +14,12 @@ namespace JoystickCurves
         public event EventHandler<CustomEventArgs<DirectInputData>> OnKeyDown;
         public event EventHandler<CustomEventArgs<DirectInputData>> OnKeyUp;
         public event EventHandler<CustomEventArgs<DirectInputData>> OnKeyPress;
+        public event EventHandler<EventArgs> OnError;
+        public event EventHandler<EventArgs> OnUnacquire;
+
 
         private const int POLL_INTERVAL = 10;
-
+        private object pollLock = new object();
         private Timer _pollTimer;
         private Device _device;
         private Dictionary<Key, List<Action<DirectInputData>>> _actionMap = new Dictionary<Key,List<Action<DirectInputData>>>();
@@ -32,54 +35,61 @@ namespace JoystickCurves
         }
         private void poll_Tick(object o)
         {
-            List<Action<DirectInputData>> action;
-            BufferedDataCollection queue = null;
-
-            _pollTimer.Change(Timeout.Infinite, Timeout.Infinite);
-
-            try
+            lock (pollLock)
             {
-                _device.Poll();
-                queue = _device.GetBufferedData();
-            }
-            catch {
-                _pollTimer.Change(Timeout.Infinite, Timeout.Infinite);
-                return;
-            }
+                List<Action<DirectInputData>> action;
+                BufferedDataCollection queue = null;
 
-            if (queue != null)
-            {
-                foreach (BufferedData data in queue)
+                try
                 {
-                    Key dataType = (Key)data.Offset;
-                    KeyState state = (KeyState)data.Data;
+                    _device.Poll();
+                    queue = _device.GetBufferedData();
+                }
+                catch
+                {
 
-                    DirectInputData keyData = new DirectInputData()
+                    _pollTimer.Change(Timeout.Infinite, Timeout.Infinite);
+                    if (OnError != null)
+                        OnError(this, EventArgs.Empty);
+
+                    return;
+                }
+
+                if (queue != null)
+                {
+                    foreach (BufferedData data in queue)
                     {
-                        Value = data.Data,
-                        KeyboardKey = dataType,
-                    };
-                    CustomEventArgs<DirectInputData> eventArg = new CustomEventArgs<DirectInputData>(keyData);
+                        Key dataType = (Key)data.Offset;
+                        KeyState state = (KeyState)data.Data;
 
-                    _actionMap.TryGetValue(dataType, out action);
+                        DirectInputData keyData = new DirectInputData()
+                        {
+                            Value = data.Data,
+                            KeyboardKey = dataType,
+                            DeviceName = Name
+                        };
+                        CustomEventArgs<DirectInputData> eventArg = new CustomEventArgs<DirectInputData>(keyData);
 
-                    if (action != null)
-                        action.ForEach(a => a(keyData));
+                        _actionMap.TryGetValue(dataType, out action);
 
-                    if (state == KeyState.Down && OnKeyDown != null)
-                        OnKeyDown(this, eventArg);
+                        if (action != null)
+                            action.ForEach(a => a(keyData));
 
-                    if (state == KeyState.Up)
-                    {
-                        if (OnKeyUp != null)
-                            OnKeyUp(this, eventArg);
-                        if (OnKeyPress != null)
-                            OnKeyPress(this, eventArg);
+                        if (state == KeyState.Down && OnKeyDown != null)
+                            OnKeyDown(this, eventArg);
+
+                        if (state == KeyState.Up)
+                        {
+                            if (OnKeyUp != null)
+                                OnKeyUp(this, eventArg);
+                            if (OnKeyPress != null)
+                                OnKeyPress(this, eventArg);
+                        }
+
                     }
-
                 }
             }
-            _pollTimer.Change(POLL_INTERVAL, POLL_INTERVAL);                
+              
         }
         private void Keyboard_OnAcquire(object sender, EventArgs e)
         {
@@ -95,7 +105,8 @@ namespace JoystickCurves
                 _device.Unacquire();
             }
             catch { }
-
+            if (OnUnacquire != null)
+                OnUnacquire(this, EventArgs.Empty);
         }
 
         public void Acquire()
@@ -118,6 +129,33 @@ namespace JoystickCurves
             if (OnAcquire != null)
                 OnAcquire(this, EventArgs.Empty);
         }
+        public void DeleteAction(Action<DirectInputData> action)
+        {
+            if (action == null)
+                return;
+
+            foreach (var perKeyActions in _actionMap.Values)
+            {
+                perKeyActions.RemoveAll(a => a == action);
+            }
+
+        }
+
+        public void DeleteActions(Key key)
+        {
+            _actionMap.Remove(key);
+        }
+        public void AddAction(Key key, Action<DirectInputData> action)
+        {
+            if (action == null)
+                return;
+
+            if (!_actionMap.Keys.Contains(key))
+                _actionMap.Add(key, new List<Action<DirectInputData>>());
+
+            _actionMap[key].Add(action);
+        }
+
         public void SetActions(Dictionary<Key, Action<DirectInputData>> actions)
         {
             if (actions == null || actions.Count <= 0)

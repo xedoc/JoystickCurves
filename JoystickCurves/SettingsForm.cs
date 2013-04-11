@@ -16,9 +16,5 @@ namespace JoystickCurves
             InitializeComponent();
         }
 
-        private void settingsTree1_Load(object sender, EventArgs e)
-        {
-
-        }
     }
 }

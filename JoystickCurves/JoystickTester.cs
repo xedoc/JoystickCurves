@@ -25,7 +25,6 @@ namespace JoystickCurves
         private Point _virtualRudderLocation;
         private Point _virtualHandleLocation;
         private Bitmap background;
-        private Region invalidateRegion;
         private Bitmap virtualCross, virtualLine, physicalCross, physicalLine;
         private System.Threading.Timer frameUpdateTimer;
 

@@ -14,6 +14,7 @@ namespace JoystickCurves
         public event EventHandler<EventArgs> OnJoystickList;
         public event EventHandler<EventArgs> OnKeyboardList;
         public event EventHandler<EventArgs> OnMouseList;
+        public object pollLock = new object();
         private String[] virtualTags = new String[] { "vjoy" };
         private Timer _pollTimer;
         private const int POLLINTERVAL = 1000;
@@ -28,11 +29,28 @@ namespace JoystickCurves
 
         private void poll_Tick(object o)
         {
-            _pollTimer.Change(Timeout.Infinite, Timeout.Infinite);
-            RefreshJoystickList();
-            RefreshKeyboardList();
-            RefreshMouseList();
-            _pollTimer.Change(POLLINTERVAL, POLLINTERVAL);
+            lock (pollLock)
+            {
+                RefreshJoystickList();
+                RefreshKeyboardList();
+                RefreshMouseList();
+            }
+        }
+
+        public void OnNoNeed(object sender, EventArgs e)
+        {
+            if (sender.GetType() == typeof(DirectInputJoystick) )
+            {
+                Joysticks.Remove((DirectInputJoystick)sender);
+            }
+            else if( sender.GetType() == typeof(DirectInputKeyboard))
+            {
+                Keyboards.Remove((DirectInputKeyboard)sender);
+            }
+            else if ( sender.GetType() == typeof(DirectInputMouse))
+            {
+                Mouses.Remove((DirectInputMouse)sender);
+            }
         }
 
         public void RefreshMouseList()
@@ -55,6 +73,8 @@ namespace JoystickCurves
             foreach (DeviceInstance dev in addList)
             {
                 var mouse = new DirectInputMouse(dev);
+                mouse.OnError +=new EventHandler<EventArgs>(OnNoNeed);
+                mouse.OnUnacquire += new EventHandler<EventArgs>(OnNoNeed);
 
                 Mouses.Add(mouse);
                 if (Mouses.Where(d => d.Name.StartsWith(mouse.Name)).Count() > 1)
@@ -69,6 +89,7 @@ namespace JoystickCurves
                 OnMouseList(this, EventArgs.Empty);
 
         }
+
 
         public void RefreshKeyboardList()
         {
@@ -90,6 +111,8 @@ namespace JoystickCurves
             foreach (DeviceInstance dev in addList)
             {
                 var keyboard = new DirectInputKeyboard(dev);
+                keyboard.OnError += new EventHandler<EventArgs>(OnNoNeed);
+                keyboard.OnUnacquire += new EventHandler<EventArgs>(OnNoNeed);
 
                 Keyboards.Add(keyboard);
                 if (Keyboards.Where(d => d.Name.StartsWith(keyboard.Name)).Count() > 1)
@@ -125,17 +148,19 @@ namespace JoystickCurves
 
             foreach (DeviceInstance dev in addList)
             {                
-                var gameController = new DirectInputJoystick(dev, GetDeviceType(dev.ProductName));
-                
-                if (gameController.Type == DeviceType.Virtual)
+                var joystick = new DirectInputJoystick(dev, GetDeviceType(dev.ProductName));
+                joystick.OnError += new EventHandler<EventArgs>(OnNoNeed);
+                joystick.OnUnacquire += new EventHandler<EventArgs>(OnNoNeed);
+
+                if (joystick.Type == DeviceType.Virtual)
                 {
-                    gameController.OnButtonChange += new EventHandler<CustomEventArgs<DirectInputData>>(gameController_OnButtonChange);
+                    joystick.OnButtonPress += new EventHandler<CustomEventArgs<DirectInputData>>(gameController_OnButtonChange);
                 }
                 
-                Joysticks.Add(gameController);
-                if (Joysticks.Where(d => d.Name.StartsWith(gameController.Name)).Count() > 1)
+                Joysticks.Add(joystick);
+                if (Joysticks.Where(d => d.Name.StartsWith(joystick.Name)).Count() > 1)
                 {
-                    Joysticks.Where(d => d.Name.StartsWith(gameController.Name) && d.Index == 0).ToList().ForEach(
+                    Joysticks.Where(d => d.Name.StartsWith(joystick.Name) && d.Index == 0).ToList().ForEach(
                             d => d.Index = Joysticks.Max(dm => dm.Index) + 1
                         );
                 }
@@ -170,7 +195,7 @@ namespace JoystickCurves
             
             Joysticks[i].VirtualJoystick = new VirtualJoystick(deviceId);
 
-            device.OnButtonChange -= gameController_OnButtonChange;
+            device.OnButtonPress -= gameController_OnButtonChange;
             device.VirtualJoystick.SetButton(device.VirtualJoystick.DeviceID, false);           
         }
 
