@@ -19,6 +19,10 @@ namespace JoystickCurves
         private const int POLLINTERVAL = 1000;
         public DeviceManager()
         {
+            Joysticks = new List<DirectInputJoystick>();
+            Mouses = new List<DirectInputMouse>();
+            Keyboards = new List<DirectInputKeyboard>();
+
             _pollTimer = new Timer(new TimerCallback(poll_Tick), null, 0, POLLINTERVAL);           
         }
 
@@ -104,8 +108,8 @@ namespace JoystickCurves
         public void RefreshJoystickList()
         {
             List<DeviceInstance> joystickInstances;
-
-            joystickInstances= Utils.DevList(Manager.GetDevices(DeviceClass.GameControl, EnumDevicesFlags.AttachedOnly));
+            var devices = Manager.GetDevices(DeviceClass.GameControl, EnumDevicesFlags.AttachedOnly );
+            joystickInstances= Utils.DevList(devices);
 
             if (Joysticks == null)
                 Joysticks = new List<DirectInputJoystick>();

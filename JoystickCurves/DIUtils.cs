@@ -10,6 +10,9 @@ namespace JoystickCurves
     {
         public static JoystickOffset ID( String name )
         {
+            if (String.IsNullOrEmpty(name) )
+                return 0;
+
             var pair = AllNames.FirstOrDefault(n => n.Value.ToLower() == name.ToLower());
             if( pair.Equals(new KeyValuePair<JoystickOffset,String>()) )
                 return 0;
@@ -18,6 +21,9 @@ namespace JoystickCurves
         }
         public static HID_USAGES VirtualID(String name)
         {
+            if (String.IsNullOrEmpty(name))
+                return 0;
+
             if (AllNames.ContainsValue(name))
                 return VirtualIDs[ID(name)];
             else

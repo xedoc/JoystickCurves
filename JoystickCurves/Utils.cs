@@ -111,6 +111,11 @@ namespace JoystickCurves
             {
                 currentDevice = items.Count > 0 ? items[0].Text : NOTSET;
             }
+            if (!items.Exists(d => d.Text == currentDevice))
+                 currentDevice = items.Where( d => d.Text != NOTSET ).Select( d => d.Text ).FirstOrDefault();
+
+            if (currentDevice == null)
+                currentDevice = NOTSET;
 
             items.Insert(0, new ToolStripMenuItem(NOTSET) { CheckOnClick = true });
             foreach (var d in items)

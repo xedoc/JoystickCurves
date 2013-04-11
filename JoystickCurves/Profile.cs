@@ -112,6 +112,63 @@ namespace JoystickCurves
             get;
             set;
         }
+
+        public Profile GetCopy()
+        {
+            Profile profile = new Profile(this.Title);
+            foreach (ProfileTab p in this.Tabs)
+            {
+                profile.Tabs.Add(new ProfileTab()
+                {
+                    CurvePoints = new BezierCurvePoints(p.CurvePoints.PointsCount)
+                    {
+                        RawPoints = p.CurvePoints.RawPoints,                        
+                        DrawHeight = p.CurvePoints.DrawHeight,
+                        DrawWidth = p.CurvePoints.DrawWidth
+                    },
+                    DestinationAxis = p.DestinationAxis,
+                    DestinationDevice = p.DestinationDevice,
+                    SourceAxis = p.SourceAxis,
+                    SourceDevice = p.SourceDevice,
+                    TabTitle = p.TabTitle
+                });
+            }
+            profile.HotKeyJoystickName = this.HotKeyJoystickName;
+            profile.HotKeyKeyboardName = this.HotKeyKeyboardName;
+            profile.HotKeyMouseName = this.HotKeyMouseName;
+            profile.JoystickHotKey = this.JoystickHotKey;
+            profile.MouseHotKey = this.MouseHotKey;
+            profile.KeyboardHotKey = this.KeyboardHotKey;
+
+            return profile;
+        }
+        public void CopyTo( ref Profile profile)
+        {
+            profile.Tabs.Clear();
+            foreach (ProfileTab p in this.Tabs)
+            {
+                profile.Tabs.Add(new ProfileTab()
+                {
+                    CurvePoints = new BezierCurvePoints(p.CurvePoints.PointsCount)
+                    {
+                        RawPoints = p.CurvePoints.RawPoints,
+                        DrawHeight = p.CurvePoints.DrawHeight,
+                        DrawWidth = p.CurvePoints.DrawWidth
+                    },
+                    DestinationAxis = p.DestinationAxis,
+                    DestinationDevice = p.DestinationDevice,
+                    SourceAxis = p.SourceAxis,
+                    SourceDevice = p.SourceDevice,
+                    TabTitle = p.TabTitle
+                });
+            }
+            profile.HotKeyJoystickName = this.HotKeyJoystickName;
+            profile.HotKeyKeyboardName = this.HotKeyKeyboardName;
+            profile.HotKeyMouseName = this.HotKeyMouseName;
+            profile.JoystickHotKey = this.JoystickHotKey;
+            profile.MouseHotKey = this.MouseHotKey;
+            profile.KeyboardHotKey = this.KeyboardHotKey;
+        }
     }
     public class ProfileTab
     {

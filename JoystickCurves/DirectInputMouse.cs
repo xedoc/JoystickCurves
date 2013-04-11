@@ -108,14 +108,21 @@ namespace JoystickCurves
 
         public void Acquire()
         {
-            _device = new Device(Guid);
-            _device.SetDataFormat(DeviceDataFormat.Mouse);
-            _device.Properties.BufferSize = 16;
-            _device.SetCooperativeLevel(Process.GetCurrentProcess().MainWindowHandle, 
-                CooperativeLevelFlags.NonExclusive | CooperativeLevelFlags.Background);
+            try
+            {
 
-            _device.Acquire();
-           
+                _device = new Device(Guid);
+                _device.SetDataFormat(DeviceDataFormat.Mouse);
+                _device.Properties.BufferSize = 16;
+                _device.SetCooperativeLevel(Process.GetCurrentProcess().MainWindowHandle,
+                    CooperativeLevelFlags.NonExclusive | CooperativeLevelFlags.Background);
+
+                _device.Acquire();
+            }
+            catch
+            {
+                return;
+            }
             _pollTimer.Change(0, POLL_INTERVAL);
             
             if (OnAcquire != null)

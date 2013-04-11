@@ -150,23 +150,42 @@ namespace JoystickCurves
 
         public void Acquire()
         {
-            _device = new Device(Guid);
-            _device.SetDataFormat(DeviceDataFormat.Joystick);
-            _device.Properties.BufferSize = 16;
-            _device.SetCooperativeLevel(Process.GetCurrentProcess().MainWindowHandle, 
-                CooperativeLevelFlags.NonExclusive | CooperativeLevelFlags.Background);
-
-            foreach (DeviceObjectInstance d in _device.Objects)
+            try
             {
-                if ((d.ObjectId & (int)DeviceObjectTypeFlags.Axis) != 0)
-                    _device.Properties.SetRange(ParameterHow.ById, d.ObjectId, new InputRange(MinAxisValue, MaxAxisValue));
+                _device = new Device(Guid);
+                _device.SetDataFormat(DeviceDataFormat.Joystick);
+                _device.Properties.BufferSize = 16;
+                _device.SetCooperativeLevel(Process.GetCurrentProcess().MainWindowHandle,
+                    CooperativeLevelFlags.NonExclusive | CooperativeLevelFlags.Background);
+
+
+                foreach (DeviceObjectInstance d in _device.Objects)
+                {
+                    if ((d.ObjectId & (int)DeviceObjectTypeFlags.Axis) != 0)
+                        _device.Properties.SetRange(ParameterHow.ById, d.ObjectId, new InputRange(MinAxisValue, MaxAxisValue));
+                }
+                _device.Acquire();
+
             }
-            _device.Acquire();
-           
+            catch
+            {
+                return;
+            }
             _pollTimer.Change(0, POLL_INTERVAL);
             
             if (OnAcquire != null)
                 OnAcquire(this, EventArgs.Empty);
+        }
+        public void DeleteAction(Action<DirectInputData> action)
+        {
+            if (action == null)
+                return;
+
+            foreach (var perKeyActions in _actionMap.Values)
+            {
+                perKeyActions.RemoveAll(a => a == action);
+            }
+
         }
         public void SetActions(Dictionary<JoystickOffset, Action<DirectInputData>> actions)
         {
@@ -175,10 +194,7 @@ namespace JoystickCurves
 
             foreach (var inAction in actions.Values.Distinct())
             {
-                foreach (var perKeyActions in _actionMap.Values)
-                {
-                    perKeyActions.RemoveAll( a => a == inAction);
-                }
+                DeleteAction(inAction);
             }
             foreach (var k in actions.Keys)
             {

@@ -16,7 +16,7 @@ namespace JoystickCurves
         private const string GC_VALMEMBER = "Name";
         private const string AXIS_DISPMEMBER = "Name";
         private const string AXIS_VALMEMBER = "Name";
-
+        private const string DEFITEM = "Looking for joysticks...";
         private List<String> _sourceAxis, _destAxis, _sourceDevices, _destDevices;
         private BindingSource _destContrBSource, _sourceContrBSource, _destAxisBSource, _sourceAxisBSource;
         private string _selectedDestDevice, _selectedDestAxis, _selectedSourceDevice, _selectedSourceAxis;
@@ -32,6 +32,18 @@ namespace JoystickCurves
         public AxisEditor()
         {
             InitializeComponent();
+            var defString = 
+            comboDestAxis.Items.Add(DEFITEM);
+            comboDestDevice.Items.Add(DEFITEM);
+            comboSourceAxis.Items.Add(DEFITEM);
+            comboSourceDevice.Items.Add(DEFITEM);
+
+            comboDestDevice.SelectedIndex = 0;
+            comboDestAxis.SelectedIndex = 0;
+            comboDestDevice.SelectedIndex = 0;
+            comboSourceAxis.SelectedIndex = 0;
+            comboSourceDevice.SelectedIndex = 0;
+
             Type = CurveType.Bezier;
             CurrentCurve = curveResponse.Points;
             _selectedDestAxis = NOTSET;
