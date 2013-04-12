@@ -6,6 +6,8 @@ using System.Net;
 using System.IO;
 using System.Drawing;
 using dot.Json.Linq;
+using System.Threading;
+using System.Diagnostics;
 
 namespace JoystickCurves
 {
@@ -19,42 +21,124 @@ namespace JoystickCurves
         public event EventHandler<SteamAPI.SteamEvent> OnMessage;
         public event EventHandler<SteamAPI.SteamEvent> OnFriendStateChange;
         public event EventHandler<SteamAPI.SteamEvent> OnTyping;
+        public event EventHandler<EventArgs> OnGuardCode;
+        public event EventHandler<EventArgs> OnLoginError;
 
+        private object lockConnect = new object();
+        private bool runPoll = false;
         private SteamAPI api;
-
-        public bool LoggedIn
+        public Steam()
+        {
+            api = new SteamAPI();
+        }
+        public bool Connecting
         {
             get;
             set;
+        }
+        public bool LoginFailed
+        {
+            get;
+            set;
+        }
+        public void Start()
+        {
+            if (!runPoll)
+            {
+                runPoll = true;
+                ThreadPool.QueueUserWorkItem(t => Poll());
+            }
+        }
+        public void Stop()
+        {
+            if (runPoll)
+            {
+                runPoll = false;
+            }
+        }
+        public bool LoggedIn
+        {
+            get { return api.loginStatus == SteamAPI.LoginStatus.LoginSuccessful; }
         }
         public String Token
         {
             get { return api.accessToken; }
         }
+
+        private void Poll()
+        {
+            while (runPoll)
+            {
+                if (LoggedIn)
+                    api.Poll();
+            }
+        }
+
+        public int FriendsNumber
+        {
+            get { return api.GetFriends().Count; }
+        }
+        public List<SteamAPI.User> GetFriends()
+        {
+            return api.GetFriends().Select(f => api.GetUserInfo(f.steamid)).ToList();
+        }
+
+        public SteamAPI.User GetFriendByNick(String nick)
+        {
+            var friend = api.GetFriends().Select(f => api.GetUserInfo(f.steamid)).Where( u => u.nickname == nick ).FirstOrDefault();
+            return friend;
+        }
+        public SteamAPI.User GetFirstFriend()
+        {
+            var firstFriend = api.GetFriends().FirstOrDefault();
+            if (firstFriend == null)
+                return null;
+
+            return api.GetUserInfo(firstFriend.steamid);
+        }
         public SteamAPI.LoginStatus Connect( string user, string password, string code, string token )
         {
-            api = new SteamAPI();
-            SteamAPI.LoginStatus status = SteamAPI.LoginStatus.LoginFailed;
-
-            api.Logon +=new EventHandler<SteamAPI.SteamEvent>(api_Logon);
-            api.NewMessage +=new EventHandler<SteamAPI.SteamEvent>(api_NewMessage);
-            api.FriendStateChange+=new EventHandler<SteamAPI.SteamEvent>(api_FriendStateChange);
-            api.Typing +=new EventHandler<SteamAPI.SteamEvent>(api_Typing);
-
-            if (!String.IsNullOrEmpty(token))
+            lock (lockConnect)
             {
-                status = api.Authenticate(token);
-            }
-            else if (!String.IsNullOrEmpty(code))
-            {
-                status = api.Authenticate(user, password, code);
-            }
-            else if (!String.IsNullOrEmpty(user) && !String.IsNullOrEmpty(password))
-            {
-                status = api.Authenticate(user, password);
+                Connecting = true;
+                api = new SteamAPI();
+                SteamAPI.LoginStatus status = SteamAPI.LoginStatus.LoginFailed;
+
+                api.Logon += new EventHandler<SteamAPI.SteamEvent>(api_Logon);
+                api.NewMessage += new EventHandler<SteamAPI.SteamEvent>(api_NewMessage);
+                api.FriendStateChange += new EventHandler<SteamAPI.SteamEvent>(api_FriendStateChange);
+                api.Typing += new EventHandler<SteamAPI.SteamEvent>(api_Typing);
+
+                if (!String.IsNullOrEmpty(token))
+                {
+                    status = api.Authenticate(token);
+                }
+                else if (!String.IsNullOrEmpty(code))
+                {
+                    status = api.Authenticate(user, password, code);
+                }
+                else if (!String.IsNullOrEmpty(user) && !String.IsNullOrEmpty(password))
+                {
+                    status = api.Authenticate(user, password);
+                    if (status == SteamAPI.LoginStatus.SteamGuard)
+                    {
+                        if (OnGuardCode != null)
+                            OnGuardCode(this, EventArgs.Empty);
+                    }
+                }
+
+                if (status == SteamAPI.LoginStatus.LoginFailed)
+                {
+                    if (OnLoginError != null)
+                        OnLoginError(this, EventArgs.Empty);
+                    
+                    LoginFailed = true;
+                    Connecting = false;
+                }
+
+                return status;
             }
 
-            return status;
         }
 
         void  api_FriendStateChange(object sender, SteamAPI.SteamEvent e)
@@ -77,14 +161,26 @@ namespace JoystickCurves
 
         void  api_Logon(object sender, SteamAPI.SteamEvent e)
         {
-            LoggedIn = true;
             if (OnLogon != null)
                 OnLogon(this, e);
+            LoginFailed = false;
+            Connecting = false;
         }
 
-        public void SendMessage(String text)
+        public void SendMessage(String nick, String text)
         {
-            //api.SendMessage();
+            SteamAPI.User user;
+            if (LoggedIn)
+            {
+                if (String.IsNullOrEmpty(nick))
+                    user = GetFirstFriend();
+                else
+                    user = GetFriendByNick(nick);
+
+                if (user != null && user.status == SteamAPI.UserStatus.Online)
+                    api.SendMessage(user, text);
+            }
+            
         }
     }
     public class SteamAPI

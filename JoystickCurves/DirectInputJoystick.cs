@@ -163,7 +163,6 @@ namespace JoystickCurves
             {
                 try
                 {
-                    _virtualJoystick.Reset();
                     _virtualJoystick.Unacquire();
                 }
                 catch { }

@@ -1,4 +1,4 @@
-﻿namespace Ubiquitous
+﻿namespace JoystickCurves
 {
     partial class InputBox
     {
