@@ -60,10 +60,10 @@ namespace JoystickCurves
             settingsForm.OnReset += new EventHandler<EventArgs>(settingsForm_OnReset);
 
 <<<<<<< HEAD
+=======
             InitializeComponent();
 
-=======
->>>>>>> Dinput
+>>>>>>> 4cae017278612dc23ab84d53f9be5fe2a62cd939
             checkBoxHotKey.DataBindings.Add(new Binding("Checked", this, "WaitingHotKey",false,DataSourceUpdateMode.OnPropertyChanged,null));
 
             _virtualJoysticks = new List<VirtualJoystick>();
@@ -503,11 +503,11 @@ namespace JoystickCurves
             Text = String.Format("{0} Dev. ver: {1}", Text, GetRunningVersion());
             LoadSettings();
 <<<<<<< HEAD
+            ConnectSteam();
+=======
             if (_settings.globalSteamEnable)
                 ThreadPool.QueueUserWorkItem(t => ConnectSteam());
-=======
-            ConnectSteam();
->>>>>>> Dinput
+>>>>>>> 4cae017278612dc23ab84d53f9be5fe2a62cd939
 
             _deviceManager = new DeviceManager();
             _deviceManager.OnJoystickList += new EventHandler<EventArgs>(deviceManager_OnJoystickList);
