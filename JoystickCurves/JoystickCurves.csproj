@@ -33,6 +33,7 @@
     <WebPage>publish.htm</WebPage>
     <OpenBrowserOnPublish>false</OpenBrowserOnPublish>
     <ApplicationRevision>3</ApplicationRevision>
+    <ApplicationRevision>5</ApplicationRevision>
     <ApplicationVersion>0.0.0.%2a</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
     <PublishWizardCompleted>true</PublishWizardCompleted>
@@ -235,12 +236,12 @@
   <ItemGroup>
     <PublishFile Include="vJoyInterfaceWrap">
       <Visible>False</Visible>
+      <PublishState>Include</PublishState>
+      <IncludeHash>True</IncludeHash>
       <Group>
       </Group>
       <TargetPath>
       </TargetPath>
-      <PublishState>Include</PublishState>
-      <IncludeHash>True</IncludeHash>
       <FileType>Assembly</FileType>
     </PublishFile>
   </ItemGroup>

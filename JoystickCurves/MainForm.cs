@@ -44,7 +44,7 @@ namespace JoystickCurves
         private object lockSetProfile = new object();
         private Steam _steam;
         private SaitekMFD _saitek;
-        
+        SettingsForm settingsForm;
 
         public MainForm()
         {         
@@ -54,7 +54,11 @@ namespace JoystickCurves
                 this.Close();
                 return;
             }
-            
+            _settings = Properties.Settings.Default;
+            _settings.PropertyChanged += new PropertyChangedEventHandler(_settings_PropertyChanged);
+            settingsForm = new SettingsForm();
+            settingsForm.OnReset += new EventHandler<EventArgs>(settingsForm_OnReset);
+
             InitializeComponent();
 
             checkBoxHotKey.DataBindings.Add(new Binding("Checked", this, "WaitingHotKey",false,DataSourceUpdateMode.OnPropertyChanged,null));
@@ -71,6 +75,17 @@ namespace JoystickCurves
 
             debugForm = new DebugForm();
         }
+
+        void settingsForm_OnReset(object sender, EventArgs e)
+        {
+            _settings = Properties.Settings.Default;
+            _settings.CurrentProfile = null;
+            _profileManager = null;
+            _currentProfile = null;
+            LoadSettings();
+            _deviceManager = new DeviceManager();
+
+        }
         private void ConnectSaitek()
         {
             if (_settings.saitekX52ProEnable)
@@ -82,9 +97,9 @@ namespace JoystickCurves
 
         private void SendSteamMessage( String text)
         {
-            if (_settings.globalSteamEnable && _steam.LoggedIn)
+            if (_settings.globalSteamEnable)
             {
-                _steam.SendMessage(_currentProfile.Title);
+                _steam.SendMessage(null, text);
             }
         }
         private void ConnectSteam()
@@ -93,32 +108,42 @@ namespace JoystickCurves
                 _steam = new Steam();
             if( _settings.globalSteamEnable )
             {
-                SteamAPI.LoginStatus result = SteamAPI.LoginStatus.LoginFailed;
-
-                if( !String.IsNullOrEmpty(_settings.steamToken))
-                    result = _steam.Connect(String.Empty,String.Empty,String.Empty,_settings.steamToken);
-
-                if( result != SteamAPI.LoginStatus.LoginSuccessful )
+                if (_steam == null)
                 {
-                    if( !String.IsNullOrEmpty(_settings.steamLogin ) &&
-                        !String.IsNullOrEmpty(_settings.steamPassword) )
-                    {
-                        result = _steam.Connect(_settings.steamLogin, _settings.steamPassword, String.Empty, String.Empty);
-                        if (result == SteamAPI.LoginStatus.SteamGuard)
-                        {
-                            var code = InputBox.Show("Check your mail for Steam Guard Code and enter it here:");
-                            if (!string.IsNullOrEmpty(code))
-                            {
-                                result = _steam.Connect(_settings.steamLogin, _settings.steamPassword, code, String.Empty);
-                            }
-                        }
-                    }
+                    _steam = new Steam();
+                    _steam.OnGuardCode += new EventHandler<EventArgs>(_steam_OnGuardCode);
+                    _steam.OnLoginError += new EventHandler<EventArgs>(_steam_OnLoginError);
+                    _steam.OnLogon += new EventHandler<SteamAPI.SteamEvent>(_steam_OnLogon);
+                    _steam.OnMessage += new EventHandler<SteamAPI.SteamEvent>(_steam_OnMessage);
                 }
-                if (result == SteamAPI.LoginStatus.LoginSuccessful)
-                    _settings.steamToken = _steam.Token;
-                else
-                    MessageBox.Show("Steam bot login failed! Check your settings and try again!");
+
+                if (String.IsNullOrEmpty(_settings.steamLogin) || String.IsNullOrEmpty(_settings.steamPassword))
+                    return;
+
+                if( !_steam.LoggedIn && !_steam.Connecting)
+                    _steam.Connect(_settings.steamLogin, _settings.steamPassword, String.Empty, _settings.steamToken);
             }
+        }
+
+        void _steam_OnMessage(object sender, SteamAPI.SteamEvent e)
+        {
+        }
+
+        void _steam_OnLogon(object sender, SteamAPI.SteamEvent e)
+        {
+            _steam.Start();
+        }
+
+        void _steam_OnLoginError(object sender, EventArgs e)
+        {
+            _steam.Stop();
+            MessageBox.Show("Steam login failed! Check your login and password!");
+        }
+
+        void _steam_OnGuardCode(object sender, EventArgs e)
+        {
+            var code = InputBox.Show("Check your mail for Steam Guard Code and enter it here:");
+            _steam.Connect(_settings.steamLogin, _settings.steamPassword, code, _settings.steamToken);
         }
         private bool CheckRunningInstances()
         {
@@ -295,7 +320,7 @@ namespace JoystickCurves
 
         private void LoadSettings()
         {
-            _settings = Properties.Settings.Default;
+
             _settings.PropertyChanged += new PropertyChangedEventHandler(_settings_PropertyChanged);
             if (!_settings.generalStartMinimized)
             {
@@ -364,22 +389,38 @@ namespace JoystickCurves
 
         void _settings_PropertyChanged(object sender, PropertyChangedEventArgs e)
         {
-            if (e.PropertyName == "generalAutoStart")
+            switch (e.PropertyName)
             {
-                if (_settings.generalAutoStart)
-                {
-                    Utils.AddToStartup();
-                }
-                else
-                {
-                    Utils.RemoveFromStartup();
-                }
+                case "generalAutoStart":
+                    if (_settings.generalAutoStart)
+                    {
+                        Utils.AddToStartup();
+                    }
+                    else
+                    {
+                        Utils.RemoveFromStartup();
+                    }
+                    break;
+                case "globalSteamEnable":
+                    if (_settings.globalSteamEnable)
+                    {
+                        if (_steam != null && _steam.Connecting)
+                            return;
+
+                        ThreadPool.QueueUserWorkItem(t => ConnectSteam());
+                    }
+                    else
+                    {
+                        if( _steam != null )
+                            _steam.Stop();
+                    }
+                    break;
             }
+
         }
 
         void ShowSettings()
-        {
-            SettingsForm settingsForm = new SettingsForm();
+        {            
             settingsForm.Show();
         }
 
@@ -459,6 +500,7 @@ namespace JoystickCurves
             Text = String.Format("{0} Dev. ver: {1}", Text, GetRunningVersion());
             LoadSettings();
             ConnectSteam();
+
 
             _deviceManager = new DeviceManager();
             _deviceManager.OnJoystickList += new EventHandler<EventArgs>(deviceManager_OnJoystickList);
@@ -1036,7 +1078,12 @@ namespace JoystickCurves
 
         private void buttonSettings_Click(object sender, EventArgs e)
         {
-            SettingsForm settingsForm = new SettingsForm();
+            if( settingsForm == null )
+            {
+                settingsForm = new SettingsForm();
+                settingsForm.OnReset +=new EventHandler<EventArgs>(settingsForm_OnReset);
+            }
+
             settingsForm.Show();
         }
 
