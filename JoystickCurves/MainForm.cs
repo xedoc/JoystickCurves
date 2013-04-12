@@ -57,8 +57,6 @@ namespace JoystickCurves
             
             InitializeComponent();
 
-            ConnectSteam();
-
             checkBoxHotKey.DataBindings.Add(new Binding("Checked", this, "WaitingHotKey",false,DataSourceUpdateMode.OnPropertyChanged,null));
 
             _virtualJoysticks = new List<VirtualJoystick>();
@@ -91,6 +89,8 @@ namespace JoystickCurves
         }
         private void ConnectSteam()
         {
+            if (_steam == null)
+                _steam = new Steam();
             if( _settings.globalSteamEnable )
             {
                 SteamAPI.LoginStatus result = SteamAPI.LoginStatus.LoginFailed;
@@ -210,7 +210,7 @@ namespace JoystickCurves
         private void ActionSetTesterVirtualX(DirectInputData data)
         {
             Utils.SetProperty<JoystickTester, DirectInputData>(joystickTester, "VirtualAxisRoll", data);
-            Utils.SetProperty<Label, String>(labelPitchPercent, "Text", data.PercentValue.ToString() + "%");
+            Utils.SetProperty<Label, String>(labelRollPercent, "Text", data.PercentValue.ToString() + "%");
         }
         private void ActionSetTesterVirtualY(DirectInputData data)
         {
@@ -458,6 +458,7 @@ namespace JoystickCurves
         {
             Text = String.Format("{0} Dev. ver: {1}", Text, GetRunningVersion());
             LoadSettings();
+            ConnectSteam();
 
             _deviceManager = new DeviceManager();
             _deviceManager.OnJoystickList += new EventHandler<EventArgs>(deviceManager_OnJoystickList);

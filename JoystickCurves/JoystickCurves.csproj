@@ -18,7 +18,7 @@
     <PublishUrl>ftp://173.254.28.24/public_html/joystickcurves/</PublishUrl>
     <Install>true</Install>
     <InstallFrom>Web</InstallFrom>
-    <UpdateEnabled>false</UpdateEnabled>
+    <UpdateEnabled>true</UpdateEnabled>
     <UpdateMode>Foreground</UpdateMode>
     <UpdateInterval>7</UpdateInterval>
     <UpdateIntervalUnits>Days</UpdateIntervalUnits>
@@ -29,8 +29,10 @@
     <SupportUrl>http://www.xedocproject.com</SupportUrl>
     <ProductName>JoystickCurves</ProductName>
     <PublisherName>JoystickCurves</PublisherName>
+    <CreateWebPageOnPublish>true</CreateWebPageOnPublish>
+    <WebPage>publish.htm</WebPage>
     <OpenBrowserOnPublish>false</OpenBrowserOnPublish>
-    <ApplicationRevision>2</ApplicationRevision>
+    <ApplicationRevision>3</ApplicationRevision>
     <ApplicationVersion>0.0.0.%2a</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
     <PublishWizardCompleted>true</PublishWizardCompleted>
@@ -243,7 +245,7 @@
     </PublishFile>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\Users\meshkov\Documents\GitHub\Ubiquitous\dotJson\Src\Newtonsoft.Json\dotJSON.csproj">
+    <ProjectReference Include="..\dotJson\Src\Newtonsoft.Json\dotJSON.csproj">
       <Project>{A9AE40FF-1A21-414A-9FE7-3BE13644CC6D}</Project>
       <Name>dotJSON</Name>
     </ProjectReference>

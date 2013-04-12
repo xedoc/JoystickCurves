@@ -154,7 +154,7 @@ namespace JoystickCurves
 
                 if (joystick.Type == DeviceType.Virtual)
                 {
-                    joystick.OnButtonPress += new EventHandler<CustomEventArgs<DirectInputData>>(gameController_OnButtonChange);
+                    joystick.OnButtonDown += new EventHandler<CustomEventArgs<DirectInputData>>(gameController_OnButtonDown);
                 }
                 
                 Joysticks.Add(joystick);
@@ -183,7 +183,7 @@ namespace JoystickCurves
             vjoy.SetButton(vjoy.DeviceID, true);
         }
 
-        void gameController_OnButtonChange(object sender, CustomEventArgs<DirectInputData> e)
+        void gameController_OnButtonDown(object sender, CustomEventArgs<DirectInputData> e)
         {
             DirectInputJoystick device = Joysticks.Where( d => d.Name == e.Data.DeviceName).FirstOrDefault();
             if (device == null)
@@ -195,7 +195,7 @@ namespace JoystickCurves
             
             Joysticks[i].VirtualJoystick = new VirtualJoystick(deviceId);
 
-            device.OnButtonPress -= gameController_OnButtonChange;
+            device.OnButtonPress -= gameController_OnButtonDown;
             device.VirtualJoystick.SetButton(device.VirtualJoystick.DeviceID, false);           
         }
 

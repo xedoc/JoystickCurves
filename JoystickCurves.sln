@@ -5,7 +5,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JoystickCurves", "JoystickC
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "mycontrol", "mycontrol\mycontrol.csproj", "{3E26D5F2-9EFF-4F76-9711-79E611F61ACB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "dotJSON", "..\..\Users\meshkov\Documents\GitHub\Ubiquitous\dotJson\Src\Newtonsoft.Json\dotJSON.csproj", "{A9AE40FF-1A21-414A-9FE7-3BE13644CC6D}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "dotJSON", "dotJson\Src\Newtonsoft.Json\dotJSON.csproj", "{A9AE40FF-1A21-414A-9FE7-3BE13644CC6D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
