@@ -68,59 +68,60 @@ namespace JoystickCurves
                 {
                     _device.Poll();
                     queue = _device.GetBufferedData();
+
+                    if (queue != null)
+                    {
+                        foreach (BufferedData data in queue)
+                        {
+                            JoystickOffset dataType = (JoystickOffset)data.Offset;
+
+                            DirectInputData joyData = new DirectInputData()
+                            {
+                                Value = data.Data,
+                                JoystickOffset = dataType,
+                                DeviceName = Name
+                            };
+
+                            var eventArgs = new CustomEventArgs<DirectInputData>(joyData);
+
+                            _actionMap.TryGetValue(dataType, out action);
+
+                            if (dataType <= JoystickOffset.PointOfView3)
+                            {
+                                eventArgs.Data.Min = MinAxisValue;
+                                eventArgs.Data.Max = MaxAxisValue;
+
+                                if (OnAxisChange != null)
+                                    OnAxisChange(this, eventArgs);
+                            }
+                            else
+                            {
+                                if (joyData.Value == (int)KeyState.Up)
+                                {
+                                    if (OnButtonUp != null)
+                                        OnButtonUp(this, eventArgs);
+                                    if (OnButtonPress != null)
+                                        OnButtonPress(this, eventArgs);
+                                }
+                                else if (joyData.Value == (int)KeyState.Down)
+                                {
+                                    if (OnButtonDown != null)
+                                        OnButtonDown(this, eventArgs);
+                                }
+                            }
+                            if (action != null)
+                                action.ForEach(a => a(joyData));
+                        }
+                    }
                 }
                 catch
                 {
                     _pollTimer.Change(Timeout.Infinite, Timeout.Infinite);
                     if (OnError != null)
-                        OnError(this, EventArgs.Empty); 
+                        OnError(this, EventArgs.Empty);
                     return;
                 }
 
-                if (queue != null)
-                {
-                    foreach (BufferedData data in queue)
-                    {
-                        JoystickOffset dataType = (JoystickOffset)data.Offset;
-
-                        DirectInputData joyData = new DirectInputData()
-                        {
-                            Value = data.Data,
-                            JoystickOffset = dataType,
-                            DeviceName = Name
-                        };
-
-                        var eventArgs = new CustomEventArgs<DirectInputData>(joyData);
-
-                        _actionMap.TryGetValue(dataType, out action);
-
-                        if (dataType <= JoystickOffset.PointOfView3)
-                        {
-                            eventArgs.Data.Min = MinAxisValue;
-                            eventArgs.Data.Max = MaxAxisValue;
-
-                            if (OnAxisChange != null)
-                                OnAxisChange(this, eventArgs);
-                        }
-                        else
-                        {
-                            if (joyData.Value == (int)KeyState.Up)
-                            {
-                                if (OnButtonUp != null)
-                                    OnButtonUp(this, eventArgs);
-                                if (OnButtonPress != null)
-                                    OnButtonPress(this, eventArgs);
-                            }
-                            else if (joyData.Value == (int)KeyState.Down)
-                            {
-                                if (OnButtonDown != null)
-                                    OnButtonDown(this, eventArgs);
-                            }
-                        }
-                        if (action != null)
-                            action.ForEach(a => a(joyData));
-                    }
-                }
             }
         }
         private void Joystick_OnAcquire(object sender, EventArgs e)
@@ -192,6 +193,9 @@ namespace JoystickCurves
             }
             catch
             {
+                if (OnError != null)
+                    OnError(this, EventArgs.Empty);
+
                 return;
             }
             _pollTimer.Change(0, POLL_INTERVAL);

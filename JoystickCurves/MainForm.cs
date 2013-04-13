@@ -41,6 +41,7 @@ namespace JoystickCurves
         private Mutex appMutex;
         private const string INSTANCENAME = "JoystickCurvesInstance";
         private Form debugForm;
+        private bool lastEnableSaitek = false, lastEnableSteam = false;
         private object lockSetProfile = new object();
         private Steam _steam;
         private SaitekMFD _saitek;
@@ -61,6 +62,7 @@ namespace JoystickCurves
 
             InitializeComponent();
 
+          
             checkBoxHotKey.DataBindings.Add(new Binding("Checked", this, "WaitingHotKey",false,DataSourceUpdateMode.OnPropertyChanged,null));
 
             _virtualJoysticks = new List<VirtualJoystick>();
@@ -90,33 +92,54 @@ namespace JoystickCurves
         {
             if (_settings.saitekX52ProEnable)
             {
-                _saitek = new SaitekMFD();
-                _saitek.Acquire();
+                if (_saitek == null)
+                {
+                    Debug.Print("Connecting Saitek");
+                    _saitek = new SaitekMFD();
+                    if (!_saitek.Acquiring)
+                    {
+                        _saitek.Acquire();
+                        _saitek.AddPage(1, "JoystickCurves");
+                    }
+                }
             }
         }
-
+        private void DisconnectSaitek()
+        {
+            if (_saitek != null && !_saitek.Unacquiring)
+            {
+                _saitek.UnAcquire();
+                _saitek = null;
+            }
+        }
+        private void DisconnectSteam()
+        {
+            if (_steam != null && !_steam.Disconnecting)
+            {
+                _steam.Stop();
+                _steam = null;
+            }
+        }
         private void SendSteamMessage( String text)
         {
-            if (_settings.globalSteamEnable)
+            if (_settings.globalSteamEnable && _steam != null)
             {
-                _steam.SendMessage(null, text);
+                ThreadPool.QueueUserWorkItem( t => _steam.SendMessage(null, text));
             }
         }
         private void ConnectSteam()
         {
-            if (_steam == null)
-                _steam = new Steam();
-            if( _settings.globalSteamEnable )
-            {
-                if (_steam == null)
-                {
-                    _steam = new Steam();
-                    _steam.OnGuardCode += new EventHandler<EventArgs>(_steam_OnGuardCode);
-                    _steam.OnLoginError += new EventHandler<EventArgs>(_steam_OnLoginError);
-                    _steam.OnLogon += new EventHandler<SteamAPI.SteamEvent>(_steam_OnLogon);
-                    _steam.OnMessage += new EventHandler<SteamAPI.SteamEvent>(_steam_OnMessage);
-                }
+            if (_steam != null && ( _steam.Connecting || _steam.LoggedIn ))
+                return;
 
+            if ( _settings.globalSteamEnable)
+            {
+
+                _steam = new Steam();
+                _steam.OnGuardCode += new EventHandler<EventArgs>(_steam_OnGuardCode);
+                _steam.OnLoginError += new EventHandler<EventArgs>(_steam_OnLoginError);
+                _steam.OnLogon += new EventHandler<SteamAPI.SteamEvent>(_steam_OnLogon);
+                _steam.OnMessage += new EventHandler<SteamAPI.SteamEvent>(_steam_OnMessage);
                 if (String.IsNullOrEmpty(_settings.steamLogin) || String.IsNullOrEmpty(_settings.steamPassword))
                     return;
 
@@ -143,7 +166,13 @@ namespace JoystickCurves
         void _steam_OnGuardCode(object sender, EventArgs e)
         {
             var code = InputBox.Show("Check your mail for Steam Guard Code and enter it here:");
-            _steam.Connect(_settings.steamLogin, _settings.steamPassword, code, _settings.steamToken);
+            if( !string.IsNullOrEmpty(code ))
+            {
+                if (_steam.Connect(_settings.steamLogin, _settings.steamPassword, code, _settings.steamToken) == SteamAPI.LoginStatus.LoginSuccessful)
+                {
+                    _settings.steamToken = _steam.Token;
+                }
+            }
         }
         private bool CheckRunningInstances()
         {
@@ -185,7 +214,8 @@ namespace JoystickCurves
             if (virtualDevice == null)
                 return;
 
-            var sourceAxis = DIUtils.ID( sourceAxisName);
+            var destAxis = DIUtils.ID(pTab.DestinationAxis);
+
 
             BezierCurvePoints curvePoints = pTab.CurvePoints;
             int newValue = data.Value;
@@ -193,7 +223,7 @@ namespace JoystickCurves
             if (curvePoints != null)
                 newValue = (int)((float)data.Value * curvePoints.GetY(Utils.PTop(1, Math.Abs(data.Value), 32767)));
 
-            virtualDevice.Set(sourceAxis, newValue);           
+            virtualDevice.Set(destAxis, newValue);           
         }
         private void UpdateCurveActions()
         {
@@ -320,7 +350,7 @@ namespace JoystickCurves
 
         private void LoadSettings()
         {
-
+            
             _settings.PropertyChanged += new PropertyChangedEventHandler(_settings_PropertyChanged);
             if (!_settings.generalStartMinimized)
             {
@@ -402,17 +432,23 @@ namespace JoystickCurves
                     }
                     break;
                 case "globalSteamEnable":
-                    if (_settings.globalSteamEnable)
+                    if (_settings.globalSteamEnable && !lastEnableSaitek)
                     {
-                        if (_steam != null && _steam.Connecting)
-                            return;
-
                         ThreadPool.QueueUserWorkItem(t => ConnectSteam());
                     }
                     else
                     {
-                        if( _steam != null )
-                            _steam.Stop();
+                        ThreadPool.QueueUserWorkItem(t => DisconnectSteam());
+                    }
+                    break;
+                case "saitekX52ProEnable":
+                    if (_settings.saitekX52ProEnable)
+                    {
+                        ThreadPool.QueueUserWorkItem(t => ConnectSaitek());
+                    }
+                    else
+                    {
+                        ThreadPool.QueueUserWorkItem( t => DisconnectSaitek());
                     }
                     break;
             }
@@ -456,6 +492,10 @@ namespace JoystickCurves
 
         private void SaveSettings()
         {
+            if (_steam != null && _steam.LoggedIn)
+            {
+                _settings.steamToken = _steam.Token;
+            }
             _settings.Profiles = _profileManager;
             _settings.CurrentProfile = GetCurrentProfile();
             _settings.Save();
@@ -498,9 +538,9 @@ namespace JoystickCurves
         private void MainForm_Shown(object sender, EventArgs e)
         {
             Text = String.Format("{0} Dev. ver: {1}", Text, GetRunningVersion());
-            LoadSettings();
             ConnectSteam();
-
+            ConnectSaitek();
+            LoadSettings();
 
             _deviceManager = new DeviceManager();
             _deviceManager.OnJoystickList += new EventHandler<EventArgs>(deviceManager_OnJoystickList);
@@ -1002,7 +1042,12 @@ namespace JoystickCurves
                     profilesToolStripMenuItem.SelectedIndexChanged += new EventHandler(profilesToolStripMenuItem_SelectedIndexChanged);
                 }
 
-                SendSteamMessage(_currentProfile.Title);
+                if (_settings.saitekX52ProEnable && _saitek != null && _saitek.Acquired)
+                    ThreadPool.QueueUserWorkItem( t => _saitek.SetText(1, 0, _currentProfile.Title));
+
+                if( _settings.globalSteamEnable && _steam != null && _steam.LoggedIn) 
+                    SendSteamMessage(_currentProfile.Title);
+
                 SetupEditorComboBoxes();
             }
         }
@@ -1036,6 +1081,7 @@ namespace JoystickCurves
         private void Exit()
         {
             UnacquireDevices();
+            DisconnectSaitek();
             SaveSettings();
         }
         private void exitToolStripMenuItem_Click(object sender, EventArgs e)

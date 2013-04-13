@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Runtime.InteropServices;
+using Microsoft.Win32;
+using System.IO;
 
 namespace JoystickCurves
 {
@@ -40,6 +42,8 @@ namespace JoystickCurves
         ButtonCallbackDelegate buttonCallback;
         private const string PROGRAMNAME = "JoystickCurves";
         void* m_hDevice = null;
+        private const string REGPATH64 = @"SOFTWARE\Saitek\DirectOutput";
+        private const string REGPATH32 = @"SOFTWARE\Wow6432Node\Saitek\DirectOutput";
 
         public event EventHandler<EventArgs> OnInit;
         public event EventHandler<EventArgs> OnError;
@@ -48,12 +52,25 @@ namespace JoystickCurves
 
         public SaitekMFD()
         {
+            Unacquiring = false;
+
             if (!AddSaitekDllPath())
                 return;
 
             if (OnInit != null)
                 OnInit(this, EventArgs.Empty);
         }
+        public bool Unacquiring
+        {
+            get;
+            set;
+        }
+        public bool Acquiring
+        {
+            get;
+            set;
+        }
+
         public bool Acquired
         {
             get;
@@ -62,8 +79,10 @@ namespace JoystickCurves
 
         public bool Acquire()
         {
-            Acquired = false;
+            Acquiring = true;
 
+            Acquired = false;
+            Unacquiring = false;
             try
             {
                 pageCallback = new PageCallbackDelegate(PageCallback);
@@ -75,6 +94,7 @@ namespace JoystickCurves
                 DirectOutput_RegisterPageChangeCallback(m_hDevice, pageCallback, 0);
                 DirectOutput_RegisterSoftButtonChangeCallback(m_hDevice, buttonCallback, 0);
                 Acquired = true;
+                Acquiring = false;
             }
             catch {
                 if (OnError != null)
@@ -89,22 +109,30 @@ namespace JoystickCurves
 
         private bool AddSaitekDllPath()
         {
-            // TODO Search for directoutput.dll and add it on path
-            Utils.AddEnvironmentPaths(new[] { @"c:\" });
-
+            RegistryKey regKey = Registry.LocalMachine.OpenSubKey(REGPATH32, false);
+            var pathToDLL = (string)regKey.GetValue("DirectOutput");
+            if (pathToDLL != null)
+            {
+                Utils.AddEnvironmentPaths(new[] { Path.GetDirectoryName(pathToDLL) });
+                return true;
+            }
             return false;
         }
 
-        private void UnAcquire()
+        public void UnAcquire()
         {
-            DirectOutput_Deinitialize();
-            Acquired = false;
+            if (!Unacquiring)
+            {
+                Unacquiring = true;
+                DirectOutput_Deinitialize();
+                Acquired = false;
+            }
         }
-        private void SetText(int pageNumber, int line, string text)
+        public void SetText(int pageNumber, int line, string text)
         {
             DirectOutput_SetString(m_hDevice, pageNumber, line, (text.Length > 16 ? 16 : text.Length), text);
         }
-        private void AddPage(int number, string pageName)
+        public void AddPage(int number, string pageName)
         {
             DirectOutput_AddPage(m_hDevice, number, pageName, false);
         }

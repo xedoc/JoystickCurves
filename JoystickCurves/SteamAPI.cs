@@ -31,6 +31,11 @@ namespace JoystickCurves
         {
             api = new SteamAPI();
         }
+        public bool Disconnecting
+        {
+            get;
+            set;
+        }
         public bool Connecting
         {
             get;
@@ -51,6 +56,7 @@ namespace JoystickCurves
         }
         public void Stop()
         {
+            Disconnecting = true;
             if (runPoll)
             {
                 runPoll = false;

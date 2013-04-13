@@ -28,9 +28,9 @@
         /// </summary>
         private void InitializeComponent()
         {
-            System.Windows.Forms.TreeNode treeNode1 = new System.Windows.Forms.TreeNode("General");
-            System.Windows.Forms.TreeNode treeNode2 = new System.Windows.Forms.TreeNode("Steam overlay");
-            System.Windows.Forms.TreeNode treeNode3 = new System.Windows.Forms.TreeNode("Saitek X52 Pro display");
+            System.Windows.Forms.TreeNode treeNode1 = new System.Windows.Forms.TreeNode("Saitek X52 Pro display");
+            System.Windows.Forms.TreeNode treeNode3 = new System.Windows.Forms.TreeNode("Steam overlay");
+            System.Windows.Forms.TreeNode treeNode2 = new System.Windows.Forms.TreeNode("General");
             this.settingsTree1 = new mycontrol.SettingsTree();
             this.settingsPage3 = new mycontrol.SettingsPage();
             this.label3 = new System.Windows.Forms.Label();
@@ -40,6 +40,7 @@
             this.textBox2 = new System.Windows.Forms.TextBox();
             this.textBox1 = new System.Windows.Forms.TextBox();
             this.settingsPage2 = new mycontrol.SettingsPage();
+            this.button1 = new System.Windows.Forms.Button();
             this.checkBox3 = new System.Windows.Forms.CheckBox();
             this.checkBox2 = new System.Windows.Forms.CheckBox();
             this.checkBox1 = new System.Windows.Forms.CheckBox();
@@ -47,8 +48,6 @@
             this.settingsPage4 = new mycontrol.SettingsPage();
             this.checkBox5 = new System.Windows.Forms.CheckBox();
             this.directorySearcher1 = new System.DirectoryServices.DirectorySearcher();
-            this.button1 = new System.Windows.Forms.Button();
-            ((System.ComponentModel.ISupportInitialize)(this.settingsTree1.SplitContainer)).BeginInit();
             this.settingsTree1.SplitContainer.Panel2.SuspendLayout();
             this.settingsPage3.SuspendLayout();
             this.settingsPage2.SuspendLayout();
@@ -58,9 +57,9 @@
             // settingsTree1
             // 
             treeNode1.Name = "";
-            treeNode1.Text = "General";
+            treeNode1.Text = "Saitek X52 Pro display";
             this.settingsTree1.CurrentNode = treeNode1;
-            this.settingsTree1.CurrentPage = this.settingsPage2;
+            this.settingsTree1.CurrentPage = this.settingsPage4;
             this.settingsTree1.Cursor = System.Windows.Forms.Cursors.Arrow;
             this.settingsTree1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.settingsTree1.LabelEdit = false;
@@ -93,9 +92,9 @@
             this.settingsTree1.TreeView.Location = new System.Drawing.Point(0, 0);
             this.settingsTree1.TreeView.Name = "treeSettings";
             this.settingsTree1.TreeView.Nodes.AddRange(new System.Windows.Forms.TreeNode[] {
+            treeNode2,
             treeNode1,
-            treeNode3,
-            treeNode2});
+            treeNode3});
             this.settingsTree1.TreeView.Size = new System.Drawing.Size(150, 191);
             this.settingsTree1.TreeView.Sorted = true;
             this.settingsTree1.TreeView.TabIndex = 0;
@@ -112,9 +111,9 @@
             this.settingsPage3.isActive = true;
             this.settingsPage3.Location = new System.Drawing.Point(0, 0);
             this.settingsPage3.Name = "settingsPage3";
-            treeNode2.Name = "";
-            treeNode2.Text = "Steam overlay";
-            this.settingsPage3.ParentNode = treeNode2;
+            treeNode3.Name = "";
+            treeNode3.Text = "Steam overlay";
+            this.settingsPage3.ParentNode = treeNode3;
             this.settingsPage3.Size = new System.Drawing.Size(352, 191);
             this.settingsPage3.TabIndex = 2;
             // 
@@ -125,7 +124,7 @@
             this.label3.Size = new System.Drawing.Size(339, 37);
             this.label3.TabIndex = 5;
             this.label3.Text = "* Add your main Steam account to friends of the bot. Bot must have single friend " +
-    "only!";
+                "only!";
             // 
             // label2
             // 
@@ -164,6 +163,7 @@
             this.textBox2.Enabled = global::JoystickCurves.Properties.Settings.Default.globalSteamEnable;
             this.textBox2.Location = new System.Drawing.Point(94, 66);
             this.textBox2.Name = "textBox2";
+            this.textBox2.PasswordChar = '*';
             this.textBox2.Size = new System.Drawing.Size(100, 20);
             this.textBox2.TabIndex = 2;
             this.textBox2.Text = global::JoystickCurves.Properties.Settings.Default.steamPassword;
@@ -191,9 +191,21 @@
             this.settingsPage2.isActive = true;
             this.settingsPage2.Location = new System.Drawing.Point(0, 0);
             this.settingsPage2.Name = "settingsPage2";
-            this.settingsPage2.ParentNode = treeNode1;
+            treeNode2.Name = "";
+            treeNode2.Text = "General";
+            this.settingsPage2.ParentNode = treeNode2;
             this.settingsPage2.Size = new System.Drawing.Size(352, 191);
             this.settingsPage2.TabIndex = 1;
+            // 
+            // button1
+            // 
+            this.button1.Location = new System.Drawing.Point(12, 103);
+            this.button1.Name = "button1";
+            this.button1.Size = new System.Drawing.Size(96, 23);
+            this.button1.TabIndex = 4;
+            this.button1.Text = "Reset Settings";
+            this.button1.UseVisualStyleBackColor = true;
+            this.button1.Click += new System.EventHandler(this.button1_Click);
             // 
             // checkBox3
             // 
@@ -248,9 +260,7 @@
             this.settingsPage4.isActive = true;
             this.settingsPage4.Location = new System.Drawing.Point(0, 0);
             this.settingsPage4.Name = "settingsPage4";
-            treeNode3.Name = "";
-            treeNode3.Text = "Saitek X52 Pro display";
-            this.settingsPage4.ParentNode = treeNode3;
+            this.settingsPage4.ParentNode = treeNode1;
             this.settingsPage4.Size = new System.Drawing.Size(352, 191);
             this.settingsPage4.TabIndex = 3;
             // 
@@ -272,16 +282,6 @@
             this.directorySearcher1.ServerPageTimeLimit = System.TimeSpan.Parse("-00:00:01");
             this.directorySearcher1.ServerTimeLimit = System.TimeSpan.Parse("-00:00:01");
             // 
-            // button1
-            // 
-            this.button1.Location = new System.Drawing.Point(12, 103);
-            this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(96, 23);
-            this.button1.TabIndex = 4;
-            this.button1.Text = "Reset Settings";
-            this.button1.UseVisualStyleBackColor = true;
-            this.button1.Click += new System.EventHandler(this.button1_Click);
-            // 
             // SettingsForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -291,8 +291,8 @@
             this.Name = "SettingsForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "SettingsForm";
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.SettingsForm_FormClosing);
             this.settingsTree1.SplitContainer.Panel2.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)(this.settingsTree1.SplitContainer)).EndInit();
             this.settingsPage3.ResumeLayout(false);
             this.settingsPage3.PerformLayout();
             this.settingsPage2.ResumeLayout(false);

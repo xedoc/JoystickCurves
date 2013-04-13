@@ -52,5 +52,11 @@ namespace JoystickCurves
             }
         }
 
+        private void SettingsForm_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            e.Cancel = true;
+            this.Hide();
+        }
+
     }
 }

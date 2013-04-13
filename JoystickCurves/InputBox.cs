@@ -25,7 +25,7 @@ namespace JoystickCurves
             newInputBox = new InputBox();
             newInputBox.label1.Text = inputBoxText;
             newInputBox.ShowDialog();
-            return returnString;
+            return newInputBox.textBox1.Text;
         }
 
         private void buttonOk_Click(object sender, EventArgs e)

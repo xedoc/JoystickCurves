@@ -83,6 +83,7 @@ namespace JoystickCurves
                 default:
                     return false;
             };
+            
             _joystick.AcquireVJD(_deviceid);
             
             var axisList = new HID_USAGES[] { HID_USAGES.HID_USAGE_X, HID_USAGES.HID_USAGE_Y, HID_USAGES.HID_USAGE_RZ };
@@ -137,14 +138,7 @@ namespace JoystickCurves
                 try
                 {
                     var val = (value + AXISLIMIT) / 2;
-                    if (!lastValue.Keys.Contains(axis))
-                    {
-                        lastValue.Add(axis, val);
-                        _joystick.SetAxis(val, _deviceid, axis);
-                    }
-                    
-                    if (val != lastValue[axis])
-                        _joystick.SetAxis(val, _deviceid, axis);
+                    _joystick.SetAxis(val, _deviceid, axis);
                 }
                 catch { }
             }

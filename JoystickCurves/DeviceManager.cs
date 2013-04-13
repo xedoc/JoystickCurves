@@ -41,14 +41,22 @@ namespace JoystickCurves
         {
             if (sender.GetType() == typeof(DirectInputJoystick) )
             {
-                Joysticks.Remove((DirectInputJoystick)sender);
+                var joystick = sender as DirectInputJoystick;
+                Debug.Print("Joystick {0} removed", ((DirectInputJoystick)sender).Name);
+
+                if (joystick.Type == DeviceType.Virtual && joystick.VirtualJoystick != null)
+                    joystick.VirtualJoystick.Unacquire();
+
+                Joysticks.Remove(joystick);
             }
             else if( sender.GetType() == typeof(DirectInputKeyboard))
             {
+                Debug.Print("Keyboard {0} removed", ((DirectInputKeyboard)sender).Name);
                 Keyboards.Remove((DirectInputKeyboard)sender);
             }
             else if ( sender.GetType() == typeof(DirectInputMouse))
             {
+                Debug.Print("Mouse {0} removed", ((DirectInputMouse)sender).Name);
                 Mouses.Remove((DirectInputMouse)sender);
             }
         }
@@ -181,6 +189,7 @@ namespace JoystickCurves
         {
             VirtualJoystick vjoy = sender as VirtualJoystick;
             vjoy.SetButton(vjoy.DeviceID, true);
+            vjoy.Unacquire();
         }
 
         void gameController_OnButtonDown(object sender, CustomEventArgs<DirectInputData> e)
@@ -196,7 +205,7 @@ namespace JoystickCurves
             Joysticks[i].VirtualJoystick = new VirtualJoystick(deviceId);
 
             device.OnButtonPress -= gameController_OnButtonDown;
-            device.VirtualJoystick.SetButton(device.VirtualJoystick.DeviceID, false);           
+            device.VirtualJoystick.SetButton(device.VirtualJoystick.DeviceID, false);
         }
 
         private DeviceType GetDeviceType( string name )
