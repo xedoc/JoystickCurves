@@ -27,15 +27,18 @@ namespace JoystickCurves
         private Bitmap background;
         private Bitmap virtualCross, virtualLine, physicalCross, physicalLine;
         private System.Threading.Timer frameUpdateTimer;
+        private bool _showVirtualRudder, _showVirtualHandle, _showPhysicalRudder, _showPhysicalHandle;
 
         public JoystickTester()
         {
+            this.SetStyle(ControlStyles.AllPaintingInWmPaint | ControlStyles.ResizeRedraw | ControlStyles.UserPaint | ControlStyles.DoubleBuffer, true);
             InitializeComponent();
             Init();
         }
 
         public JoystickTester(IContainer container)
         {
+            this.SetStyle(ControlStyles.AllPaintingInWmPaint | ControlStyles.ResizeRedraw | ControlStyles.UserPaint | ControlStyles.DoubleBuffer, true);
             container.Add(this);
 
             InitializeComponent();
@@ -45,10 +48,6 @@ namespace JoystickCurves
         private void Init()
         {
             this.HandleCreated += new EventHandler(JoystickTester_HandleCreated);
-            this.DoubleBuffered = true;
-            this.SetStyle(ControlStyles.AllPaintingInWmPaint | ControlStyles.ResizeRedraw | ControlStyles.UserPaint, true);
-
-            frameUpdateTimer = new System.Threading.Timer(new TimerCallback(frame_Tick), null, 0, 33);
         }
 
         void frame_Tick(object o)
@@ -68,7 +67,8 @@ namespace JoystickCurves
             VirtualAxisRoll = defaultAxis;
             VirtualAxisRudder = defaultAxis;
 
-            //this.SetStyle(ControlStyles.AllPaintingInWmPaint | ControlStyles.ResizeRedraw | ControlStyles.UserPaint | ControlStyles.DoubleBuffer, true);
+            Invalidate();
+           
         }
         public Rectangle HandleBounds
         {
@@ -80,6 +80,26 @@ namespace JoystickCurves
             get;
             set;
         }
+        public bool ShowPhysicalRudder
+        {
+            get { return _showPhysicalRudder; }
+            set { _showPhysicalRudder = value; Invalidate(); }
+        }
+        public bool ShowVirtualRudder
+        {
+            get { return _showVirtualRudder; }
+            set { _showVirtualRudder = value; Invalidate(); }
+        }
+        public bool ShowPhysicalHandle
+        {
+            get { return _showPhysicalHandle; }
+            set { _showPhysicalHandle = value; Invalidate(); }
+        }
+        public bool ShowVirtualHandle
+        {
+            get { return _showVirtualRudder; }
+            set { _showVirtualHandle = value; Invalidate(); }
+        }
         public Point PhysicalRudderLocation
         {
             get { return _physicalRudderLocation; }
@@ -87,6 +107,7 @@ namespace JoystickCurves
                 if (!_physicalRudderLocation.Equals(value))
                 {
                     _physicalRudderLocation = value;
+                    Invalidate();
                 }
             }
         }
@@ -98,6 +119,7 @@ namespace JoystickCurves
                 if (!_physicalHandleLocation.Equals(value))
                 {
                     _physicalHandleLocation = value;
+                    Invalidate();
                 }
             }
         }
@@ -109,6 +131,8 @@ namespace JoystickCurves
                 if (!_virtualRudderLocation.Equals(value))
                 {
                     _virtualRudderLocation = value;
+                    Invalidate();
+
                 }
             }
 
@@ -121,6 +145,7 @@ namespace JoystickCurves
                 if (!_virtualHandleLocation.Equals(value))
                 {
                     _virtualHandleLocation = value;
+                    Invalidate();
                 }
             }
 
@@ -183,6 +208,7 @@ namespace JoystickCurves
                     RudderBounds.Y
                     );
             }
+
         }
 
         private int CoordByAxisValue(DirectInputData value, int coord, int bound)
@@ -208,20 +234,19 @@ namespace JoystickCurves
                 var rightMiddle = new Point(smallestSide + Margin.Left, smallestSide / 2 + Margin.Top);
                 var center = new Point(smallestSide / 2 + Margin.Left, smallestSide / 2 + Margin.Top);
                 var green = 80;
-                var gridPen = new Pen(Color.FromArgb(0, green, 0));
                 var pointLeftRudder = new Point(Margin.Left, Size.Height - 20);
                 var pointRightRudder = new Point(smallestSide + Margin.Left, Size.Height - 20);
-                var rudderWidth = pointRightRudder.X - pointLeftRudder.X;
-                var pen = new Pen(Color.FromArgb(0, 150, 0));
+
+                var gridPen = new Pen(Color.FromArgb(0, green, 0));
 
                 gridPen.Width = 1;
 
                 gridPen.DashPattern = dashCircleValues;
 
-                background = new Bitmap(Size.Width,Size.Height);
+                background = new Bitmap(Size.Width, Size.Height);
                 using (Graphics g = Graphics.FromImage(background))
                 {
-                    g.FillRectangle(new SolidBrush(Color.FromArgb(0, 64, 0)), new Rectangle(0,0,Size.Width, Size.Height));
+                    g.FillRectangle(new SolidBrush(Color.FromArgb(0, 64, 0)), new Rectangle(0, 0, Size.Width, Size.Height));
 
                     g.DrawEllipse(gridPen, drawArea);
 
@@ -249,14 +274,12 @@ namespace JoystickCurves
                     g.DrawLine(gridPen, leftMiddle, new Point(center.X - 10, center.Y));
                     g.DrawLine(gridPen, rightMiddle, new Point(center.X + 10, center.Y));
 
-                    //Yaw
-
                     g.DrawLine(gridPen, pointLeftRudder, pointRightRudder);
-
                 }
-            }
 
-            e.Graphics.DrawImage(background, 0,0);
+                gridPen.Dispose();
+            }
+            e.Graphics.DrawImageUnscaled(background, 0, 0);
 
         }
         void JoystickTester_Paint(object sender, PaintEventArgs e)
@@ -298,12 +321,13 @@ namespace JoystickCurves
                 RudderBounds = new Rectangle(pointLeftRudder.X - RETICLE_SIZE / 2, pointLeftRudder.Y - RETICLE_SIZE / 2, rudderWidth, RETICLE_SIZE);
                 
                 var p0 = new Point(0, 0);
+
                 var pen = new Pen(Color.FromArgb(0, 150, 0));
                 DrawReticle(plG, ReticleShape.VerticalLine, p0, pen);
                 DrawReticle(pcG, ReticleShape.Cross, p0, pen);
 
                 pen = new Pen(Color.FromArgb(0, 255, 0));
-    
+                    
                 DrawReticle(vlG, ReticleShape.VerticalLine, p0, pen);
                 DrawReticle(vcG, ReticleShape.Cross, p0, pen);
 
@@ -324,10 +348,17 @@ namespace JoystickCurves
                 VirtualAxisRudder = centerAxis;
 
             }
-            e.Graphics.DrawImage(physicalCross, PhysicalHandleLocation);
-            e.Graphics.DrawImage(physicalLine, PhysicalRudderLocation);
-            e.Graphics.DrawImage(virtualCross, VirtualHandleLocation);
-            e.Graphics.DrawImage(virtualLine, VirtualRudderLocation);
+
+            if( ShowPhysicalHandle )
+                e.Graphics.DrawImage(physicalCross, PhysicalHandleLocation);
+            if( ShowPhysicalRudder )
+                e.Graphics.DrawImage(physicalLine, PhysicalRudderLocation);
+
+            if( ShowVirtualHandle)
+                e.Graphics.DrawImage(virtualCross, VirtualHandleLocation);
+
+            if( ShowVirtualRudder )
+                e.Graphics.DrawImage(virtualLine, VirtualRudderLocation);
 
             //invalidateRegion.Union(new Rectangle(VirtualHandleLocation, new Size(RETICLE_SIZE, RETICLE_SIZE)));
             //invalidateRegion.Union(new Rectangle(VirtualRudderLocation, new Size(RETICLE_SIZE, RETICLE_SIZE)));

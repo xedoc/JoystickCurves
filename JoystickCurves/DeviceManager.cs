@@ -140,6 +140,7 @@ namespace JoystickCurves
         {
             List<DeviceInstance> joystickInstances;
             var devices = Manager.GetDevices(DeviceClass.GameControl, EnumDevicesFlags.AttachedOnly );
+
             joystickInstances= Utils.DevList(devices);
 
             if (Joysticks == null)
@@ -160,10 +161,7 @@ namespace JoystickCurves
                 joystick.OnError += new EventHandler<EventArgs>(OnNoNeed);
                 joystick.OnUnacquire += new EventHandler<EventArgs>(OnNoNeed);
 
-                if (joystick.Type == DeviceType.Virtual)
-                {
-                    joystick.OnButtonDown += new EventHandler<CustomEventArgs<DirectInputData>>(gameController_OnButtonDown);
-                }
+
                 
                 Joysticks.Add(joystick);
                 if (Joysticks.Where(d => d.Name.StartsWith(joystick.Name)).Count() > 1)
@@ -174,11 +172,19 @@ namespace JoystickCurves
                 }
             }
 
-            for (uint i = 1; i <= 16; i++)
+            var virtualCount = Joysticks.Count(j => j.Type == DeviceType.Virtual);
+            if ( virtualCount >= 1)
             {
-                var vjoy = new VirtualJoystick(i);
-                vjoy.OnAcquire += new EventHandler<EventArgs>(vjoy_OnAcquire);
-                vjoy.Acquire();
+                foreach (var joystick in Joysticks.Where(j => j.Type == DeviceType.Virtual))
+                {
+                    joystick.OnButtonDown += new EventHandler<CustomEventArgs<DirectInputData>>(gameController_OnButtonDown);
+                }
+                for (uint i = 1; i <= 16; i++)
+                {
+                    var vjoy = new VirtualJoystick(i);
+                    vjoy.OnAcquire += new EventHandler<EventArgs>(vjoy_OnAcquire);
+                    vjoy.Acquire();
+                }
             }
 
             if (OnJoystickList != null)

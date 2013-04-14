@@ -88,6 +88,8 @@
             this.comboProfiles.Size = new System.Drawing.Size(269, 21);
             this.comboProfiles.TabIndex = 4;
             this.comboProfiles.SelectionChangeCommitted += new System.EventHandler(this.comboProfiles_SelectionChangeCommitted);
+            this.comboProfiles.Enter += new System.EventHandler(this.comboProfiles_Enter);
+            this.comboProfiles.Leave += new System.EventHandler(this.comboProfiles_Leave);
             this.comboProfiles.Validated += new System.EventHandler(this.comboProfiles_Validated);
             // 
             // label2
@@ -326,6 +328,7 @@
             // 
             // label5
             // 
+            this.label5.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.label5.AutoSize = true;
             this.label5.Location = new System.Drawing.Point(627, 31);
             this.label5.Name = "label5";
@@ -365,6 +368,7 @@
             // 
             // buttonSettings
             // 
+            this.buttonSettings.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.buttonSettings.Location = new System.Drawing.Point(909, 6);
             this.buttonSettings.Name = "buttonSettings";
             this.buttonSettings.Size = new System.Drawing.Size(75, 23);
@@ -411,6 +415,10 @@
             this.joystickTester.PhysicalHandleLocation = new System.Drawing.Point(170, 155);
             this.joystickTester.PhysicalRudderLocation = new System.Drawing.Point(170, 326);
             this.joystickTester.RudderBounds = new System.Drawing.Rectangle(30, 326, 281, 20);
+            this.joystickTester.ShowPhysicalHandle = false;
+            this.joystickTester.ShowPhysicalRudder = false;
+            this.joystickTester.ShowVirtualHandle = false;
+            this.joystickTester.ShowVirtualRudder = false;
             this.joystickTester.Size = new System.Drawing.Size(356, 356);
             this.joystickTester.TabIndex = 9;
             this.joystickTester.TabStop = false;

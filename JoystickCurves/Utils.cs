@@ -20,16 +20,20 @@ namespace JoystickCurves
         public delegate void CallMethodCallback(Control ctrl, string methodName, object param);
         public static void CallMethod<TControl>(this TControl ctrl, string methodName, object value) where TControl : Control
         {
-            if (ctrl.InvokeRequired)
+            try
             {
-                var d = new CallMethodCallback(CallMethod);
-                ctrl.Invoke(d, new object[] { ctrl, methodName, value });
+                if (ctrl.InvokeRequired)
+                {
+                    var d = new CallMethodCallback(CallMethod);
+                    ctrl.Invoke(d, new object[] { ctrl, methodName, value });
+                }
+                else
+                {
+                    Type t = ctrl.GetType();
+                    t.InvokeMember(methodName, BindingFlags.Instance | BindingFlags.InvokeMethod | BindingFlags.Public, null, ctrl, new object[] { value });
+                }
             }
-            else
-            {
-                Type t = ctrl.GetType();
-                t.InvokeMember(methodName, BindingFlags.Instance | BindingFlags.InvokeMethod| BindingFlags.Public, null, ctrl, new object[] { value });
-            }
+            catch { }
 
         }
 
@@ -128,7 +132,7 @@ namespace JoystickCurves
             {
                 currentDevice = items.Count > 0 ? items[0].Text : NOTSET;
             }
-            if (!items.Exists(d => d.Text == currentDevice))
+            if (currentDevice != NOTSET && !items.Exists(d => d.Text == currentDevice))
                  currentDevice = items.Where( d => d.Text != NOTSET ).Select( d => d.Text ).FirstOrDefault();
 
             if (currentDevice == null)

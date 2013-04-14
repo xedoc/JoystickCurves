@@ -43,6 +43,9 @@ namespace JoystickCurves
         private Form debugForm;
         private bool lastEnableSaitek = false, lastEnableSteam = false;
         private object lockSetProfile = new object();
+        private object lockHotKeyboard = new object();
+        private object lockHotMouse = new object();
+        private object lockHotJoystick = new object();
         private Steam _steam;
         private SaitekMFD _saitek;
         SettingsForm settingsForm;
@@ -313,6 +316,10 @@ namespace JoystickCurves
         private void UpdateTesterActions()
         {
             ClearTesterActions();
+            joystickTester.ShowPhysicalHandle = _settings.TesterPhysicalJoystick == NOTSET ? false : true;
+            joystickTester.ShowPhysicalRudder = _settings.TesterPhysicalJoystick == NOTSET ? false : true;
+            joystickTester.ShowVirtualHandle = _settings.TesterVirtualJoystick == NOTSET ? false : true;
+            joystickTester.ShowVirtualRudder = _settings.TesterVirtualJoystick == NOTSET ? false : true;
 
             var virtualDev = _deviceManager.Joysticks.Where(d => d.Name == joystickTester.CurrentVirtualDevice && d.Type == DeviceType.Virtual).FirstOrDefault();
             if (virtualDev != null)
@@ -332,6 +339,7 @@ namespace JoystickCurves
             var physicalDev = _deviceManager.Joysticks.Where(d => d.Name == joystickTester.CurrentPhysicalDevice && d.Type == DeviceType.Physical ).FirstOrDefault();
             if (physicalDev != null)
             {
+
                 var physicalActionMap = new Dictionary<JoystickOffset, Action<DirectInputData>>()
                 {
                     { joystickTester.CurrentPhysicalRZ, 
@@ -973,6 +981,7 @@ namespace JoystickCurves
                     return;
                 }
                 _suspendTabActions = true;
+                this.SuspendLayout();
 
                 while (tabAxis.TabPages.Count > 1)
                     tabAxis.TabPages.RemoveAt(0);
@@ -1049,6 +1058,7 @@ namespace JoystickCurves
                     SendSteamMessage(_currentProfile.Title);
 
                 SetupEditorComboBoxes();
+                this.ResumeLayout();
             }
         }
 
@@ -1077,6 +1087,7 @@ namespace JoystickCurves
         {
             this.Show();
             this.WindowState = FormWindowState.Normal;
+            this.Activate();
         }
         private void Exit()
         {
@@ -1162,31 +1173,52 @@ namespace JoystickCurves
 
         }
 
+        private bool ProfileComboFocused
+        {
+            get;set;
+        }
         private void ActionKeyboardProfileHotKey(DirectInputData data)
         {
-            var profile = _profileManager.Profiles.FirstOrDefault(
-                p => p.HotKeyKeyboardName == data.DeviceName && p.KeyboardHotKey == data.KeyboardKey.ToString());
+            lock (lockHotKeyboard)
+            {
+                if (ProfileComboFocused)
+                    return;
 
-            if (profile != null && _currentProfile.Title != profile.Title)
-                Utils.CallMethod<Form>(this, "SetCurrentProfile", profile.Title);
+                var profile = _profileManager.Profiles.FirstOrDefault(
+                    p => p.HotKeyKeyboardName == data.DeviceName && p.KeyboardHotKey == data.KeyboardKey.ToString());
+
+                if (profile != null && _currentProfile.Title != profile.Title)
+                    Utils.CallMethod<Form>(this, "SetCurrentProfile", profile.Title);
+            }
         }
         private void ActionJoystickProfileHotKey(DirectInputData data)
         {
+            lock (lockHotJoystick)
+            {
+                if (ProfileComboFocused)
+                    return;
 
-            var profile = _profileManager.Profiles.FirstOrDefault(
-                p => p.HotKeyJoystickName == data.DeviceName && p.JoystickHotKey == data.JoystickOffset.ToString());
+                var profile = _profileManager.Profiles.FirstOrDefault(
+                    p => p.HotKeyJoystickName == data.DeviceName && p.JoystickHotKey == data.JoystickOffset.ToString());
 
-            if (profile != null && _currentProfile.Title != profile.Title)
-                Utils.CallMethod<Form>(this, "SetCurrentProfile", profile.Title);
+                if (profile != null && _currentProfile.Title != profile.Title)
+                    Utils.CallMethod<Form>(this, "SetCurrentProfile", profile.Title);
+            }
 
         }
         private void ActionMouseProfileHotKey(DirectInputData data)
         {
-            var profile = _profileManager.Profiles.FirstOrDefault(
-                p => p.HotKeyMouseName == data.DeviceName && p.MouseHotKey == data.MouseOffset.ToString());
+            lock (lockHotMouse)
+            {
+                if (ProfileComboFocused)
+                    return;
 
-            if (profile != null && _currentProfile.Title != profile.Title)
-                Utils.CallMethod<Form>(this, "SetCurrentProfile", profile.Title);
+                var profile = _profileManager.Profiles.FirstOrDefault(
+                    p => p.HotKeyMouseName == data.DeviceName && p.MouseHotKey == data.MouseOffset.ToString());
+
+                if (profile != null && _currentProfile.Title != profile.Title)
+                    Utils.CallMethod<Form>(this, "SetCurrentProfile", profile.Title);
+            }
         }
 
         private void SetupProfileHotKeyActions(Profile profile)
@@ -1361,6 +1393,16 @@ namespace JoystickCurves
             {
                 return Assembly.GetExecutingAssembly().GetName().Version;
             }
+        }
+
+        private void comboProfiles_Enter(object sender, EventArgs e)
+        {
+            ProfileComboFocused = true;
+        }
+
+        private void comboProfiles_Leave(object sender, EventArgs e)
+        {
+            ProfileComboFocused = false;
         }
     }
 

@@ -42,8 +42,7 @@ namespace JoystickCurves
         ButtonCallbackDelegate buttonCallback;
         private const string PROGRAMNAME = "JoystickCurves";
         void* m_hDevice = null;
-        private const string REGPATH64 = @"SOFTWARE\Saitek\DirectOutput";
-        private const string REGPATH32 = @"SOFTWARE\Wow6432Node\Saitek\DirectOutput";
+        private const string REGPATH = @"SOFTWARE\Saitek\DirectOutput";
 
         public event EventHandler<EventArgs> OnInit;
         public event EventHandler<EventArgs> OnError;
@@ -109,12 +108,15 @@ namespace JoystickCurves
 
         private bool AddSaitekDllPath()
         {
-            RegistryKey regKey = Registry.LocalMachine.OpenSubKey(REGPATH32, false);
-            var pathToDLL = (string)regKey.GetValue("DirectOutput");
-            if (pathToDLL != null)
+            RegistryKey regKey = Registry.LocalMachine.OpenSubKey(REGPATH, false);
+            if (regKey != null)
             {
-                Utils.AddEnvironmentPaths(new[] { Path.GetDirectoryName(pathToDLL) });
-                return true;
+                var pathToDLL = (string)regKey.GetValue("DirectOutput");
+                if (pathToDLL != null)
+                {
+                    Utils.AddEnvironmentPaths(new[] { Path.GetDirectoryName(pathToDLL) });
+                    return true;
+                }
             }
             return false;
         }
@@ -130,6 +132,7 @@ namespace JoystickCurves
         }
         public void SetText(int pageNumber, int line, string text)
         {
+            text = text.PadRight(16, ' ');
             DirectOutput_SetString(m_hDevice, pageNumber, line, (text.Length > 16 ? 16 : text.Length), text);
         }
         public void AddPage(int number, string pageName)
