@@ -504,6 +504,14 @@ namespace JoystickCurves
             {
                 _settings.steamToken = _steam.Token;
             }
+            _settings.hotKeys = new HotKeys()
+            {
+                Keys = new HashSet<HotKey>(){
+                    new HotKey() {Title = "test", Type = HotKeyType.DecSensitivity, Key = new DirectInputData() {
+                        DeviceName = "device",JoystickOffset = JoystickOffset.Button0, MouseOffset = MouseOffset.Button1, KeyboardKey = Key.BackSlash, Type = DIDataType.Joystick 
+                    }}
+                }
+            };
             _settings.Profiles = _profileManager;
             _settings.CurrentProfile = GetCurrentProfile();
             _settings.Save();
@@ -767,6 +775,7 @@ namespace JoystickCurves
                                     {
                                         JoystickOffset = DIUtils.ID(axisEditor.CurrentDestAxis),
                                         DeviceName = axisEditor.CurrentDestDevice,
+                                        Type = DIDataType.Joystick,
                                         Min = -32767,
                                         Max = 32767,
                                         Value = 0
@@ -782,6 +791,7 @@ namespace JoystickCurves
                                     DIUtils.ID(axisEditor.CurrentSourceAxis),
                                     new DirectInputData() { 
                                         JoystickOffset = DIUtils.ID(axisEditor.CurrentDestAxis),
+                                        Type = DIDataType.Joystick,
                                         DeviceName = axisEditor.CurrentDestDevice,
                                         Min = -32767,
                                         Max = 32767,

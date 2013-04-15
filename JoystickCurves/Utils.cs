@@ -107,6 +107,32 @@ namespace JoystickCurves
         }
 
 
+        delegate void SetDataSourceCB<T>(T list, BindingSource source, string displayMember, string valueMember);
+        public static void SetDataSource<T>(T list, BindingSource source = null, string displayMember = "", string valueMember = "") where T: ListControl
+        {
+
+            if (list.Parent.InvokeRequired)
+            {
+                SetDataSourceCB<T> dlgt = new SetDataSourceCB<T>(SetDataSource);
+                list.Parent.Invoke(dlgt, new object[] { list, source, displayMember, valueMember });
+            }
+            else
+            {
+                list.DataSource = null;
+                if (source != null)
+                {
+                    list.DataSource = source.DataSource;
+
+                    if (!String.IsNullOrEmpty(displayMember))
+                        list.DisplayMember = displayMember;
+
+                    if (!String.IsNullOrEmpty(valueMember))
+                        list.ValueMember = valueMember;
+                }
+
+            }
+        }
+
         public static List<ToolStripMenuItem> SetAxisContextMenuItems(String itemName, JoystickOffset currentOffset, EventHandler<EventArgs>clickHandler, MouseEventHandler mouseDownHandler)
         {
             var items = DIUtils.AxisNames.Select(ax => new ToolStripMenuItem(ax) { CheckOnClick = true }).ToList();

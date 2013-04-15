@@ -57,6 +57,7 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup>
     <ManifestCertificateThumbprint>D4EF0F79430F5632629D524D9A96A293FFB7E905</ManifestCertificateThumbprint>
@@ -114,6 +115,7 @@
     <Compile Include="DirectInputMouse.cs" />
     <Compile Include="DIUtils.cs" />
     <Compile Include="DirectInputKeyboard.cs" />
+    <Compile Include="HotKeys.cs" />
     <Compile Include="InputBox.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -230,6 +232,7 @@
   <ItemGroup>
     <None Include="Resources\appicon.ico" />
     <None Include="Resources\joystickcurve.ico" />
+    <None Include="Resources\x52pro.png" />
     <Content Include="vJoyInterface.dll" />
   </ItemGroup>
   <ItemGroup>

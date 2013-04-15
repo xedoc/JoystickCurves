@@ -21,7 +21,7 @@ namespace JoystickCurves
         private object pollLock = new object();
         private Timer _pollTimer;
         private Device _device;
-        private Dictionary<MouseOffset, List<Action<DirectInputData>>> _actionMap = new Dictionary<MouseOffset,List<Action<DirectInputData>>>();
+        private Dictionary<MouseOffset, HashSet<Action<DirectInputData>>> _actionMap = new Dictionary<MouseOffset,HashSet<Action<DirectInputData>>>();
         private void emptyAction(DirectInputData joyData) {}
 
         public DirectInputMouse(DeviceInstance dev)
@@ -36,7 +36,7 @@ namespace JoystickCurves
         {
             lock (pollLock)
             {
-                List<Action<DirectInputData>> action;
+                HashSet<Action<DirectInputData>> action;
                 BufferedDataCollection queue = null;
 
                 try
@@ -63,6 +63,7 @@ namespace JoystickCurves
                         {
                             Value = data.Data,
                             MouseOffset = dataType,
+                            Type = DIDataType.Mouse,
                             DeviceName = Name
                         };
 
@@ -71,7 +72,7 @@ namespace JoystickCurves
                         _actionMap.TryGetValue(dataType, out action);
 
                         if (action != null)
-                            action.ForEach(a => a(mouseData));
+                            action.ToList().ForEach(a => a(mouseData));
 
                         if (dataType >= MouseOffset.Button0)
                         {
@@ -144,7 +145,7 @@ namespace JoystickCurves
 
             foreach (var perKeyActions in _actionMap.Values)
             {
-                perKeyActions.RemoveAll(a => a == action);
+                perKeyActions.RemoveWhere(a => a == action);
             }
 
         }
@@ -159,7 +160,7 @@ namespace JoystickCurves
                 return;
 
             if (!_actionMap.Keys.Contains(key))
-                _actionMap.Add(key, new List<Action<DirectInputData>>());
+                _actionMap.Add(key, new HashSet<Action<DirectInputData>>());
 
             _actionMap[key].Add(action);
         }
@@ -172,13 +173,13 @@ namespace JoystickCurves
             {
                 foreach (var perKeyActions in _actionMap.Values)
                 {
-                    perKeyActions.RemoveAll( a => a == inAction);
+                    perKeyActions.RemoveWhere( a => a == inAction);
                 }
             }
             foreach (var k in actions.Keys)
             {
                 if (!_actionMap.Keys.Contains(k))
-                    _actionMap.Add(k, new List<Action<DirectInputData>>());
+                    _actionMap.Add(k, new HashSet<Action<DirectInputData>>());
 
                 _actionMap[k].Add(actions[k]);
             }

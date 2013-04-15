@@ -13,6 +13,7 @@ namespace JoystickCurves
     {
         public event EventHandler<EventArgs> OnReset;
 
+        private BindingSource _hotkeyBindingSrc;
         private Properties.Settings _settings;
         private String oldLogin, oldPassword, oldToken;
         public SettingsForm()
@@ -22,9 +23,55 @@ namespace JoystickCurves
             oldLogin = textBox1.Text;
             oldPassword = textBox2.Text;
             oldToken = _settings.steamToken;
+            SetupHotkeyList();
 
         }
 
+        private void SetupHotkeyList()
+        {
+            buttonHotKey.Enabled = false;
+            if (_settings.hotKeys == null)
+                return;
+
+            if( _settings.hotKeys.Keys.Count <= 0 )
+                return;
+
+            if (_hotkeyBindingSrc == null)
+            {
+                _hotkeyBindingSrc = new BindingSource();
+                _hotkeyBindingSrc.DataSource = _settings.hotKeys.Keys.ToList();
+            }            
+            Utils.SetDataSource<ListBox>( listHotKeys, _hotkeyBindingSrc, "Title", "Title" );
+            buttonHotKey.Enabled = true;
+            var first = _settings.hotKeys.Keys.FirstOrDefault();
+            var text = "Hot Key";
+            var devicetext = "";
+            if( first != null)
+            {
+                switch( first.Key.Type )
+                {
+                    case DIDataType.Joystick:
+                        {
+                            text = first.Key.JoystickOffsetString;
+                            devicetext = "Joy:";
+                        }
+                        break;
+                    case DIDataType.Keyboard: 
+                        {
+                            text = first.Key.KeyboardKeyString;
+                            devicetext = "Key:";
+                        } 
+                        break;
+                    case DIDataType.Mouse:
+                        {
+                            text = first.Key.MouseOffsetString;
+                            devicetext = "Mou:";
+                        }
+                        break;
+                }
+            }
+            buttonHotKey.Text = devicetext + text;
+        }
         private void textBox1_TextChanged(object sender, EventArgs e)
         {
             if (oldLogin != textBox1.Text)
