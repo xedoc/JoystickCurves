@@ -164,6 +164,12 @@
     <Compile Include="ProfileManager.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ValueInput.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="ValueInput.Designer.cs">
+      <DependentUpon>ValueInput.cs</DependentUpon>
+    </Compile>
     <Compile Include="VirtualJoystick.cs" />
     <EmbeddedResource Include="AxisEditor.resx">
       <DependentUpon>AxisEditor.cs</DependentUpon>
@@ -192,10 +198,13 @@
     <EmbeddedResource Include="SettingsForm.resx">
       <DependentUpon>SettingsForm.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="ValueInput.resx">
+      <DependentUpon>ValueInput.cs</DependentUpon>
+    </EmbeddedResource>
     <None Include="app.config" />
     <None Include="JoystickCurves_TemporaryKey.pfx" />
     <None Include="Properties\Settings.settings">
-      <Generator>SettingsSingleFileGenerator</Generator>
+      <Generator>PublicSettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
     </None>
     <Compile Include="Properties\Settings.Designer.cs">

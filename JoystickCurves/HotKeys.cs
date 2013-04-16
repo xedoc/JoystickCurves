@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading;
 using Microsoft.DirectX.DirectInput;
 using System.Xml.Serialization;
+using System.Collections.ObjectModel;
 
 namespace JoystickCurves
 {
@@ -14,29 +15,45 @@ namespace JoystickCurves
         public event EventHandler<EventArgs> OnPrevProfile;
         public event EventHandler<EventArgs> OnDecSensitivity;
         public event EventHandler<EventArgs> OnIncSensitivity;
-        public event EventHandler<HotKeyArgs> OnSetSensitivity;
+        public event EventHandler<HotKeyArgs> OnSetLowSensitivity;
+        public event EventHandler<HotKeyArgs> OnSetMediumSensitivity;
+        public event EventHandler<HotKeyArgs> OnSetHighSensitivity;
+        public event EventHandler<EventArgs> OnChange;
+
 
         public HotKeys()
-        {
-            Keys = new HashSet<HotKey>();
+        { 
+            Keys = new ObservableCollection<HotKey>();
+            foreach (HotKeyType v in Enum.GetValues(typeof(HotKeyType)))
+            {
+                AddHotKey( new HotKey() { HotKeyType = v });
+            }
         }
+
+
         [XmlElement(ElementName="HotKey")]
-        public HashSet<HotKey> Keys
+        public ObservableCollection<HotKey> Keys
         {
             get;
             set;
         }
         public void AddHotKey(HotKey hotkey)
         {
+
             if (hotkey == null)
                 return;
 
             RemoveHotkey(hotkey);
             Keys.Add(hotkey);
+
+            if (OnChange != null)
+                OnChange(this, EventArgs.Empty);
         }
         public void RemoveHotkey(HotKey hotkey)
         {
-            Keys.RemoveWhere(hk => hk.Title == hk.Title);
+            var todelete = Keys.FirstOrDefault(hk => hk.Title == hotkey.Title);
+            if (todelete != null)
+                Keys.Remove(todelete);
         }
         public void ProcessData( DirectInputData data )
         {
@@ -65,7 +82,7 @@ namespace JoystickCurves
             if (hotkey == null)
                 return;
 
-            switch (hotkey.Type)
+            switch (hotkey.HotKeyType)
             {
                 case HotKeyType.NextProfile:
                     if (OnNextProfile != null) OnNextProfile(this, EventArgs.Empty);
@@ -79,8 +96,14 @@ namespace JoystickCurves
                 case HotKeyType.IncSensitivity:
                     if (OnIncSensitivity != null) OnIncSensitivity(this, EventArgs.Empty);
                     break;
-                case HotKeyType.SetSensitivity:
-                    if (OnSetSensitivity!= null) OnSetSensitivity(this, new HotKeyArgs( hotkey ));
+                case HotKeyType.SetLowSensitivity:
+                    if (OnSetLowSensitivity != null) OnSetLowSensitivity(this, new HotKeyArgs(hotkey));
+                    break;
+                case HotKeyType.SetMediumSensitivity:
+                    if (OnSetMediumSensitivity != null) OnSetMediumSensitivity(this, new HotKeyArgs(hotkey));
+                    break;
+                case HotKeyType.SetHighSensitivity:
+                    if (OnSetHighSensitivity != null) OnSetHighSensitivity(this, new HotKeyArgs(hotkey));
                     break;
             }
         }
@@ -91,25 +114,63 @@ namespace JoystickCurves
         PrevProfile,
         DecSensitivity,
         IncSensitivity,
-        SetSensitivity
+        SetLowSensitivity,
+        SetMediumSensitivity,
+        SetHighSensitivity
     }
     public class HotKey
     {
+        private HotKeyType _type;
+
         [XmlElement(ElementName="DirectInputData")]
         public DirectInputData Key
         {
             get;set;
         }
-        [XmlAttribute]
+        [XmlIgnore]
         public String Title
         {
             get;set;
         }
         [XmlIgnore]
-        public HotKeyType Type
+        public HotKeyType HotKeyType
         {
-            get;
-            set;
+            get { return _type; }
+            set
+            {
+                _type = value;
+                switch (value)
+                {
+                    case HotKeyType.DecSensitivity:
+                        Title = "Decrease sensitivity";
+                        break;
+                    case HotKeyType.IncSensitivity:
+                        Title = "Increase sensitivity";
+                        break;
+                    case HotKeyType.NextProfile:
+                        Title = "Next profile";
+                        break;
+                    case HotKeyType.PrevProfile:
+                        Title = "Previous profile";
+                        break;
+                    case HotKeyType.SetLowSensitivity:
+                        Title = "Low sensitivity";
+                        break;
+                    case HotKeyType.SetMediumSensitivity:
+                        Title = "Medium sensitivity";
+                        break;
+                    case HotKeyType.SetHighSensitivity:
+                        Title = "High sensitivity";
+                        break;
+                }
+
+            }
+        }
+        [XmlAttribute(AttributeName = "HotKeyType")]
+        public String TypeString
+        {
+            get { return HotKeyType.ToString(); }
+            set { HotKeyType v; Enum.TryParse<HotKeyType>(value, out v); HotKeyType = v; }
         }
         [XmlAttribute]
         public float FloatValue1
@@ -125,6 +186,18 @@ namespace JoystickCurves
         }
         [XmlAttribute]
         public bool BoolValue1
+        {
+            get;
+            set;
+        }
+        [XmlAttribute]
+        public bool StringValue1
+        {
+            get;
+            set;
+        }
+        [XmlAttribute]
+        public bool HoldToActivate
         {
             get;
             set;

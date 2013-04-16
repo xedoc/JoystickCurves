@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
@@ -58,9 +59,10 @@ namespace JoystickCurves
                 this.Close();
                 return;
             }
-            _settings = Properties.Settings.Default;
+            _settings = Properties.Settings.Default;           
             _settings.PropertyChanged += new PropertyChangedEventHandler(_settings_PropertyChanged);
-            settingsForm = new SettingsForm();
+            settingsForm = new SettingsForm(ref _settings);
+            settingsForm.OnHotKeyRequest += new EventHandler<HotKeyArgs>(settingsForm_OnHotKeyRequest);
             settingsForm.OnReset += new EventHandler<EventArgs>(settingsForm_OnReset);
 
             InitializeComponent();
@@ -79,10 +81,37 @@ namespace JoystickCurves
 
 
             debugForm = new DebugForm();
+            _settings.hotKeys = new HotKeys()
+            {
+                Keys = new ObservableCollection<HotKey>(){
+                    new HotKey() {HotKeyType = HotKeyType.DecSensitivity, Key = new DirectInputData() {
+                        DeviceName = "device",JoystickOffset = JoystickOffset.Button0, MouseOffset = MouseOffset.Button1, KeyboardKey = Key.BackSlash, Type = DIDataType.Joystick 
+                    }}
+                }
+            };
+
+        }
+
+        void settingsForm_OnHotKeyRequest(object sender, HotKeyArgs e)
+        {
+            _settings.hotKeys.AddHotKey(new HotKey()
+            {
+                HotKeyType = HotKeyType.SetHighSensitivity,
+                Key = new DirectInputData()
+                {
+                    DeviceName = "device 2",
+                    JoystickOffset = JoystickOffset.Button0,
+                    MouseOffset = MouseOffset.Button1,
+                    KeyboardKey = Key.BackSlash,
+                    Type = DIDataType.Joystick
+                }
+            });
         }
 
         void settingsForm_OnReset(object sender, EventArgs e)
         {
+            _settings.Reset();
+            _settings.Save();
             _settings = Properties.Settings.Default;
             _settings.CurrentProfile = null;
             _profileManager = null;
@@ -98,7 +127,7 @@ namespace JoystickCurves
                 if (_saitek == null)
                 {
                     Debug.Print("Connecting Saitek");
-                    _saitek = new SaitekMFD();
+                    _saitek = new SaitekMFD();                    
                     if (!_saitek.Acquiring)
                     {
                         _saitek.Acquire();
@@ -504,14 +533,7 @@ namespace JoystickCurves
             {
                 _settings.steamToken = _steam.Token;
             }
-            _settings.hotKeys = new HotKeys()
-            {
-                Keys = new HashSet<HotKey>(){
-                    new HotKey() {Title = "test", Type = HotKeyType.DecSensitivity, Key = new DirectInputData() {
-                        DeviceName = "device",JoystickOffset = JoystickOffset.Button0, MouseOffset = MouseOffset.Button1, KeyboardKey = Key.BackSlash, Type = DIDataType.Joystick 
-                    }}
-                }
-            };
+
             _settings.Profiles = _profileManager;
             _settings.CurrentProfile = GetCurrentProfile();
             _settings.Save();
@@ -1147,11 +1169,13 @@ namespace JoystickCurves
         {
             if( settingsForm == null )
             {
-                settingsForm = new SettingsForm();
+                settingsForm = new SettingsForm(ref _settings);
+
                 settingsForm.OnReset +=new EventHandler<EventArgs>(settingsForm_OnReset);
             }
 
             settingsForm.Show();
+            settingsForm.Activate();
         }
 
         private void deleteCurrentProfileToolStripMenuItem_Click(object sender, EventArgs e)

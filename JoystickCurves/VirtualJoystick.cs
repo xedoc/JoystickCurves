@@ -3,7 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using vJoyInterfaceWrap;
-
+using System.Threading;
+using System.Diagnostics;
 namespace JoystickCurves
 {
     public class VirtualJoystick
@@ -15,27 +16,31 @@ namespace JoystickCurves
         private Dictionary<HID_USAGES, int[]> minMaxAxis;
         private Dictionary<HID_USAGES, int> lastValue;
         private object lockSetAxis = new object();
+        private object lockAcquire = new object();
+        private const int POLLINTERVAL = 3000;
+        private Timer _acquireTimer;
+        private object lockMinMax = new object();
         #endregion
 
         #region Public accessors/methods/properties
         public event EventHandler<EventArgs> OnAcquire;
 
-        public VirtualJoystick()
-        {
-            Init();
-
-            if (!Enabled) 
-                return;
-        }
         public VirtualJoystick(uint id)
         {
             Init();
 
             if (!Enabled)
                 return;
-            _deviceid = id;
 
+            _deviceid = id;
             Acquire();
+            _acquireTimer = new Timer(new TimerCallback(acquire_Tick), null, POLLINTERVAL, POLLINTERVAL);
+
+        }
+        private void acquire_Tick( object o)
+        {
+                Acquire();
+
         }
         private void Init()
         {
@@ -69,64 +74,67 @@ namespace JoystickCurves
         }
         public bool Acquire()
         {
-            var status = _joystick.GetVJDStatus(_deviceid);
-            switch (status)
+            lock (lockAcquire)
             {
-                case VjdStat.VJD_STAT_OWN:
-                    break;
-                case VjdStat.VJD_STAT_FREE:
-                    break;
-                case VjdStat.VJD_STAT_BUSY:
-                    return false; 
-                case VjdStat.VJD_STAT_MISS:
-                    return false;
-                default:
-                    return false;
-            };
-            
-            _joystick.AcquireVJD(_deviceid);
-            
-            var axisList = new HID_USAGES[] { HID_USAGES.HID_USAGE_X, HID_USAGES.HID_USAGE_Y, HID_USAGES.HID_USAGE_RZ };
-            var v = 0;
-            foreach (var a in axisList)
-            {
-                v = AxisMinValue(a);
-                SetAxis(0, a);
+                var status = _joystick.GetVJDStatus(_deviceid);
+                switch (status)
+                {
+                    case VjdStat.VJD_STAT_OWN:
+                        return true;
+                    case VjdStat.VJD_STAT_FREE:
+                        break;
+                    case VjdStat.VJD_STAT_BUSY:
+                        return false;
+                    case VjdStat.VJD_STAT_MISS:
+                        return false;
+                    default:
+                        return false;
+                };
+
+                _joystick.AcquireVJD(_deviceid);
+
+                var axisList = new HID_USAGES[] { HID_USAGES.HID_USAGE_X, HID_USAGES.HID_USAGE_Y, HID_USAGES.HID_USAGE_RZ };
+                var v = 0;
+                foreach (var a in axisList)
+                {
+                    v = AxisMinValue(a);
+                    SetAxis(0, a);
+                }
+
+                var btnNumber = _joystick.GetVJDButtonNumber(_deviceid);
+                for (uint i = 0; i < btnNumber; i++)
+                    _joystick.SetBtn(false, _deviceid, i);
+
+                if (OnAcquire != null)
+                    OnAcquire(this, EventArgs.Empty);
+
+                isAcquired = true;
+                return true;
             }
-            
-            var btnNumber = _joystick.GetVJDButtonNumber( _deviceid );
-            for (uint i = 0; i < btnNumber; i++)
-                _joystick.SetBtn(false, _deviceid, i);
-
-            if (OnAcquire != null)
-                OnAcquire(this, EventArgs.Empty);
-
-            isAcquired = true;
-            return true;
 
         }
         private int AxisMaxValue(HID_USAGES hidusage)
         {
-            long maxValue = 0;
-            long minValue = 0;
-            if (!minMaxAxis.ContainsKey(hidusage))
-            {
-                _joystick.GetVJDAxisMax(_deviceid, hidusage, ref maxValue);
-                _joystick.GetVJDAxisMin(_deviceid, hidusage, ref minValue);
-                minMaxAxis.Add(hidusage, new int[] { (int)minValue, (int)maxValue });
-            }
+            //long maxValue = 0;
+            //long minValue = 0;
+            //if (!minMaxAxis.ContainsKey(hidusage))
+            //{
+            //    _joystick.GetVJDAxisMax(_deviceid, hidusage, ref maxValue);
+            //    _joystick.GetVJDAxisMin(_deviceid, hidusage, ref minValue);
+            //    minMaxAxis.Add(hidusage, new int[] { (int)minValue, (int)maxValue });
+            //}
             return AXISLIMIT;
         }
         private int AxisMinValue(HID_USAGES hidusage)
         {
-            long maxValue = 0;
-            long minValue = 0;
-            if (!minMaxAxis.ContainsKey(hidusage))
-            {
-                _joystick.GetVJDAxisMax(_deviceid, hidusage, ref maxValue);
-                _joystick.GetVJDAxisMin(_deviceid, hidusage, ref minValue);
-                minMaxAxis.Add(hidusage, new int[] { (int)minValue, (int)maxValue });
-            }
+            //long maxValue = 0;
+            //long minValue = 0;
+            //if (!minMaxAxis.ContainsKey(hidusage))
+            //{
+            //    _joystick.GetVJDAxisMax(_deviceid, hidusage, ref maxValue);
+            //    _joystick.GetVJDAxisMin(_deviceid, hidusage, ref minValue);
+            //    minMaxAxis.Add(hidusage, new int[] { (int)minValue, (int)maxValue });
+            //}
             return -AXISLIMIT;
         }
 

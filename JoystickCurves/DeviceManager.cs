@@ -15,9 +15,10 @@ namespace JoystickCurves
         public event EventHandler<EventArgs> OnKeyboardList;
         public event EventHandler<EventArgs> OnMouseList;
         public object pollLock = new object();
+        public object bindVirtualJoyLock = new object();
         private String[] virtualTags = new String[] { "vjoy" };
         private Timer _pollTimer;
-        private const int POLLINTERVAL = 1000;
+        private const int POLLINTERVAL = 3000;
         public DeviceManager()
         {
             Joysticks = new List<DirectInputJoystick>();
@@ -161,7 +162,6 @@ namespace JoystickCurves
                 joystick.OnError += new EventHandler<EventArgs>(OnNoNeed);
                 joystick.OnUnacquire += new EventHandler<EventArgs>(OnNoNeed);
 
-
                 
                 Joysticks.Add(joystick);
                 if (Joysticks.Where(d => d.Name.StartsWith(joystick.Name)).Count() > 1)
@@ -172,8 +172,7 @@ namespace JoystickCurves
                 }
             }
 
-            var virtualCount = Joysticks.Count(j => j.Type == DeviceType.Virtual);
-            if ( virtualCount >= 1)
+            if ( Joysticks.Exists( j => j.Type == DeviceType.Virtual && j.VirtualJoystick == null ))
             {
                 foreach (var joystick in Joysticks.Where(j => j.Type == DeviceType.Virtual))
                 {
@@ -181,37 +180,38 @@ namespace JoystickCurves
                 }
                 for (uint i = 1; i <= 16; i++)
                 {
-                    var vjoy = new VirtualJoystick(i);
-                    vjoy.OnAcquire += new EventHandler<EventArgs>(vjoy_OnAcquire);
-                    vjoy.Acquire();
+                    if (!Joysticks.Exists(j => j.VirtualJoystick != null && j.VirtualJoystick.DeviceID == i))
+                    {
+                        var vjoy = new VirtualJoystick(i);
+                        if (vjoy.isAcquired)
+                        {
+                            vjoy.SetButton(vjoy.DeviceID, true);
+                            vjoy.Unacquire();
+                        }
+                    }
                 }
             }
 
             if (OnJoystickList != null)
                 OnJoystickList(this, EventArgs.Empty);
         }
-
-        void vjoy_OnAcquire(object sender, EventArgs e)
-        {
-            VirtualJoystick vjoy = sender as VirtualJoystick;
-            vjoy.SetButton(vjoy.DeviceID, true);
-            vjoy.Unacquire();
-        }
-
         void gameController_OnButtonDown(object sender, CustomEventArgs<DirectInputData> e)
         {
-            DirectInputJoystick device = Joysticks.Where( d => d.Name == e.Data.DeviceName).FirstOrDefault();
-            if (device == null)
-                return;
+            lock (bindVirtualJoyLock)
+            {
+                DirectInputJoystick device = Joysticks.Where(d => d.Name == e.Data.DeviceName).FirstOrDefault();
+                if (device == null)
+                    return;
 
-            var i = Joysticks.IndexOf(device);
-            var devName = device.Name;
-            var deviceId = (uint)e.Data.JoystickOffset - (uint)JoystickOffset.Button0 + 1;
-            
-            Joysticks[i].VirtualJoystick = new VirtualJoystick(deviceId);
+                var i = Joysticks.IndexOf(device);
+                var devName = device.Name;
+                var deviceId = (uint)e.Data.JoystickOffset - (uint)JoystickOffset.Button0 + 1;
 
-            device.OnButtonPress -= gameController_OnButtonDown;
-            device.VirtualJoystick.SetButton(device.VirtualJoystick.DeviceID, false);
+                Joysticks[i].VirtualJoystick = new VirtualJoystick(deviceId);
+
+                device.OnButtonPress -= gameController_OnButtonDown;
+                device.VirtualJoystick.SetButton(device.VirtualJoystick.DeviceID, false);
+            }
         }
 
         private DeviceType GetDeviceType( string name )
