@@ -20,18 +20,13 @@ namespace JoystickCurves
         public event EventHandler<HotKeyArgs> OnSetHighSensitivity;
         public event EventHandler<EventArgs> OnChange;
 
-
+        private ObservableCollection<HotKey> _keys;
         public HotKeys()
         { 
-            Keys = new ObservableCollection<HotKey>();
-            foreach (HotKeyType v in Enum.GetValues(typeof(HotKeyType)))
-            {
-                AddHotKey( new HotKey() { HotKeyType = v });
-            }
+
         }
 
-
-        [XmlElement(ElementName="HotKey")]
+        [XmlElement(ElementName = "HotKey")]
         public ObservableCollection<HotKey> Keys
         {
             get;
@@ -131,6 +126,34 @@ namespace JoystickCurves
         public String Title
         {
             get;set;
+        }
+        [XmlIgnore]
+        public String DisplayTitle
+        {
+            get
+            {
+                var result = Title;
+                if (Key != null)
+                {
+                    var device = Key.DeviceName;
+                    var button = "";
+                    switch( Key.Type )
+                    {
+                        case DIDataType.Joystick:
+                            button = Key.JoystickOffset.ToString();
+                            break;
+                        case DIDataType.Keyboard:
+                            button = Key.KeyboardKey.ToString();
+                            break;
+                        case DIDataType.Mouse:
+                            button = Key.MouseOffset.ToString();
+                            break;
+
+                    }
+                    return String.Format("{0}\t{1}\t{2}", Title, device, button);
+                }
+                return result;
+            }
         }
         [XmlIgnore]
         public HotKeyType HotKeyType

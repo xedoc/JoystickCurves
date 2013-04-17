@@ -19,6 +19,7 @@ namespace JoystickCurves
         private String[] virtualTags = new String[] { "vjoy" };
         private Timer _pollTimer;
         private const int POLLINTERVAL = 3000;
+        private HotKey _currentHotkey;
         public DeviceManager()
         {
             Joysticks = new List<DirectInputJoystick>();
@@ -98,7 +99,33 @@ namespace JoystickCurves
                 OnMouseList(this, EventArgs.Empty);
 
         }
+        public HotKey GetHotKey(HotKey key)
+        {
+            if (key == null)
+            {
+                _currentHotkey = null;
+                return null;
+            }
 
+            _currentHotkey = key;
+
+            foreach (var joy in Joysticks.Where(d => d.Type == DeviceType.Physical))
+                joy.OnButtonDown += new EventHandler<CustomEventArgs<DirectInputData>>(hotkey_OnButton);
+            
+            Keyboards.ForEach(keyboard => keyboard.OnKeyUp += new EventHandler<CustomEventArgs<DirectInputData>>(hotkey_OnButton));
+            Mouses.ForEach(mouse => mouse.OnButtonDown += new EventHandler<CustomEventArgs<DirectInputData>>(hotkey_OnButton));
+            _currentHotkey.Key = null;
+            while (_currentHotkey.Key == null)
+            {
+                Thread.Sleep(50);
+            }
+            return _currentHotkey;
+        }
+
+        void hotkey_OnButton(object sender, CustomEventArgs<DirectInputData> e)
+        {
+            _currentHotkey.Key = e.Data;
+        }
 
         public void RefreshKeyboardList()
         {

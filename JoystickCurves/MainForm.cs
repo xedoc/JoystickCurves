@@ -61,9 +61,6 @@ namespace JoystickCurves
             }
             _settings = Properties.Settings.Default;           
             _settings.PropertyChanged += new PropertyChangedEventHandler(_settings_PropertyChanged);
-            settingsForm = new SettingsForm(ref _settings);
-            settingsForm.OnHotKeyRequest += new EventHandler<HotKeyArgs>(settingsForm_OnHotKeyRequest);
-            settingsForm.OnReset += new EventHandler<EventArgs>(settingsForm_OnReset);
 
             InitializeComponent();
 
@@ -81,31 +78,13 @@ namespace JoystickCurves
 
 
             debugForm = new DebugForm();
-            _settings.hotKeys = new HotKeys()
-            {
-                Keys = new ObservableCollection<HotKey>(){
-                    new HotKey() {HotKeyType = HotKeyType.DecSensitivity, Key = new DirectInputData() {
-                        DeviceName = "device",JoystickOffset = JoystickOffset.Button0, MouseOffset = MouseOffset.Button1, KeyboardKey = Key.BackSlash, Type = DIDataType.Joystick 
-                    }}
-                }
-            };
 
         }
 
         void settingsForm_OnHotKeyRequest(object sender, HotKeyArgs e)
         {
-            _settings.hotKeys.AddHotKey(new HotKey()
-            {
-                HotKeyType = HotKeyType.SetHighSensitivity,
-                Key = new DirectInputData()
-                {
-                    DeviceName = "device 2",
-                    JoystickOffset = JoystickOffset.Button0,
-                    MouseOffset = MouseOffset.Button1,
-                    KeyboardKey = Key.BackSlash,
-                    Type = DIDataType.Joystick
-                }
-            });
+            var hk = _deviceManager.GetHotKey(e.HotKey);
+            settingsForm.UpdateHotKey(hk);
         }
 
         void settingsForm_OnReset(object sender, EventArgs e)
@@ -420,8 +399,24 @@ namespace JoystickCurves
             else
                 _currentProfile = _settings.CurrentProfile;
 
+            if (_settings.hotKeys == null)
+                _settings.hotKeys = new HotKeys();
+
+            if (_settings.hotKeys.Keys == null)
+            {
+                _settings.hotKeys.Keys = new ObservableCollection<HotKey>();
+                foreach (HotKeyType v in Enum.GetValues(typeof(HotKeyType)))
+                {
+                    _settings.hotKeys.AddHotKey(new HotKey() { HotKeyType = v });
+                }
+            }
+
             if (_currentProfile.Tabs == null)
                 _currentProfile.Tabs.Add(new ProfileTab() { TabTitle = "Axis 1" });
+
+            settingsForm = new SettingsForm(ref _settings);
+            settingsForm.OnHotKeyRequest += new EventHandler<HotKeyArgs>(settingsForm_OnHotKeyRequest);
+            settingsForm.OnReset += new EventHandler<EventArgs>(settingsForm_OnReset);
 
             SetCurrentProfile(_currentProfile);
             SetupProfileCombo();

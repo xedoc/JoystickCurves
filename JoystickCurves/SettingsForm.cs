@@ -7,11 +7,17 @@ using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Windows.Forms;
-
+using System.Runtime.InteropServices;
+					
 namespace JoystickCurves
 {
     public partial class SettingsForm : Form, INotifyPropertyChanged
     {
+
+        [DllImport("user32.dll")]
+        private static extern int SendMessage(int hWnd, int wMsg, int wParam, ref int lParam);
+        private const int LB_SETTABSTOPS = 0x192;
+
         public event EventHandler<EventArgs> OnReset;
         public event EventHandler<HotKeyArgs> OnHotKeyRequest;
         private Properties.Settings _settings;
@@ -20,12 +26,20 @@ namespace JoystickCurves
         public SettingsForm(ref Properties.Settings settings)
         {
             InitializeComponent();
+
             _settings = settings;
             oldLogin = textBox1.Text;
             oldPassword = textBox2.Text;
             oldToken = _settings.steamToken;
             SetupHotkeyList();
             checkBoxHotKey.DataBindings.Add(new Binding("Checked", this, "WaitingHotKey", false, DataSourceUpdateMode.OnPropertyChanged, null));
+
+        }
+        private void SetListTabs()
+        {
+            int[] ListBoxTabs = new int[] { listHotKeys.Width / 3, listHotKeys.Width / 2 };
+            int result;
+            result = SendMessage(listHotKeys.Handle.ToInt32(), LB_SETTABSTOPS, ListBoxTabs.Length, ref ListBoxTabs[0]);
         }
         private void SetupHotkeyList()
         {
@@ -46,7 +60,11 @@ namespace JoystickCurves
             }
 
 
-            Utils.SetDataSource<ListBox>( listHotKeys, _hotkeyBindingSrc, "Title", "Title" );
+            SetListTabs();
+
+            Utils.SetDataSource<ListBox>( listHotKeys, _hotkeyBindingSrc, "DisplayTitle", "Title" );
+
+
             checkBoxHotKey.Enabled = true;
             var first = _settings.hotKeys.Keys.FirstOrDefault();
             var text = "Hot Key";
@@ -149,9 +167,54 @@ namespace JoystickCurves
         {
             if (checkBoxHotKey.Checked)
             {
-                if (OnHotKeyRequest != null)
-                    OnHotKeyRequest(this, new HotKeyArgs(new HotKey()));
+
+                var _curHotkey = listHotKeys.SelectedItem as HotKey;
+                if (_curHotkey != null)
+                {
+                    checkBoxHotKey.Enabled = false;
+                    listHotKeys.Enabled = false;
+                    valueInput.Enabled = false;
+                    checkBoxHold.Enabled = false;
+
+                    if (OnHotKeyRequest != null)
+                        OnHotKeyRequest(this, new HotKeyArgs(_curHotkey));
+                }
+                else
+                {
+                    checkBoxHotKey.Checked = false;
+                }
             }
+        }
+
+        public void UpdateHotKey(HotKey key)
+        {
+
+            if( _settings.hotKeys.Keys.ToList().Exists( hk => hk.Title == key.Title ))
+            {
+
+                var i = _settings.hotKeys.Keys.IndexOf((HotKey)listHotKeys.SelectedItem);
+                if (i >= 0)
+                {
+                    _settings.hotKeys.Keys[i] = key;
+                }
+                else
+                {
+                    _settings.hotKeys.Keys.Add(key);
+                }
+                _hotkeyBindingSrc = null;
+                SetupHotkeyList();
+            }
+            checkBoxHotKey.Checked = false;
+            checkBoxHotKey.Enabled = true;
+            listHotKeys.Enabled = true;
+            valueInput.Enabled = true;
+            checkBoxHold.Enabled = true;
+        }
+
+        private void listHotKeys_Resize(object sender, EventArgs e)
+        {
+            SetListTabs();
+            listHotKeys.Refresh();
         }
     }
 }

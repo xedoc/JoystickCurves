@@ -36,10 +36,10 @@
             this.directorySearcher1 = new System.DirectoryServices.DirectorySearcher();
             this.settingsTree1 = new mycontrol.SettingsTree();
             this.settingsPage5 = new mycontrol.SettingsPage();
-            this.valueInput = new JoystickCurves.ValueInput();
+            this.listHotKeys = new System.Windows.Forms.ListBox();
             this.checkBoxHotKey = new System.Windows.Forms.CheckBox();
             this.label5 = new System.Windows.Forms.Label();
-            this.checkBox6 = new System.Windows.Forms.CheckBox();
+            this.checkBoxHold = new System.Windows.Forms.CheckBox();
             this.settingsPage2 = new mycontrol.SettingsPage();
             this.button1 = new System.Windows.Forms.Button();
             this.checkBox3 = new System.Windows.Forms.CheckBox();
@@ -57,7 +57,7 @@
             this.label4 = new System.Windows.Forms.Label();
             this.checkBox5 = new System.Windows.Forms.CheckBox();
             this.settingsPage1 = new mycontrol.SettingsPage();
-            this.listHotKeys = new System.Windows.Forms.ListBox();
+            this.valueInput = new JoystickCurves.ValueInput();
             ((System.ComponentModel.ISupportInitialize)(this.settingsTree1.SplitContainer)).BeginInit();
             this.settingsTree1.SplitContainer.Panel2.SuspendLayout();
             this.settingsPage5.SuspendLayout();
@@ -126,7 +126,7 @@
             this.settingsPage5.Controls.Add(this.valueInput);
             this.settingsPage5.Controls.Add(this.checkBoxHotKey);
             this.settingsPage5.Controls.Add(this.label5);
-            this.settingsPage5.Controls.Add(this.checkBox6);
+            this.settingsPage5.Controls.Add(this.checkBoxHold);
             this.settingsPage5.Dock = System.Windows.Forms.DockStyle.Fill;
             this.settingsPage5.isActive = true;
             this.settingsPage5.Location = new System.Drawing.Point(0, 0);
@@ -135,24 +135,18 @@
             this.settingsPage5.Size = new System.Drawing.Size(322, 269);
             this.settingsPage5.TabIndex = 4;
             // 
-            // valueInput
+            // listHotKeys
             // 
-            this.valueInput.BoolValue = false;
-            this.valueInput.FloatMax = 1F;
-            this.valueInput.FloatMin = 0F;
-            this.valueInput.FloatStep = 0.01F;
-            this.valueInput.FloatValue = 0F;
-            this.valueInput.IntMax = 0;
-            this.valueInput.IntMin = 0;
-            this.valueInput.IntStep = 0;
-            this.valueInput.IntValue = 0;
-            this.valueInput.Label = "Value";
-            this.valueInput.Location = new System.Drawing.Point(91, 207);
-            this.valueInput.Name = "valueInput";
-            this.valueInput.Size = new System.Drawing.Size(219, 25);
-            this.valueInput.StringValue = "";
-            this.valueInput.TabIndex = 6;
-            this.valueInput.Type = JoystickCurves.ValueInput.ValueType.Float;
+            this.listHotKeys.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.listHotKeys.FormattingEnabled = true;
+            this.listHotKeys.Location = new System.Drawing.Point(13, 25);
+            this.listHotKeys.MultiColumn = true;
+            this.listHotKeys.Name = "listHotKeys";
+            this.listHotKeys.Size = new System.Drawing.Size(297, 173);
+            this.listHotKeys.TabIndex = 7;
+            this.listHotKeys.Resize += new System.EventHandler(this.listHotKeys_Resize);
             // 
             // checkBoxHotKey
             // 
@@ -175,15 +169,15 @@
             this.label5.TabIndex = 4;
             this.label5.Text = "Select an action and press Hot Key button to bind a key";
             // 
-            // checkBox6
+            // checkBoxHold
             // 
-            this.checkBox6.AutoSize = true;
-            this.checkBox6.Location = new System.Drawing.Point(13, 238);
-            this.checkBox6.Name = "checkBox6";
-            this.checkBox6.Size = new System.Drawing.Size(101, 17);
-            this.checkBox6.TabIndex = 3;
-            this.checkBox6.Text = "Hold to activate";
-            this.checkBox6.UseVisualStyleBackColor = true;
+            this.checkBoxHold.AutoSize = true;
+            this.checkBoxHold.Location = new System.Drawing.Point(13, 238);
+            this.checkBoxHold.Name = "checkBoxHold";
+            this.checkBoxHold.Size = new System.Drawing.Size(101, 17);
+            this.checkBoxHold.TabIndex = 3;
+            this.checkBoxHold.Text = "Hold to activate";
+            this.checkBoxHold.UseVisualStyleBackColor = true;
             // 
             // settingsPage2
             // 
@@ -385,14 +379,24 @@
             this.settingsPage1.Size = new System.Drawing.Size(267, 191);
             this.settingsPage1.TabIndex = 0;
             // 
-            // listHotKeys
+            // valueInput
             // 
-            this.listHotKeys.FormattingEnabled = true;
-            this.listHotKeys.Location = new System.Drawing.Point(13, 25);
-            this.listHotKeys.MultiColumn = true;
-            this.listHotKeys.Name = "listHotKeys";
-            this.listHotKeys.Size = new System.Drawing.Size(297, 173);
-            this.listHotKeys.TabIndex = 7;
+            this.valueInput.BoolValue = false;
+            this.valueInput.FloatMax = 1F;
+            this.valueInput.FloatMin = 0F;
+            this.valueInput.FloatStep = 0.01F;
+            this.valueInput.FloatValue = 0F;
+            this.valueInput.IntMax = 0;
+            this.valueInput.IntMin = 0;
+            this.valueInput.IntStep = 0;
+            this.valueInput.IntValue = 0;
+            this.valueInput.Label = "Value";
+            this.valueInput.Location = new System.Drawing.Point(91, 207);
+            this.valueInput.Name = "valueInput";
+            this.valueInput.Size = new System.Drawing.Size(219, 25);
+            this.valueInput.StringValue = "";
+            this.valueInput.TabIndex = 6;
+            this.valueInput.Type = JoystickCurves.ValueInput.ValueType.Float;
             // 
             // SettingsForm
             // 
@@ -441,7 +445,7 @@
         private System.Windows.Forms.PictureBox pictureBox1;
         private System.Windows.Forms.Label label4;
         private mycontrol.SettingsPage settingsPage5;
-        private System.Windows.Forms.CheckBox checkBox6;
+        private System.Windows.Forms.CheckBox checkBoxHold;
         private System.Windows.Forms.Label label5;
         private System.Windows.Forms.CheckBox checkBoxHotKey;
         private ValueInput valueInput;
