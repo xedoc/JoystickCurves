@@ -28,10 +28,10 @@
         /// </summary>
         private void InitializeComponent()
         {
-            System.Windows.Forms.TreeNode treeNode1 = new System.Windows.Forms.TreeNode("Hot keys");
-            System.Windows.Forms.TreeNode treeNode2 = new System.Windows.Forms.TreeNode("General");
-            System.Windows.Forms.TreeNode treeNode3 = new System.Windows.Forms.TreeNode("Steam overlay");
-            System.Windows.Forms.TreeNode treeNode4 = new System.Windows.Forms.TreeNode("Saitek X52 Pro display");
+            System.Windows.Forms.TreeNode treeNode1 = new System.Windows.Forms.TreeNode("General");
+            System.Windows.Forms.TreeNode treeNode4 = new System.Windows.Forms.TreeNode("Hot keys");
+            System.Windows.Forms.TreeNode treeNode2 = new System.Windows.Forms.TreeNode("Steam overlay");
+            System.Windows.Forms.TreeNode treeNode3 = new System.Windows.Forms.TreeNode("Saitek X52 Pro display");
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(SettingsForm));
             this.directorySearcher1 = new System.DirectoryServices.DirectorySearcher();
             this.settingsTree1 = new mycontrol.SettingsTree();
@@ -42,21 +42,21 @@
             this.checkBoxHold = new System.Windows.Forms.CheckBox();
             this.settingsPage2 = new mycontrol.SettingsPage();
             this.button1 = new System.Windows.Forms.Button();
-            this.checkBox3 = new System.Windows.Forms.CheckBox();
-            this.checkBox2 = new System.Windows.Forms.CheckBox();
-            this.checkBox1 = new System.Windows.Forms.CheckBox();
             this.settingsPage3 = new mycontrol.SettingsPage();
             this.label3 = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
             this.label1 = new System.Windows.Forms.Label();
-            this.textBox2 = new System.Windows.Forms.TextBox();
-            this.checkBox4 = new System.Windows.Forms.CheckBox();
-            this.textBox1 = new System.Windows.Forms.TextBox();
             this.settingsPage4 = new mycontrol.SettingsPage();
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
             this.label4 = new System.Windows.Forms.Label();
-            this.checkBox5 = new System.Windows.Forms.CheckBox();
             this.settingsPage1 = new mycontrol.SettingsPage();
+            this.checkBox3 = new System.Windows.Forms.CheckBox();
+            this.checkBox2 = new System.Windows.Forms.CheckBox();
+            this.checkBox1 = new System.Windows.Forms.CheckBox();
+            this.textBox2 = new System.Windows.Forms.TextBox();
+            this.checkBox4 = new System.Windows.Forms.CheckBox();
+            this.textBox1 = new System.Windows.Forms.TextBox();
+            this.checkBox5 = new System.Windows.Forms.CheckBox();
             this.valueInput = new JoystickCurves.ValueInput();
             ((System.ComponentModel.ISupportInitialize)(this.settingsTree1.SplitContainer)).BeginInit();
             this.settingsTree1.SplitContainer.Panel2.SuspendLayout();
@@ -76,9 +76,9 @@
             // settingsTree1
             // 
             treeNode1.Name = "";
-            treeNode1.Text = "Hot keys";
+            treeNode1.Text = "General";
             this.settingsTree1.CurrentNode = treeNode1;
-            this.settingsTree1.CurrentPage = this.settingsPage5;
+            this.settingsTree1.CurrentPage = this.settingsPage2;
             this.settingsTree1.Cursor = System.Windows.Forms.Cursors.Arrow;
             this.settingsTree1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.settingsTree1.LabelEdit = false;
@@ -104,6 +104,7 @@
             this.settingsTree1.SplitContainer.SplitterDistance = 148;
             this.settingsTree1.SplitContainer.TabIndex = 5;
             this.settingsTree1.TabIndex = 0;
+            this.settingsTree1.TabStop = false;
             // 
             // 
             // 
@@ -112,13 +113,14 @@
             this.settingsTree1.TreeView.Location = new System.Drawing.Point(0, 0);
             this.settingsTree1.TreeView.Name = "treeSettings";
             this.settingsTree1.TreeView.Nodes.AddRange(new System.Windows.Forms.TreeNode[] {
-            treeNode2,
             treeNode1,
             treeNode4,
-            treeNode3});
+            treeNode3,
+            treeNode2});
             this.settingsTree1.TreeView.Size = new System.Drawing.Size(148, 269);
             this.settingsTree1.TreeView.Sorted = true;
             this.settingsTree1.TreeView.TabIndex = 0;
+            this.settingsTree1.KeyDown += new System.Windows.Forms.KeyEventHandler(this.settingsTree1_KeyDown);
             // 
             // settingsPage5
             // 
@@ -131,7 +133,9 @@
             this.settingsPage5.isActive = true;
             this.settingsPage5.Location = new System.Drawing.Point(0, 0);
             this.settingsPage5.Name = "settingsPage5";
-            this.settingsPage5.ParentNode = treeNode1;
+            treeNode4.Name = "";
+            treeNode4.Text = "Hot keys";
+            this.settingsPage5.ParentNode = treeNode4;
             this.settingsPage5.Size = new System.Drawing.Size(322, 269);
             this.settingsPage5.TabIndex = 4;
             // 
@@ -189,10 +193,8 @@
             this.settingsPage2.isActive = true;
             this.settingsPage2.Location = new System.Drawing.Point(0, 0);
             this.settingsPage2.Name = "settingsPage2";
-            treeNode2.Name = "";
-            treeNode2.Text = "General";
-            this.settingsPage2.ParentNode = treeNode2;
-            this.settingsPage2.Size = new System.Drawing.Size(322, 248);
+            this.settingsPage2.ParentNode = treeNode1;
+            this.settingsPage2.Size = new System.Drawing.Size(322, 269);
             this.settingsPage2.TabIndex = 1;
             // 
             // button1
@@ -204,6 +206,95 @@
             this.button1.Text = "Reset Settings";
             this.button1.UseVisualStyleBackColor = true;
             this.button1.Click += new System.EventHandler(this.button1_Click);
+            // 
+            // settingsPage3
+            // 
+            this.settingsPage3.Controls.Add(this.label3);
+            this.settingsPage3.Controls.Add(this.label2);
+            this.settingsPage3.Controls.Add(this.label1);
+            this.settingsPage3.Controls.Add(this.textBox2);
+            this.settingsPage3.Controls.Add(this.checkBox4);
+            this.settingsPage3.Controls.Add(this.textBox1);
+            this.settingsPage3.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.settingsPage3.isActive = true;
+            this.settingsPage3.Location = new System.Drawing.Point(0, 0);
+            this.settingsPage3.Name = "settingsPage3";
+            treeNode2.Name = "";
+            treeNode2.Text = "Steam overlay";
+            this.settingsPage3.ParentNode = treeNode2;
+            this.settingsPage3.Size = new System.Drawing.Size(322, 269);
+            this.settingsPage3.TabIndex = 2;
+            // 
+            // label3
+            // 
+            this.label3.Location = new System.Drawing.Point(10, 99);
+            this.label3.Name = "label3";
+            this.label3.Size = new System.Drawing.Size(339, 37);
+            this.label3.TabIndex = 5;
+            this.label3.Text = "* Add bot to the friend list of your main Steam account. Bot must have single fri" +
+    "end only!";
+            // 
+            // label2
+            // 
+            this.label2.AutoSize = true;
+            this.label2.Location = new System.Drawing.Point(8, 69);
+            this.label2.Name = "label2";
+            this.label2.Size = new System.Drawing.Size(74, 13);
+            this.label2.TabIndex = 3;
+            this.label2.Text = "Bot password:";
+            // 
+            // label1
+            // 
+            this.label1.AutoSize = true;
+            this.label1.Location = new System.Drawing.Point(5, 43);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(83, 13);
+            this.label1.TabIndex = 1;
+            this.label1.Text = "Steam bot login:";
+            // 
+            // settingsPage4
+            // 
+            this.settingsPage4.Controls.Add(this.pictureBox1);
+            this.settingsPage4.Controls.Add(this.label4);
+            this.settingsPage4.Controls.Add(this.checkBox5);
+            this.settingsPage4.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.settingsPage4.isActive = true;
+            this.settingsPage4.Location = new System.Drawing.Point(0, 0);
+            this.settingsPage4.Name = "settingsPage4";
+            treeNode3.Name = "";
+            treeNode3.Text = "Saitek X52 Pro display";
+            this.settingsPage4.ParentNode = treeNode3;
+            this.settingsPage4.Size = new System.Drawing.Size(322, 269);
+            this.settingsPage4.TabIndex = 3;
+            // 
+            // pictureBox1
+            // 
+            this.pictureBox1.Image = ((System.Drawing.Image)(resources.GetObject("pictureBox1.Image")));
+            this.pictureBox1.InitialImage = ((System.Drawing.Image)(resources.GetObject("pictureBox1.InitialImage")));
+            this.pictureBox1.Location = new System.Drawing.Point(17, 68);
+            this.pictureBox1.Name = "pictureBox1";
+            this.pictureBox1.Size = new System.Drawing.Size(290, 159);
+            this.pictureBox1.TabIndex = 2;
+            this.pictureBox1.TabStop = false;
+            // 
+            // label4
+            // 
+            this.label4.AutoSize = true;
+            this.label4.Location = new System.Drawing.Point(14, 49);
+            this.label4.Name = "label4";
+            this.label4.Size = new System.Drawing.Size(230, 13);
+            this.label4.TabIndex = 1;
+            this.label4.Text = "Scroll left wheel under display to switch a page:";
+            // 
+            // settingsPage1
+            // 
+            this.settingsPage1.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.settingsPage1.isActive = true;
+            this.settingsPage1.Location = new System.Drawing.Point(0, 0);
+            this.settingsPage1.Name = "settingsPage1";
+            this.settingsPage1.ParentNode = null;
+            this.settingsPage1.Size = new System.Drawing.Size(267, 191);
+            this.settingsPage1.TabIndex = 0;
             // 
             // checkBox3
             // 
@@ -240,51 +331,6 @@
             this.checkBox1.TabIndex = 1;
             this.checkBox1.Text = "Minimize on close";
             this.checkBox1.UseVisualStyleBackColor = true;
-            // 
-            // settingsPage3
-            // 
-            this.settingsPage3.Controls.Add(this.label3);
-            this.settingsPage3.Controls.Add(this.label2);
-            this.settingsPage3.Controls.Add(this.label1);
-            this.settingsPage3.Controls.Add(this.textBox2);
-            this.settingsPage3.Controls.Add(this.checkBox4);
-            this.settingsPage3.Controls.Add(this.textBox1);
-            this.settingsPage3.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.settingsPage3.isActive = true;
-            this.settingsPage3.Location = new System.Drawing.Point(0, 0);
-            this.settingsPage3.Name = "settingsPage3";
-            treeNode3.Name = "";
-            treeNode3.Text = "Steam overlay";
-            this.settingsPage3.ParentNode = treeNode3;
-            this.settingsPage3.Size = new System.Drawing.Size(322, 248);
-            this.settingsPage3.TabIndex = 2;
-            // 
-            // label3
-            // 
-            this.label3.Location = new System.Drawing.Point(10, 99);
-            this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(339, 37);
-            this.label3.TabIndex = 5;
-            this.label3.Text = "* Add bot to the friend list of your main Steam account. Bot must have single fri" +
-    "end only!";
-            // 
-            // label2
-            // 
-            this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(8, 69);
-            this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(74, 13);
-            this.label2.TabIndex = 3;
-            this.label2.Text = "Bot password:";
-            // 
-            // label1
-            // 
-            this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(5, 43);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(83, 13);
-            this.label1.TabIndex = 1;
-            this.label1.Text = "Steam bot login:";
             // 
             // textBox2
             // 
@@ -323,40 +369,6 @@
             this.textBox1.Text = global::JoystickCurves.Properties.Settings.Default.steamLogin;
             this.textBox1.TextChanged += new System.EventHandler(this.textBox1_TextChanged);
             // 
-            // settingsPage4
-            // 
-            this.settingsPage4.Controls.Add(this.pictureBox1);
-            this.settingsPage4.Controls.Add(this.label4);
-            this.settingsPage4.Controls.Add(this.checkBox5);
-            this.settingsPage4.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.settingsPage4.isActive = true;
-            this.settingsPage4.Location = new System.Drawing.Point(0, 0);
-            this.settingsPage4.Name = "settingsPage4";
-            treeNode4.Name = "";
-            treeNode4.Text = "Saitek X52 Pro display";
-            this.settingsPage4.ParentNode = treeNode4;
-            this.settingsPage4.Size = new System.Drawing.Size(322, 248);
-            this.settingsPage4.TabIndex = 3;
-            // 
-            // pictureBox1
-            // 
-            this.pictureBox1.Image = ((System.Drawing.Image)(resources.GetObject("pictureBox1.Image")));
-            this.pictureBox1.InitialImage = ((System.Drawing.Image)(resources.GetObject("pictureBox1.InitialImage")));
-            this.pictureBox1.Location = new System.Drawing.Point(17, 68);
-            this.pictureBox1.Name = "pictureBox1";
-            this.pictureBox1.Size = new System.Drawing.Size(290, 159);
-            this.pictureBox1.TabIndex = 2;
-            this.pictureBox1.TabStop = false;
-            // 
-            // label4
-            // 
-            this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(14, 49);
-            this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(230, 13);
-            this.label4.TabIndex = 1;
-            this.label4.Text = "Scroll left wheel under display to switch a page:";
-            // 
             // checkBox5
             // 
             this.checkBox5.AutoSize = true;
@@ -368,16 +380,6 @@
             this.checkBox5.TabIndex = 0;
             this.checkBox5.Text = "Enable Saitek X52 Pro display support";
             this.checkBox5.UseVisualStyleBackColor = true;
-            // 
-            // settingsPage1
-            // 
-            this.settingsPage1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.settingsPage1.isActive = true;
-            this.settingsPage1.Location = new System.Drawing.Point(0, 0);
-            this.settingsPage1.Name = "settingsPage1";
-            this.settingsPage1.ParentNode = null;
-            this.settingsPage1.Size = new System.Drawing.Size(267, 191);
-            this.settingsPage1.TabIndex = 0;
             // 
             // valueInput
             // 

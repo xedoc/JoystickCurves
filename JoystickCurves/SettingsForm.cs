@@ -173,9 +173,7 @@ namespace JoystickCurves
                 {
                     checkBoxHotKey.Enabled = false;
                     listHotKeys.Enabled = false;
-                    valueInput.Enabled = false;
-                    checkBoxHold.Enabled = false;
-
+                    checkBoxHold.Enabled = false;                    
                     if (OnHotKeyRequest != null)
                         OnHotKeyRequest(this, new HotKeyArgs(_curHotkey));
                 }
@@ -207,7 +205,6 @@ namespace JoystickCurves
             checkBoxHotKey.Checked = false;
             checkBoxHotKey.Enabled = true;
             listHotKeys.Enabled = true;
-            valueInput.Enabled = true;
             checkBoxHold.Enabled = true;
         }
 
@@ -215,6 +212,15 @@ namespace JoystickCurves
         {
             SetListTabs();
             listHotKeys.Refresh();
+        }
+
+        private void SettingsForm_KeyDown(object sender, KeyEventArgs e)
+        {
+        }
+
+        private void settingsTree1_KeyDown(object sender, KeyEventArgs e)
+        {
+            e.Handled = true;
         }
     }
 }
