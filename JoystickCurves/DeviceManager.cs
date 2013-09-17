@@ -205,16 +205,38 @@ namespace JoystickCurves
                 {
                     joystick.OnButtonDown += new EventHandler<CustomEventArgs<DirectInputData>>(gameController_OnButtonDown);
                 }
-                for (uint i = 1; i <= 16; i++)
+                if (Joysticks.Exists(j => j.Name.Contains("vJoy") == true))
                 {
-                    if (!Joysticks.Exists(j => j.VirtualJoystick != null && j.VirtualJoystick.DeviceID == i))
+                    for (uint i = 1; i <= 16; i++)
                     {
-                        var vjoy = new VirtualJoystick(i);
-                        if (vjoy.isAcquired)
+                        if (!Joysticks.Exists(j => j.VirtualJoystick != null && j.VirtualJoystick.DeviceID == i))
                         {
-                            vjoy.SetButton(vjoy.DeviceID, true);
-                            vjoy.Unacquire();
+
+                            var vjoy = new VJoyEizikovich(i);
+
+                            if (vjoy.isAcquired)
+                            {
+                                vjoy.SetButton(vjoy.DeviceID, true);
+                                vjoy.Unacquire();
+                            }
+
                         }
+                    }
+                }
+                else if (Joysticks.Exists(j => j.Name.Contains("VJoy") == true))
+                {
+                    for (uint i = 0; i <= 1; i++)
+                    {
+                        try
+                        {
+                            var hvjoy = new VJoyHeadsoft(i);
+                            if (hvjoy.isAcquired)
+                            {
+                                hvjoy.SetButton(hvjoy.DeviceID, true);
+                                hvjoy.Unacquire();
+                            }
+                        }
+                        catch { }
                     }
                 }
             }
@@ -234,7 +256,15 @@ namespace JoystickCurves
                 var devName = device.Name;
                 var deviceId = (uint)e.Data.JoystickOffset - (uint)JoystickOffset.Button0 + 1;
 
-                Joysticks[i].VirtualJoystick = new VirtualJoystick(deviceId);
+                switch (devName.Substring(0, 4))
+                {
+                    case "vJoy":
+                        Joysticks[i].VirtualJoystick = new VJoyEizikovich(deviceId);
+                        break;
+                    case "VJoy":
+                        Joysticks[i].VirtualJoystick = new VJoyHeadsoft(deviceId-1);
+                        break;
+                }
 
                 device.OnButtonPress -= gameController_OnButtonDown;
                 device.VirtualJoystick.SetButton(device.VirtualJoystick.DeviceID, false);

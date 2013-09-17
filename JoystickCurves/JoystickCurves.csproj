@@ -32,8 +32,8 @@
     <CreateWebPageOnPublish>true</CreateWebPageOnPublish>
     <WebPage>publish.htm</WebPage>
     <OpenBrowserOnPublish>false</OpenBrowserOnPublish>
-    <ApplicationRevision>2</ApplicationRevision>
-    <ApplicationVersion>0.0.1.%2a</ApplicationVersion>
+    <ApplicationRevision>11</ApplicationRevision>
+    <ApplicationVersion>0.0.3.%2a</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
     <PublishWizardCompleted>true</PublishWizardCompleted>
     <BootstrapperEnabled>true</BootstrapperEnabled>
@@ -103,6 +103,9 @@
     <Reference Include="WindowsFormsIntegration" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\..\..\Users\meshkov\Documents\GitHub\Ubiquitous\dotUtilities\Re.cs">
+      <Link>Re.cs</Link>
+    </Compile>
     <Compile Include="DirectInputData.cs" />
     <Compile Include="Button.cs" />
     <Compile Include="DebugForm.cs">
@@ -115,6 +118,7 @@
     <Compile Include="DirectInputMouse.cs" />
     <Compile Include="DIUtils.cs" />
     <Compile Include="DirectInputKeyboard.cs" />
+    <Compile Include="ExecutablePath.cs" />
     <Compile Include="HotKeys.cs" />
     <Compile Include="InputBox.cs">
       <SubType>Form</SubType>
@@ -171,6 +175,12 @@
       <DependentUpon>ValueInput.cs</DependentUpon>
     </Compile>
     <Compile Include="VirtualJoystick.cs" />
+    <Compile Include="VJoyEizikovich.cs" />
+    <Compile Include="VJoyHeadsoft.cs" />
+    <Compile Include="BGWorker.cs" />
+    <Compile Include="CurrentAircraft.cs" />
+    <Compile Include="WarThunderTrack\WTAircraft.cs" />
+    <Compile Include="WarThunderTrack\WTFolder.cs" />
     <EmbeddedResource Include="AxisEditor.resx">
       <DependentUpon>AxisEditor.cs</DependentUpon>
       <SubType>Designer</SubType>
@@ -242,6 +252,9 @@
     <None Include="Resources\appicon.ico" />
     <None Include="Resources\joystickcurve.ico" />
     <None Include="Resources\x52pro.png" />
+    <Content Include="VJoy.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="vJoyInterface.dll" />
   </ItemGroup>
   <ItemGroup>

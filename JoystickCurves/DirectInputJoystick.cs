@@ -28,12 +28,13 @@ namespace JoystickCurves
                                                      JoystickOffset.RY, 
                                                      JoystickOffset.RZ, 
                                                      JoystickOffset.Slider0, 
-                                                     JoystickOffset.Slider1 };
+                                                     JoystickOffset.Slider1};
 
         private Timer _pollTimer;
         private Device _device;
         private Dictionary<JoystickOffset, HashSet<Action<DirectInputData>>> _actionMap = new Dictionary<JoystickOffset, HashSet<Action<DirectInputData>>>();
         private VirtualJoystick _virtualJoystick;
+        private object lockSet = new object();
         private void emptyAction(DirectInputData joyData) {}
 
         public DirectInputJoystick(String name)
@@ -189,6 +190,7 @@ namespace JoystickCurves
                     if ((d.ObjectId & (int)DeviceObjectTypeFlags.Axis) != 0)
                         _device.Properties.SetRange(ParameterHow.ById, d.ObjectId, new InputRange(MinAxisValue, MaxAxisValue));
                 }
+                _device.Properties.AxisModeAbsolute = true;
                 _device.Acquire();
 
             }
@@ -249,41 +251,45 @@ namespace JoystickCurves
        
         public void Set(JoystickOffset offset, int value)
         {
+            
             if (Type != DeviceType.Virtual || _virtualJoystick == null)
                 return;
 
-            if (offset >= JoystickOffset.Button0 && offset <= JoystickOffset.Button128)
+            lock (lockSet)
             {
-                _virtualJoystick.SetButton((uint)(offset - JoystickOffset.Button0), value == 128 ? true : false);
-                return;
-            }
+                if (offset >= JoystickOffset.Button0 && offset <= JoystickOffset.Button128)
+                {
+                    _virtualJoystick.SetButton((uint)(offset - JoystickOffset.Button0), value == 128 ? true : false);
+                    return;
+                }
 
-            switch (offset)
-            {
-                case JoystickOffset.X:
-                    _virtualJoystick.X = value;
-                    break;
-                case JoystickOffset.Y:
-                    _virtualJoystick.Y = value;
-                    break;
-                case JoystickOffset.Z:
-                    _virtualJoystick.Z = value;
-                    break;
-                case JoystickOffset.RX:
-                    _virtualJoystick.RX = value;
-                    break;
-                case JoystickOffset.RY:
-                    _virtualJoystick.RY = value;
-                    break;
-                case JoystickOffset.RZ:
-                    _virtualJoystick.RZ = value;
-                    break;
-                case JoystickOffset.Slider0:
-                    _virtualJoystick.SL0 = value;
-                    break;
-                case JoystickOffset.Slider1:
-                    _virtualJoystick.SL1 = value;
-                    break;
+                switch (offset)
+                {
+                    case JoystickOffset.X:
+                        _virtualJoystick.X = value;
+                        break;
+                    case JoystickOffset.Y:
+                        _virtualJoystick.Y = value;
+                        break;
+                    case JoystickOffset.Z:
+                        _virtualJoystick.Z = value;
+                        break;
+                    case JoystickOffset.RX:
+                        _virtualJoystick.RX = value;
+                        break;
+                    case JoystickOffset.RY:
+                        _virtualJoystick.RY = value;
+                        break;
+                    case JoystickOffset.RZ:
+                        _virtualJoystick.RZ = value;
+                        break;
+                    case JoystickOffset.Slider0:
+                        _virtualJoystick.SL0 = value;
+                        break;
+                    case JoystickOffset.Slider1:
+                        _virtualJoystick.SL1 = value;
+                        break;
+                }
             }
 
 

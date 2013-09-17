@@ -9,6 +9,7 @@ using System.Xml;
 using System.IO;
 using Microsoft.DirectX.DirectInput;
 using Microsoft.Win32;
+using System.Diagnostics;
 
 namespace JoystickCurves
 {
@@ -213,6 +214,11 @@ namespace JoystickCurves
             path += ";" + string.Join(";", paths);
 
             Environment.SetEnvironmentVariable("PATH", path);
+        }
+
+        public static FileVersionInfo FileVersion(string path)
+        {
+            return FileVersionInfo.GetVersionInfo(path);
         }
 
     }

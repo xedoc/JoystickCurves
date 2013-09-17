@@ -49,6 +49,13 @@ namespace JoystickCurves
             set { _pointsCount = value; }
         }
         [XmlAttribute]
+        public CurveResponseType CurveResponseType
+        {
+            get;
+            set;
+        }
+
+        [XmlAttribute]
         public int DrawWidth
         {
             get { return _drawWidth; }
@@ -187,8 +194,11 @@ namespace JoystickCurves
                 
                 x = (x - firstPoint.X) * 4.0f;
                 var offsetPoints = _rawPoints.GetRange(i, 4).Select(p => new PointF(p.X, p.Y)).ToArray();
-                
-                return 1 - Bezier(offsetPoints[0], offsetPoints[1], offsetPoints[2], offsetPoints[3], x).Y;
+
+                var y = 1 - Bezier(offsetPoints[0], offsetPoints[1], offsetPoints[2], offsetPoints[3], x).Y;
+                if (y < 0) y = 0;
+                else if (y > 1) y = 1;
+                return y;
             }
         }
         PointF Bezier(PointF a, PointF b, PointF c, PointF d, float t)

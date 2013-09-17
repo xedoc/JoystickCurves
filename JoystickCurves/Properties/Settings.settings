@@ -59,5 +59,8 @@
     <Setting Name="hotKeys" Type="JoystickCurves.HotKeys" Scope="User">
       <Value Profile="(Default)" />
     </Setting>
+    <Setting Name="warThunderTrackAircraft" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
   </Settings>
 </SettingsFile>

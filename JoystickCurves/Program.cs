@@ -30,7 +30,10 @@ namespace JoystickCurves
             }
             catch (Exception ex)
             {
-                Debug.Print("Error: " + ex.Message + "\n\nStack Trace:\n" + ex.StackTrace);
+                var msg = "Error: " + ex.Message + "\n\nStack Trace:\n" + ex.StackTrace;
+                System.IO.File.WriteAllText(@"C:\JoystickCurvesCrash.txt", msg);
+                Debug.Print(msg);
+
             }
         }
 

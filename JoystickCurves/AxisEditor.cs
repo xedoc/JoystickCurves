@@ -9,6 +9,16 @@ using System.Windows.Forms;
 
 namespace JoystickCurves
 {
+    public enum CurveResponseType
+    {
+        Multiplier,
+        Values
+    }
+    public enum CurveShapeType
+    {
+        Bezier,
+        Cardinal
+    }
     public partial class AxisEditor : UserControl
     {
         private const string NOTSET = "Not set";
@@ -22,17 +32,15 @@ namespace JoystickCurves
         private string _selectedDestDevice, _selectedDestAxis, _selectedSourceDevice, _selectedSourceAxis;
         public event EventHandler<EventArgs> OnChange;
         private object lockRead = new object();
-        CurveType _curveType;
+        private CurveResponseType _curveResponseType;
+        CurveShapeType _curveType;
 
-        public enum CurveType
-        {
-            Bezier,
-            Cardinal
-        }
+
+
         public AxisEditor()
         {
             InitializeComponent();
-            var defString = 
+            
             comboDestAxis.Items.Add(DEFITEM);
             comboDestDevice.Items.Add(DEFITEM);
             comboSourceAxis.Items.Add(DEFITEM);
@@ -44,22 +52,53 @@ namespace JoystickCurves
             comboSourceAxis.SelectedIndex = 0;
             comboSourceDevice.SelectedIndex = 0;
 
-            Type = CurveType.Bezier;
+            ShapeType = CurveShapeType.Bezier;
             CurrentCurve = curveResponse.Points;
             _selectedDestAxis = NOTSET;
             _selectedDestDevice = NOTSET;
             _selectedSourceAxis = NOTSET;
             _selectedSourceDevice = NOTSET;
         }
-        public CurveType Type
+        public CurveResponseType CurveResponseType
+        {
+            get { return _curveResponseType; }
+            set
+            {
+                switch (value)
+                {
+                    case CurveResponseType.Multiplier:
+                        {
+                            if( CurrentCurve.RawPoints.Count <= 0 )
+                                return;
+                            _curveResponseType = JoystickCurves.CurveResponseType.Multiplier;
+                            groupBoxCurve.Text = "Response Curve (Multiplier)";
+                        }
+                        break;
+                    case CurveResponseType.Values:
+                        {
+                            if( CurrentCurve.RawPoints.Count <= 0 )
+                                return;
+                            _curveResponseType = JoystickCurves.CurveResponseType.Values;
+                            groupBoxCurve.Text = "Response Curve (Absolute Value)";
+                        }
+                        break;
+
+                }
+
+                CurrentCurve.CurveResponseType = _curveResponseType;
+
+                if (OnChange != null)
+                    OnChange(this, EventArgs.Empty);
+            }
+        }
+
+        public CurveShapeType ShapeType
         {
             get { return _curveType; }
             set
             {
                 _curveType = value;
             }
-
-
         }
         public int Index
         {
@@ -162,6 +201,24 @@ namespace JoystickCurves
         public void ResetCurve()
         {
             curveResponse.ResetCurve();
+            switch (CurveResponseType)
+            {
+                case JoystickCurves.CurveResponseType.Multiplier:
+                    {
+                        CurrentCurve.RawPoints[0] = new PointF(0.0f, 0.0f);
+                        CurrentCurve.RawPoints[CurrentCurve.RawPoints.Count - 1] = new PointF(1.0f, 0.0f);
+                        CurrentCurve.Streighten();
+                    }
+                    break;
+                case JoystickCurves.CurveResponseType.Values:
+                    {
+                        CurrentCurve.RawPoints[0] = new PointF(0.0f, 1.0f);
+                        CurrentCurve.RawPoints[CurrentCurve.RawPoints.Count - 1] = new PointF(1.0f, 0.0f);
+                        CurrentCurve.Streighten();
+                    }
+                    break;
+            }
+
         }
         public String CurrentSourceAxis
         {

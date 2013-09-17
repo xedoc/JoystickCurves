@@ -21,6 +21,18 @@ namespace JoystickCurves
             Title = title;
         }
         [XmlAttribute]
+        public string BindGame
+        {
+            get;
+            set;
+        }
+        [XmlAttribute]
+        public string BindVehicle
+        {
+            get;
+            set;
+        }
+        [XmlAttribute]
         public string Title
         {
             get;

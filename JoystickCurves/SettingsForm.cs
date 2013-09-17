@@ -33,7 +33,8 @@ namespace JoystickCurves
             oldToken = _settings.steamToken;
             SetupHotkeyList();
             checkBoxHotKey.DataBindings.Add(new Binding("Checked", this, "WaitingHotKey", false, DataSourceUpdateMode.OnPropertyChanged, null));
-
+            if( settingsTree1.Nodes.Count > 0) 
+                settingsTree1.TreeView.SelectedNode = settingsTree1.Nodes[0];
         }
         private void SetListTabs()
         {

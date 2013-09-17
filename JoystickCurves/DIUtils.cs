@@ -19,6 +19,17 @@ namespace JoystickCurves
             else
                 return pair.Key;
         }
+        public static MouseOffset MID(String name)
+        {
+            if (String.IsNullOrEmpty(name))
+                return 0;
+
+            var pair = AllNamesMouse.FirstOrDefault(n => n.Value.ToLower() == name.ToLower());
+            if (pair.Equals(new KeyValuePair<MouseOffset, String>()))
+                return 0;
+            else
+                return pair.Key;
+        }
         public static HID_USAGES VirtualID(String name)
         {
             if (String.IsNullOrEmpty(name))
@@ -226,6 +237,20 @@ namespace JoystickCurves
                 {JoystickOffset.Button126, "Button 126"},
                 {JoystickOffset.Button127, "Button 127"},
                 {JoystickOffset.Button128, "Button 128"}
+            };
+        public static readonly System.Collections.Generic.Dictionary<MouseOffset, String> AllNamesMouse =
+            new Dictionary<MouseOffset, string>() {
+                {MouseOffset.X, "Mouse X"},
+                {MouseOffset.Y, "Mouse Y"},
+                {MouseOffset.Z, "Mouse Z"},
+                {MouseOffset.Button0, "MButton 0"},
+                {MouseOffset.Button1, "MButton 1"},
+                {MouseOffset.Button2, "MButton 2"},
+                {MouseOffset.Button3, "MButton 3"},
+                {MouseOffset.Button4, "MButton 4"},
+                {MouseOffset.Button5, "MButton 5"},
+                {MouseOffset.Button6, "MButton 6"},
+                {MouseOffset.Button7, "MButton 7"}
             };
 
 

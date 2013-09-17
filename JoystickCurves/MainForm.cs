@@ -36,6 +36,8 @@ namespace JoystickCurves
         private const string NOTSET = "Not set";
         private const string NEWPROFILE = "<New profile...>";
         private const string COPYPROFILE = "<Copy profile...>";
+        private const string WAITSPAWN = "you didn't spawn yet";
+        private const string DISABLEDOPTION = "Disabled in settings";
         private const string PROFILEDEFNAME = "New Profile";
         private const string PRESSKEY = "Press Key";
         private bool isExit = false;
@@ -47,8 +49,13 @@ namespace JoystickCurves
         private object lockHotKeyboard = new object();
         private object lockHotMouse = new object();
         private object lockHotJoystick = new object();
+        private object lockWarThunder = new object();
+        private object lockSaitek = new object();
+        private CurrentAircraft currentAircraft;
+
         private Steam _steam;
         private SaitekMFD _saitek;
+        
         SettingsForm settingsForm;
 
         public MainForm()
@@ -101,16 +108,24 @@ namespace JoystickCurves
         }
         private void ConnectSaitek()
         {
-            if (_settings.saitekX52ProEnable)
+            lock (lockSaitek)
             {
-                if (_saitek == null)
+                if (_settings.saitekX52ProEnable)
                 {
-                    Debug.Print("Connecting Saitek");
-                    _saitek = new SaitekMFD();                    
-                    if (!_saitek.Acquiring)
+                    if (_saitek == null || !_saitek.Acquired)
                     {
-                        _saitek.Acquire();
-                        _saitek.AddPage(1, "JoystickCurves");
+                        Debug.Print("Connecting Saitek");
+                        try
+                        {
+
+                            _saitek = new SaitekMFD();
+                            if (!_saitek.Acquiring)
+                            {
+                                _saitek.Acquire();
+                                _saitek.AddPage(1, "JoystickCurves");
+                            }
+                        }
+                        catch { }
                     }
                 }
             }
@@ -230,11 +245,23 @@ namespace JoystickCurves
 
             BezierCurvePoints curvePoints = pTab.CurvePoints;
             int newValue = data.Value;
-
             if (curvePoints != null)
-                newValue = (int)((float)data.Value * curvePoints.GetY(Utils.PTop(1, Math.Abs(data.Value), 32767)));
+            {
+                float y = curvePoints.GetY(Utils.PTop(1.0f, Math.Abs(data.Value), 32767.0f));
+                switch (curvePoints.CurveResponseType)
+                {
+                    case CurveResponseType.Multiplier:
+                        newValue = (int)((float)data.Value * y);
+                        Debug.Print(String.Format("y: {0}, value: {1}", y, newValue));
+                        break;
+                    case CurveResponseType.Values:
+                        newValue = (int)(y * 32767.0f * (data.Value < 0 ? -1 : 1));
+                        break;
+                }
+            }
 
             virtualDevice.Set(destAxis, newValue);           
+
         }
         private void UpdateCurveActions()
         {
@@ -483,10 +510,76 @@ namespace JoystickCurves
                         ThreadPool.QueueUserWorkItem( t => DisconnectSaitek());
                     }
                     break;
+                case "warThunderTrackAircraft":
+                    if (_settings.warThunderTrackAircraft)
+                    {
+                        ThreadPool.QueueUserWorkItem(t => ConnectWarThunder());
+                    }
+                    else
+                    {
+                        ThreadPool.QueueUserWorkItem(t => DisconnectWarThunder());
+                    }
+                    break;
             }
 
         }
 
+        public void ConnectWarThunder()
+        {
+            lock (lockWarThunder)
+            {
+                if (!_settings.warThunderTrackAircraft)
+                {
+                    Utils.SetProperty<Label, String>(labelCurrentAircraft, "Text", DISABLEDOPTION);
+                    return;
+                }
+                else
+                {
+                    Utils.SetProperty<Label, String>(labelCurrentAircraft, "Text", WAITSPAWN);
+                    if (currentAircraft == null)
+                    {
+                        currentAircraft = new WTAircraft();
+                        currentAircraft.AircraftChange += new EventHandler<EventArgsString>(wtCurrentAircraft_AircraftChange);
+                        currentAircraft.StartPoll();
+                    }
+
+                }
+            }
+        }
+
+        void wtCurrentAircraft_AircraftChange(object sender, EventArgsString e)
+        {
+            if (!checkBoxBindAircraft.Checked)
+            {
+                Utils.SetProperty<Label, String>(labelCurrentAircraft, "Text", e.Value);
+            }
+            
+            var bindedProfile = _profileManager.Profiles.FirstOrDefault(p => p.BindVehicle == currentAircraft.AircraftName && p.BindGame == currentAircraft.GameName);
+            if (bindedProfile != null && bindedProfile.Title != _currentProfile.Title)
+            {
+                Debug.Print("Set profile on aircraft change {0} aircraft: {1}", bindedProfile.Title, currentAircraft.AircraftName);
+                Utils.CallMethod<Form>(this, "SetCurrentProfile", bindedProfile.Title);
+            }
+
+
+
+        }
+        public void DisconnectWarThunder()
+        {
+            lock (lockWarThunder)
+            {
+                if (currentAircraft != null)
+                {
+                    try
+                    {
+                        Utils.SetProperty<Label, String>(labelCurrentAircraft, "Text", DISABLEDOPTION);
+                        currentAircraft.StopPoll();
+                        currentAircraft = null;
+                    }
+                    catch { }
+                }
+            }
+        }
         void ShowSettings()
         {            
             settingsForm.Show();
@@ -573,6 +666,7 @@ namespace JoystickCurves
             Text = String.Format("{0} Dev. ver: {1}", Text, GetRunningVersion());
             ConnectSteam();
             ConnectSaitek();
+            ConnectWarThunder();
             LoadSettings();
 
             _deviceManager = new DeviceManager();
@@ -582,15 +676,18 @@ namespace JoystickCurves
 
 
         }
-
-        private void deviceManager_OnJoystickList(object sender, EventArgs e)
+        private void UpdateDevices()
         {
-            _deviceManager.Joysticks.ForEach(j => j.Acquire());
             SetupTesterContextMenus();
             SetupEditorComboBoxes();
             UpdateAxisBindings();
             UpdateCurveActions();
             UpdateTesterActions();
+        }
+        private void deviceManager_OnJoystickList(object sender, EventArgs e)
+        {
+            _deviceManager.Joysticks.ForEach(j => j.Acquire());
+            UpdateDevices();
         }
 
         void deviceManager_OnMouseList(object sender, EventArgs e)
@@ -607,7 +704,7 @@ namespace JoystickCurves
 
         private void SetupTesterContextMenus()
         {
-            var physicalDevices = Utils.SetDeviceContextMenuItems( 
+            var physicalDevices = Utils.SetDeviceContextMenuItems(
                     _deviceManager.Joysticks.Where(d => d.Type == DeviceType.Physical).Select(d => new ToolStripMenuItem(d.Name) { CheckOnClick = true, Name = "physicalDevice" }).ToList(),
                     "PhysicalDevice", 
                     _settings.TesterPhysicalJoystick, 
@@ -757,9 +854,11 @@ namespace JoystickCurves
                     if (tp.Controls.Count > 0)
                     {
                         AxisEditor axisEditor = tp.Controls[0] as AxisEditor;
+
+                        //
                         axisEditor.SourceControllers = _deviceManager.Joysticks.Where(d => d.Type == DeviceType.Physical).Select(d => d.Name).ToList();
                         axisEditor.DestinationControllers = _deviceManager.Joysticks.Where(d => d.Type == DeviceType.Virtual).Select(d => d.Name).ToList();
-                        axisEditor.SourceAxis = DIUtils.AxisNames.ToList();
+                        axisEditor.SourceAxis = DIUtils.AxisNames.ToList(); 
                         axisEditor.DestinationAxis = DIUtils.AxisNames.ToList();
                         axisEditor.OnChange += new EventHandler<EventArgs>(axisEditor_OnChange);
                     }
@@ -830,6 +929,18 @@ namespace JoystickCurves
             copyCurveToToolStripMenuItem.DropDownItems.Clear();
             foreach( var a in axisList )
                 copyCurveToToolStripMenuItem.DropDownItems.Add(a);
+
+            var axisEditor = tabAxis.SelectedTab.Controls[0] as AxisEditor;
+            if (axisEditor.CurveResponseType == CurveResponseType.Multiplier)
+            {
+                value.Checked = false;
+                multiplier.Checked = true;
+            }
+            else
+            {
+                multiplier.Checked = false;
+                value.Checked = true;
+            }
         }
 
         private void axisEditor_OnChange(object sender, EventArgs e)
@@ -844,9 +955,19 @@ namespace JoystickCurves
 
             UpdateAxisBindings();
             UpdateCurveActions();
+            
 
+            if (axisEditor.CurveResponseType == CurveResponseType.Multiplier && !multiplier.Checked)
+            {
+                value.Checked = false;
+                multiplier.Checked = true;
+            }
+            else if (!value.Checked)
+            {
+                multiplier.Checked = false;
+                value.Checked = true;
+            }
         }
-
 
         private void tabAxis_SelectedIndexChanged(object sender, EventArgs e)
         {
@@ -861,9 +982,11 @@ namespace JoystickCurves
                 var curve = new BezierCurvePoints();
                 curve.PointsCount = DEFPOINTSCOUNT;
                 axisEditor.CurrentCurve.Reset();
+                axisEditor.CurveResponseType = CurveResponseType.Multiplier;
                 SetupEditorComboBoxes();
                 _currentProfile.Tabs.Add(axisEditor);
             }
+            
             SetupTabContextMenu();
         }
 
@@ -878,6 +1001,7 @@ namespace JoystickCurves
                 Index = tabAxis.TabPages.Count - 1,
                 Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right | AnchorStyles.Top
             };
+            newAxisEditor.CurveResponseType = CurveResponseType.Multiplier;
             newAxisEditor.ResetCurve();
             newTabPage.Controls.Add( newAxisEditor );
 
@@ -932,7 +1056,6 @@ namespace JoystickCurves
         {
             var axisEditor = tabAxis.SelectedTab.Controls[0] as AxisEditor;
             axisEditor.ResetCurve();
-
         }
 
         private void contextMenuTester_Closing(object sender, ToolStripDropDownClosingEventArgs e)
@@ -1040,8 +1163,34 @@ namespace JoystickCurves
                     axisEditor.CurrentSourceAxis = p.SourceAxis;
                     axisEditor.CurrentSourceDevice = p.SourceDevice;
                     axisEditor.Title = String.IsNullOrEmpty(p.TabTitle) || p.TabTitle == NOTSET ? String.Format("Axis {0}", _currentProfile.Tabs.IndexOf(p) + 1) : p.TabTitle;
+                    axisEditor.CurveResponseType = p.CurvePoints.CurveResponseType;
+
                     tabPage.Text = axisEditor.Title;
                 }
+                try
+                {
+                    if (currentAircraft != null &&
+                        !String.IsNullOrEmpty(_currentProfile.BindGame) &&
+                        !String.IsNullOrEmpty(_currentProfile.BindVehicle) &&
+                        _currentProfile.BindVehicle == currentAircraft.AircraftName &&
+                        _currentProfile.BindGame == currentAircraft.GameName)
+                    {
+                        Utils.SetProperty<Label, String>(labelCurrentAircraft, "Text", _currentProfile.BindVehicle);
+                        Utils.SetProperty<CheckBox, Boolean>(checkBoxBindAircraft, "Checked", true);
+                    }
+                    else if( currentAircraft != null )
+                    {
+                        if (!String.IsNullOrEmpty(currentAircraft.AircraftName))
+                            Utils.SetProperty<Label, String>(labelCurrentAircraft, "Text", currentAircraft.AircraftName);
+                        else
+                            Utils.SetProperty<Label, String>(labelCurrentAircraft, "Text", WAITSPAWN);
+
+                        Utils.SetProperty<CheckBox, Boolean>(checkBoxBindAircraft, "Checked", false);
+                    }
+                }
+                catch { }
+
+
                 var hotkey = "Hot Key";
                 if (!String.IsNullOrEmpty(_currentProfile.HotKeyJoystickName))
                 {
@@ -1101,6 +1250,7 @@ namespace JoystickCurves
         public static void ThreadException(object sender, System.Threading.ThreadExceptionEventArgs e)
         {
             var errorMsg = e.Exception.Message + "\n\nStack Trace:\n" + e.Exception.StackTrace;
+            System.IO.File.WriteAllText(@"C:\JoystickCurvesCrash.txt", errorMsg);
             Debug.Print(errorMsg);
         }
 
@@ -1433,6 +1583,123 @@ namespace JoystickCurves
         {
             ProfileComboFocused = false;
         }
+
+        private int curX = 32767;
+        private void timer1_Tick(object sender, EventArgs e)
+        {
+            return;
+            var virtualDevice = _deviceManager.Joysticks.ToList().FirstOrDefault(
+                gc => gc.Type == DeviceType.Virtual );
+
+            if (virtualDevice == null)
+                return;
+
+            curX -= 5000;
+            if (curX <= -32767)
+                curX = 32767;
+            virtualDevice.Set(JoystickOffset.X, curX);
+        }
+
+        private void multiplerToolStripMenuItem_CheckedChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void valueToolStripMenuItem_CheckedChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void multiplerToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            //if (MessageBox.Show("Current curve will be reset! Continue ?", "Change response modifier", MessageBoxButtons.YesNo) != System.Windows.Forms.DialogResult.Yes)
+            //    return;
+
+
+            var currentItem = sender as ToolStripMenuItem;
+
+            var parent = currentItem.GetCurrentParent();
+            foreach (ToolStripMenuItem item in parent.Items)
+                if (!item.Equals(currentItem))
+                    item.Checked = false;
+
+            var selName = currentItem.Name.ToLower();
+            switch (selName)
+            {
+                case "value":
+                {
+                    multiplier.Checked = false;
+                    var axisEditor = tabAxis.SelectedTab.Controls[0] as AxisEditor;
+                    axisEditor.CurveResponseType = CurveResponseType.Values;
+                    //axisEditor.ResetCurve();
+                }
+                break;
+                case "multiplier":
+                {
+                    value.Checked = false;
+                    var axisEditor = tabAxis.SelectedTab.Controls[0] as AxisEditor;
+                    axisEditor.CurveResponseType = CurveResponseType.Multiplier;
+                    //axisEditor.ResetCurve();
+                }
+                break;
+            }           
+        }
+
+        private void checkBoxBindAircraft_CheckedChanged(object sender, EventArgs e)
+        {            
+            var checkbox = sender as CheckBox;
+            var label = labelCurrentAircraft;
+
+            if (checkbox.Checked)
+            {
+                if (_currentProfile.BindVehicle != currentAircraft.AircraftName ||
+                    _currentProfile.BindGame != currentAircraft.GameName)
+                {
+                    _profileManager.Profiles.ForEach(p =>
+                    {
+                        if (!String.IsNullOrEmpty(p.BindGame) && p.BindGame == currentAircraft.GameName &&
+                            !String.IsNullOrEmpty(p.BindVehicle) && p.BindVehicle == currentAircraft.AircraftName)
+                        {
+                            p.BindGame = String.Empty;
+                            p.BindVehicle = String.Empty;
+                        }
+                    });
+                    _currentProfile.BindVehicle = currentAircraft.AircraftName;
+                    _currentProfile.BindGame = currentAircraft.GameName;
+                }
+            }
+            else
+            {
+                Utils.SetProperty<Label, String>(labelCurrentAircraft, "Text", currentAircraft.AircraftName);
+            }
+        }
+/*
+        private string[] aircrafts = { "Aircraft 1", "Aircraft 2", "Aircraft 3" };
+        private int airIndex = 0;
+        private void button1_Click(object sender, EventArgs e)
+        {
+            if (currentAircraft == null)
+                currentAircraft = new WTAircraft();
+
+            currentAircraft.AircraftName = aircrafts[airIndex++];
+            if (airIndex >= aircrafts.Length)
+            {
+                airIndex = 0;
+            }
+            Debug.Print(currentAircraft.AircraftName);
+        }
+
+        private void button2_Click(object sender, EventArgs e)
+        {
+
+            currentAircraft.AircraftName = aircrafts[airIndex--];
+            if (airIndex < 0)
+            {
+                airIndex = aircrafts.Length - 1;
+            }
+            Debug.Print(currentAircraft.AircraftName);
+        }
+ */
     }
 
 }

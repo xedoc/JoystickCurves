@@ -28,7 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
-            JoystickCurves.BezierCurvePoints bezierCurvePoints1 = new JoystickCurves.BezierCurvePoints();
+            JoystickCurves.BezierCurvePoints bezierCurvePoints2 = new JoystickCurves.BezierCurvePoints();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(AxisEditor));
             this.comboSourceAxis = new System.Windows.Forms.ComboBox();
             this.label1 = new System.Windows.Forms.Label();
@@ -40,11 +40,11 @@
             this.comboDestDevice = new System.Windows.Forms.ComboBox();
             this.label4 = new System.Windows.Forms.Label();
             this.comboDestAxis = new System.Windows.Forms.ComboBox();
-            this.groupBox3 = new System.Windows.Forms.GroupBox();
+            this.groupBoxCurve = new System.Windows.Forms.GroupBox();
             this.curveResponse = new JoystickCurves.BezierCurve();
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
-            this.groupBox3.SuspendLayout();
+            this.groupBoxCurve.SuspendLayout();
             this.SuspendLayout();
             // 
             // comboSourceAxis
@@ -149,35 +149,35 @@
             this.comboDestAxis.TabIndex = 5;
             this.comboDestAxis.SelectionChangeCommitted += new System.EventHandler(this.Change);
             // 
-            // groupBox3
+            // groupBoxCurve
             // 
-            this.groupBox3.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-                        | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
-            this.groupBox3.Controls.Add(this.curveResponse);
-            this.groupBox3.Location = new System.Drawing.Point(5, 92);
-            this.groupBox3.Name = "groupBox3";
-            this.groupBox3.Size = new System.Drawing.Size(589, 307);
-            this.groupBox3.TabIndex = 6;
-            this.groupBox3.TabStop = false;
-            this.groupBox3.Text = "Response Curve";
+            this.groupBoxCurve.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.groupBoxCurve.Controls.Add(this.curveResponse);
+            this.groupBoxCurve.Location = new System.Drawing.Point(5, 92);
+            this.groupBoxCurve.Name = "groupBoxCurve";
+            this.groupBoxCurve.Size = new System.Drawing.Size(589, 307);
+            this.groupBoxCurve.TabIndex = 6;
+            this.groupBoxCurve.TabStop = false;
+            this.groupBoxCurve.Text = "Response Curve";
             // 
             // curveResponse
             // 
-            this.curveResponse.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-                        | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.curveResponse.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.curveResponse.BackColor = System.Drawing.Color.White;
             this.curveResponse.HorizontalLines = 5;
             this.curveResponse.Location = new System.Drawing.Point(6, 19);
             this.curveResponse.Name = "curveResponse";
             this.curveResponse.Padding = new System.Windows.Forms.Padding(10);
-            bezierCurvePoints1.DrawHeight = 262;
-            bezierCurvePoints1.DrawPoints = ((System.Collections.Generic.List<System.Drawing.Point>)(resources.GetObject("bezierCurvePoints1.DrawPoints")));
-            bezierCurvePoints1.DrawWidth = 557;
-            bezierCurvePoints1.PointsCount = 13;
-            bezierCurvePoints1.RawPoints = ((System.Collections.Generic.List<System.Drawing.PointF>)(resources.GetObject("bezierCurvePoints1.RawPoints")));
-            this.curveResponse.Points = bezierCurvePoints1;
+            bezierCurvePoints2.DrawHeight = 262;
+            bezierCurvePoints2.DrawPoints = ((System.Collections.Generic.List<System.Drawing.Point>)(resources.GetObject("bezierCurvePoints2.DrawPoints")));
+            bezierCurvePoints2.DrawWidth = 557;
+            bezierCurvePoints2.PointsCount = 13;
+            bezierCurvePoints2.RawPoints = ((System.Collections.Generic.List<System.Drawing.PointF>)(resources.GetObject("bezierCurvePoints2.RawPoints")));
+            this.curveResponse.Points = bezierCurvePoints2;
             this.curveResponse.PointsCount = 13;
             this.curveResponse.Size = new System.Drawing.Size(577, 282);
             this.curveResponse.TabIndex = 1;
@@ -187,7 +187,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.Controls.Add(this.groupBox3);
+            this.Controls.Add(this.groupBoxCurve);
             this.Controls.Add(this.groupBox2);
             this.Controls.Add(this.groupBox1);
             this.Name = "AxisEditor";
@@ -196,7 +196,7 @@
             this.groupBox1.PerformLayout();
             this.groupBox2.ResumeLayout(false);
             this.groupBox2.PerformLayout();
-            this.groupBox3.ResumeLayout(false);
+            this.groupBoxCurve.ResumeLayout(false);
             this.ResumeLayout(false);
 
         }
@@ -213,7 +213,7 @@
         private System.Windows.Forms.ComboBox comboDestDevice;
         private System.Windows.Forms.Label label4;
         private System.Windows.Forms.ComboBox comboDestAxis;
-        private System.Windows.Forms.GroupBox groupBox3;
+        private System.Windows.Forms.GroupBox groupBoxCurve;
         private JoystickCurves.BezierCurve curveResponse;
     }
 }

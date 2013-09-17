@@ -10,6 +10,7 @@ using System.Threading;
 
 namespace JoystickCurves
 {
+
     public class BezierCurve : Panel
     {
         private BezierCurvePoints _points;
@@ -62,8 +63,6 @@ namespace JoystickCurves
         {
 
         }
-
-
         public int HorizontalLines
         {
             get;
@@ -171,7 +170,7 @@ namespace JoystickCurves
         }
         public void ResetCurve()
         {
-            Points.Reset();
+            Points.Reset();            
             InitCurve();
             if (OnCurveChange != null)
                 OnCurveChange(this, EventArgs.Empty);

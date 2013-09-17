@@ -22,9 +22,6 @@ namespace JoystickCurves
     }
     public class DirectInputDevice
     {
-
-        
-
         private const int POLL_INTERVAL = 10;
         private string _name;
 

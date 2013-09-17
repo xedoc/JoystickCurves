@@ -39,6 +39,9 @@
             this.streightenUpCurveToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.deleteAxis = new System.Windows.Forms.ToolStripMenuItem();
             this.deleteCurrentProfileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.responseModifierToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.multiplier = new System.Windows.Forms.ToolStripMenuItem();
+            this.value = new System.Windows.Forms.ToolStripMenuItem();
             this.tabAddNew = new System.Windows.Forms.TabPage();
             this.imageList = new System.Windows.Forms.ImageList(this.components);
             this.contextMenuTester = new System.Windows.Forms.ContextMenuStrip(this.components);
@@ -65,6 +68,9 @@
             this.exitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.buttonSettings = new System.Windows.Forms.Button();
             this.checkBoxHotKey = new System.Windows.Forms.CheckBox();
+            this.timer1 = new System.Windows.Forms.Timer(this.components);
+            this.labelCurrentAircraft = new System.Windows.Forms.Label();
+            this.checkBoxBindAircraft = new System.Windows.Forms.CheckBox();
             this.joystickTester = new JoystickCurves.JoystickTester(this.components);
             this.label4 = new System.Windows.Forms.Label();
             this.label3 = new System.Windows.Forms.Label();
@@ -103,9 +109,9 @@
             // 
             // tabAxis
             // 
-            this.tabAxis.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-                        | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.tabAxis.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.tabAxis.ContextMenuStrip = this.contextMenuTabPage;
             this.tabAxis.Controls.Add(this.tabAddNew);
             this.tabAxis.ImageList = this.imageList;
@@ -125,44 +131,74 @@
             this.resetCurveToolStripMenuItem,
             this.streightenUpCurveToolStripMenuItem,
             this.deleteAxis,
-            this.deleteCurrentProfileToolStripMenuItem});
+            this.deleteCurrentProfileToolStripMenuItem,
+            this.responseModifierToolStripMenuItem});
             this.contextMenuTabPage.Name = "contextMenuTabPage";
-            this.contextMenuTabPage.Size = new System.Drawing.Size(186, 114);
+            this.contextMenuTabPage.Size = new System.Drawing.Size(177, 136);
             this.contextMenuTabPage.ItemClicked += new System.Windows.Forms.ToolStripItemClickedEventHandler(this.contextMenuTabPage_ItemClicked);
             // 
             // copyCurveToToolStripMenuItem
             // 
             this.copyCurveToToolStripMenuItem.Name = "copyCurveToToolStripMenuItem";
-            this.copyCurveToToolStripMenuItem.Size = new System.Drawing.Size(185, 22);
+            this.copyCurveToToolStripMenuItem.Size = new System.Drawing.Size(176, 22);
             this.copyCurveToToolStripMenuItem.Text = "Copy curve to...";
             this.copyCurveToToolStripMenuItem.DropDownItemClicked += new System.Windows.Forms.ToolStripItemClickedEventHandler(this.copyCurveToToolStripMenuItem_DropDownItemClicked);
             // 
             // resetCurveToolStripMenuItem
             // 
             this.resetCurveToolStripMenuItem.Name = "resetCurveToolStripMenuItem";
-            this.resetCurveToolStripMenuItem.Size = new System.Drawing.Size(185, 22);
+            this.resetCurveToolStripMenuItem.Size = new System.Drawing.Size(176, 22);
             this.resetCurveToolStripMenuItem.Text = "Reset curve";
             this.resetCurveToolStripMenuItem.Click += new System.EventHandler(this.resetCurveToolStripMenuItem_Click);
             // 
             // streightenUpCurveToolStripMenuItem
             // 
             this.streightenUpCurveToolStripMenuItem.Name = "streightenUpCurveToolStripMenuItem";
-            this.streightenUpCurveToolStripMenuItem.Size = new System.Drawing.Size(185, 22);
+            this.streightenUpCurveToolStripMenuItem.Size = new System.Drawing.Size(176, 22);
             this.streightenUpCurveToolStripMenuItem.Text = "Streighten curve";
             this.streightenUpCurveToolStripMenuItem.Click += new System.EventHandler(this.streightenUpCurveToolStripMenuItem_Click);
             // 
             // deleteAxis
             // 
             this.deleteAxis.Name = "deleteAxis";
-            this.deleteAxis.Size = new System.Drawing.Size(185, 22);
+            this.deleteAxis.Size = new System.Drawing.Size(176, 22);
             this.deleteAxis.Text = "Delete tab";
             // 
             // deleteCurrentProfileToolStripMenuItem
             // 
             this.deleteCurrentProfileToolStripMenuItem.Name = "deleteCurrentProfileToolStripMenuItem";
-            this.deleteCurrentProfileToolStripMenuItem.Size = new System.Drawing.Size(185, 22);
+            this.deleteCurrentProfileToolStripMenuItem.Size = new System.Drawing.Size(176, 22);
             this.deleteCurrentProfileToolStripMenuItem.Text = "Delete current profile";
             this.deleteCurrentProfileToolStripMenuItem.Click += new System.EventHandler(this.deleteCurrentProfileToolStripMenuItem_Click);
+            // 
+            // responseModifierToolStripMenuItem
+            // 
+            this.responseModifierToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.multiplier,
+            this.value});
+            this.responseModifierToolStripMenuItem.Name = "responseModifierToolStripMenuItem";
+            this.responseModifierToolStripMenuItem.Size = new System.Drawing.Size(176, 22);
+            this.responseModifierToolStripMenuItem.Text = "Response modifier";
+            // 
+            // multiplier
+            // 
+            this.multiplier.Checked = true;
+            this.multiplier.CheckOnClick = true;
+            this.multiplier.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.multiplier.Name = "multiplier";
+            this.multiplier.Size = new System.Drawing.Size(152, 22);
+            this.multiplier.Text = "Multiplier";
+            this.multiplier.CheckedChanged += new System.EventHandler(this.multiplerToolStripMenuItem_CheckedChanged);
+            this.multiplier.Click += new System.EventHandler(this.multiplerToolStripMenuItem_Click);
+            // 
+            // value
+            // 
+            this.value.CheckOnClick = true;
+            this.value.Name = "value";
+            this.value.Size = new System.Drawing.Size(152, 22);
+            this.value.Text = "Value";
+            this.value.CheckedChanged += new System.EventHandler(this.valueToolStripMenuItem_CheckedChanged);
+            this.value.Click += new System.EventHandler(this.multiplerToolStripMenuItem_Click);
             // 
             // tabAddNew
             // 
@@ -195,14 +231,14 @@
             this.physicalRollToolStripMenuItem,
             this.physicalYawToolStripMenuItem});
             this.contextMenuTester.Name = "contextMenuTester";
-            this.contextMenuTester.Size = new System.Drawing.Size(229, 180);
+            this.contextMenuTester.Size = new System.Drawing.Size(217, 180);
             this.contextMenuTester.Closing += new System.Windows.Forms.ToolStripDropDownClosingEventHandler(this.contextMenuTester_Closing);
             // 
             // virtualDeviceLightGreenToolStripMenuItem
             // 
             this.virtualDeviceLightGreenToolStripMenuItem.DropDown = this.contextMenuVirtualDevices;
             this.virtualDeviceLightGreenToolStripMenuItem.Name = "virtualDeviceLightGreenToolStripMenuItem";
-            this.virtualDeviceLightGreenToolStripMenuItem.Size = new System.Drawing.Size(228, 22);
+            this.virtualDeviceLightGreenToolStripMenuItem.Size = new System.Drawing.Size(216, 22);
             this.virtualDeviceLightGreenToolStripMenuItem.Text = "Virtual device ( Light green )";
             this.virtualDeviceLightGreenToolStripMenuItem.Click += new System.EventHandler(this.testerRootMenuItem_Click);
             // 
@@ -218,7 +254,7 @@
             // 
             this.physicalDeviceDarkGreenToolStripMenuItem.DropDown = this.contextMenuPhysicalDevices;
             this.physicalDeviceDarkGreenToolStripMenuItem.Name = "physicalDeviceDarkGreenToolStripMenuItem";
-            this.physicalDeviceDarkGreenToolStripMenuItem.Size = new System.Drawing.Size(228, 22);
+            this.physicalDeviceDarkGreenToolStripMenuItem.Size = new System.Drawing.Size(216, 22);
             this.physicalDeviceDarkGreenToolStripMenuItem.Text = "Physical device ( Dark green )";
             this.physicalDeviceDarkGreenToolStripMenuItem.Click += new System.EventHandler(this.testerRootMenuItem_Click);
             // 
@@ -234,7 +270,7 @@
             // 
             this.virtualPitchToolStripMenuItem.DropDown = this.contextMenuAxisListVirtualY;
             this.virtualPitchToolStripMenuItem.Name = "virtualPitchToolStripMenuItem";
-            this.virtualPitchToolStripMenuItem.Size = new System.Drawing.Size(228, 22);
+            this.virtualPitchToolStripMenuItem.Size = new System.Drawing.Size(216, 22);
             this.virtualPitchToolStripMenuItem.Text = "Virtual Pitch";
             this.virtualPitchToolStripMenuItem.Click += new System.EventHandler(this.testerRootMenuItem_Click);
             // 
@@ -250,7 +286,7 @@
             // 
             this.virtualRollToolStripMenuItem.DropDown = this.contextMenuAxisListVirtualX;
             this.virtualRollToolStripMenuItem.Name = "virtualRollToolStripMenuItem";
-            this.virtualRollToolStripMenuItem.Size = new System.Drawing.Size(228, 22);
+            this.virtualRollToolStripMenuItem.Size = new System.Drawing.Size(216, 22);
             this.virtualRollToolStripMenuItem.Text = "Virtual Roll";
             this.virtualRollToolStripMenuItem.Click += new System.EventHandler(this.testerRootMenuItem_Click);
             // 
@@ -266,7 +302,7 @@
             // 
             this.virtualYawToolStripMenuItem.DropDown = this.contextMenuAxisListVirtualRZ;
             this.virtualYawToolStripMenuItem.Name = "virtualYawToolStripMenuItem";
-            this.virtualYawToolStripMenuItem.Size = new System.Drawing.Size(228, 22);
+            this.virtualYawToolStripMenuItem.Size = new System.Drawing.Size(216, 22);
             this.virtualYawToolStripMenuItem.Text = "Virtual Yaw";
             this.virtualYawToolStripMenuItem.Click += new System.EventHandler(this.testerRootMenuItem_Click);
             // 
@@ -282,7 +318,7 @@
             // 
             this.physicalPitchToolStripMenuItem.DropDown = this.contextMenuAxisListPhysY;
             this.physicalPitchToolStripMenuItem.Name = "physicalPitchToolStripMenuItem";
-            this.physicalPitchToolStripMenuItem.Size = new System.Drawing.Size(228, 22);
+            this.physicalPitchToolStripMenuItem.Size = new System.Drawing.Size(216, 22);
             this.physicalPitchToolStripMenuItem.Text = "Physical Pitch";
             this.physicalPitchToolStripMenuItem.Click += new System.EventHandler(this.testerRootMenuItem_Click);
             // 
@@ -298,7 +334,7 @@
             // 
             this.physicalRollToolStripMenuItem.DropDown = this.contextMenuAxisListPhysX;
             this.physicalRollToolStripMenuItem.Name = "physicalRollToolStripMenuItem";
-            this.physicalRollToolStripMenuItem.Size = new System.Drawing.Size(228, 22);
+            this.physicalRollToolStripMenuItem.Size = new System.Drawing.Size(216, 22);
             this.physicalRollToolStripMenuItem.Text = "Physical Roll";
             this.physicalRollToolStripMenuItem.Click += new System.EventHandler(this.testerRootMenuItem_Click);
             // 
@@ -314,7 +350,7 @@
             // 
             this.physicalYawToolStripMenuItem.DropDown = this.contextMenuAxisListPhysRZ;
             this.physicalYawToolStripMenuItem.Name = "physicalYawToolStripMenuItem";
-            this.physicalYawToolStripMenuItem.Size = new System.Drawing.Size(228, 22);
+            this.physicalYawToolStripMenuItem.Size = new System.Drawing.Size(216, 22);
             this.physicalYawToolStripMenuItem.Text = "Physical Yaw";
             this.physicalYawToolStripMenuItem.Click += new System.EventHandler(this.testerRootMenuItem_Click);
             // 
@@ -330,7 +366,7 @@
             // 
             this.label5.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.label5.AutoSize = true;
-            this.label5.Location = new System.Drawing.Point(627, 31);
+            this.label5.Location = new System.Drawing.Point(625, 31);
             this.label5.Name = "label5";
             this.label5.Size = new System.Drawing.Size(181, 13);
             this.label5.TabIndex = 12;
@@ -350,12 +386,12 @@
             this.profilesToolStripMenuItem,
             this.exitToolStripMenuItem});
             this.contextMenuTray.Name = "contextMenuTray";
-            this.contextMenuTray.Size = new System.Drawing.Size(213, 53);
+            this.contextMenuTray.Size = new System.Drawing.Size(213, 51);
             // 
             // profilesToolStripMenuItem
             // 
             this.profilesToolStripMenuItem.Name = "profilesToolStripMenuItem";
-            this.profilesToolStripMenuItem.Size = new System.Drawing.Size(152, 23);
+            this.profilesToolStripMenuItem.Size = new System.Drawing.Size(152, 21);
             this.profilesToolStripMenuItem.Text = "Profile";
             this.profilesToolStripMenuItem.SelectedIndexChanged += new System.EventHandler(this.profilesToolStripMenuItem_SelectedIndexChanged);
             // 
@@ -381,13 +417,41 @@
             // 
             this.checkBoxHotKey.Appearance = System.Windows.Forms.Appearance.Button;
             this.checkBoxHotKey.Enabled = false;
-            this.checkBoxHotKey.Location = new System.Drawing.Point(339, 4);
+            this.checkBoxHotKey.Location = new System.Drawing.Point(339, 5);
             this.checkBoxHotKey.Name = "checkBoxHotKey";
             this.checkBoxHotKey.Size = new System.Drawing.Size(109, 25);
             this.checkBoxHotKey.TabIndex = 13;
             this.checkBoxHotKey.Text = "Hot Key";
             this.checkBoxHotKey.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             this.checkBoxHotKey.UseVisualStyleBackColor = true;
+            // 
+            // timer1
+            // 
+            this.timer1.Interval = 1000;
+            this.timer1.Tick += new System.EventHandler(this.timer1_Tick);
+            // 
+            // labelCurrentAircraft
+            // 
+            this.labelCurrentAircraft.DataBindings.Add(new System.Windows.Forms.Binding("Enabled", global::JoystickCurves.Properties.Settings.Default, "warThunderTrackAircraft", true, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged));
+            this.labelCurrentAircraft.Enabled = global::JoystickCurves.Properties.Settings.Default.warThunderTrackAircraft;
+            this.labelCurrentAircraft.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.labelCurrentAircraft.Location = new System.Drawing.Point(627, 9);
+            this.labelCurrentAircraft.Name = "labelCurrentAircraft";
+            this.labelCurrentAircraft.Size = new System.Drawing.Size(155, 13);
+            this.labelCurrentAircraft.TabIndex = 15;
+            // 
+            // checkBoxBindAircraft
+            // 
+            this.checkBoxBindAircraft.AutoSize = true;
+            this.checkBoxBindAircraft.DataBindings.Add(new System.Windows.Forms.Binding("Enabled", global::JoystickCurves.Properties.Settings.Default, "warThunderTrackAircraft", true, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged));
+            this.checkBoxBindAircraft.Enabled = global::JoystickCurves.Properties.Settings.Default.warThunderTrackAircraft;
+            this.checkBoxBindAircraft.Location = new System.Drawing.Point(464, 8);
+            this.checkBoxBindAircraft.Name = "checkBoxBindAircraft";
+            this.checkBoxBindAircraft.Size = new System.Drawing.Size(165, 17);
+            this.checkBoxBindAircraft.TabIndex = 16;
+            this.checkBoxBindAircraft.Text = "Bind this profile to the aircraft:";
+            this.checkBoxBindAircraft.UseVisualStyleBackColor = true;
+            this.checkBoxBindAircraft.CheckedChanged += new System.EventHandler(this.checkBoxBindAircraft_CheckedChanged);
             // 
             // joystickTester
             // 
@@ -494,6 +558,8 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(989, 416);
+            this.Controls.Add(this.checkBoxBindAircraft);
+            this.Controls.Add(this.labelCurrentAircraft);
             this.Controls.Add(this.checkBoxHotKey);
             this.Controls.Add(this.label5);
             this.Controls.Add(this.label2);
@@ -566,6 +632,12 @@
         private System.Windows.Forms.Button buttonSettings;
         private System.Windows.Forms.ToolStripMenuItem deleteCurrentProfileToolStripMenuItem;
         private System.Windows.Forms.CheckBox checkBoxHotKey;
+        private System.Windows.Forms.Timer timer1;
+        private System.Windows.Forms.ToolStripMenuItem responseModifierToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem multiplier;
+        private System.Windows.Forms.ToolStripMenuItem value;
+        private System.Windows.Forms.Label labelCurrentAircraft;
+        private System.Windows.Forms.CheckBox checkBoxBindAircraft;
     }
 }
 
