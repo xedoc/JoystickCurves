@@ -45,8 +45,12 @@ namespace JoystickCurves
         [DllImport("DIRECTOUTPUT.DLL", EntryPoint = "DirectOutput_RegisterPageCallback")]
         unsafe public static extern int DirectOutput_RegisterPageCallback(void* hDevice, PageCallbackDelegate pfnCb, int pCtxt);
         [DllImport("DIRECTOUTPUT.DLL", EntryPoint = "DirectOutput_RegisterSoftButtonCallback")]
-        unsafe public static extern int DirectOutput_RegisterSoftButtonCallback(void* hDevice, ButtonCallbackDelegate pfnCb, int pCtxt);
-
+        unsafe public static extern int DirectOutput_RegisterSoftButtonCallback(void* hDevice, ButtonCallbackDelegate pfnCb, int pCtxt);        
+        unsafe public delegate int EnumerateCallbackDelegate(void* hDevice, int lContext);
+        [DllImport("DIRECTOUTPUT.DLL", EntryPoint = "DirectOutput_Enumerate")]
+        public static extern int DirectOutput_Enumerate(EnumerateCallbackDelegate pfnCb, int pCtx);        
+        [DllImport("DIRECTOUTPUT.DLL", EntryPoint = "DirectOutput_AddPage")]
+        unsafe public static extern int DirectOutput_AddPage(void* hDevice, int dwPage, [MarshalAs(UnmanagedType.LPWStr)] string wszValue);
         #endregion
 
         PageCallbackDelegate pageCallback;
@@ -109,19 +113,8 @@ namespace JoystickCurves
                 var result = 0;
                 result = DirectOutput_Initialize(PROGRAMNAME);
                 Debug.Print( "DirectOutput_Initialize result = {0}", result );
-                switch (ApiVersion)
+                if( ApiVersion <= 6 )
                 {
-                    case 7:
-                        result = DirectOutput_RegisterDeviceCallback(new DeviceCallbackDelegate(DeviceCallback), 0);
-                        Debug.Print( "v7 DirectOutput_RegisterDeviceCallback result = {0}", result );
-                        result = DirectOutput_Enumerate();
-                        Debug.Print( "v7 DirectOutput_Enumerate result = {0}", result );
-                        result = DirectOutput_RegisterPageCallback(m_hDevice, pageCallback, 0);
-                        Debug.Print( "v7 DirectOutput_RegisterPageCallback result = {0}", result );
-                        result = DirectOutput_RegisterSoftButtonCallback(m_hDevice, buttonCallback, 0);
-                        Debug.Print( "v7 DirectOutput_RegisterSoftButtonCallback result = {0}", result );
-                        break;
-                    default:
                         result = DirectOutput_RegisterDeviceChangeCallback(new DeviceCallbackDelegate(DeviceCallback), 0);
                         Debug.Print("DirectOutput_RegisterDeviceChangeCallback result = {0}", result);
                         result = DirectOutput_Enumerate();
@@ -130,7 +123,17 @@ namespace JoystickCurves
                         Debug.Print( "DirectOutput_RegisterPageChangeCallback result = {0}", result );
                         result = DirectOutput_RegisterSoftButtonChangeCallback(m_hDevice, buttonCallback, 0);
                         Debug.Print( "DirectOutput_RegisterSoftButtonChangeCallback result = {0}", result );
-                        break;
+                }
+                else
+                {
+                        result = DirectOutput_RegisterDeviceCallback(new DeviceCallbackDelegate(DeviceCallback), 0);
+                        Debug.Print( "v7 DirectOutput_RegisterDeviceCallback result = {0}", result );
+                        result = DirectOutput_Enumerate( new EnumerateCallbackDelegate( EnumerateCallback ),0);
+                        Debug.Print( "v7 DirectOutput_Enumerate result = {0}", result );
+                        result = DirectOutput_RegisterPageCallback(m_hDevice, pageCallback, 0);
+                        Debug.Print( "v7 DirectOutput_RegisterPageCallback result = {0}", result );
+                        result = DirectOutput_RegisterSoftButtonCallback(m_hDevice, buttonCallback, 0);
+                        Debug.Print( "v7 DirectOutput_RegisterSoftButtonCallback result = {0}", result );
                 }
                 Acquired = true;
                 Acquiring = false;
@@ -194,8 +197,14 @@ namespace JoystickCurves
         }
         public void AddPage(int number, string pageName)
         {
-            var result = DirectOutput_AddPage(m_hDevice, number, pageName, false);
-            Debug.Print( "DirectOutput_AddPage result = {0}", result );
+            if (ApiVersion == 6)
+            {
+                DirectOutput_AddPage(m_hDevice, number, pageName, false );
+            }
+            else
+            {
+                DirectOutput_AddPage(m_hDevice, number, pageName);
+            }
         }
 
         public int DeviceCallback(void* hDevice, bool bAdded, int lContext)
@@ -206,6 +215,12 @@ namespace JoystickCurves
                 m_hDevice = null;
             return 0;
         }
+        public int EnumerateCallback(void* hDevice, int lContext)
+        {
+            m_hDevice = hDevice;
+            return 0;
+        }
+
         public int PageCallback(void* hDevice, int lPage, bool bActivated, int lContext)
         {
             if (OnPageChange != null)
