@@ -142,7 +142,9 @@ namespace JoystickCurves
                     DestinationDevice = p.DestinationDevice,
                     SourceAxis = p.SourceAxis,
                     SourceDevice = p.SourceDevice,
-                    TabTitle = p.TabTitle
+                    TabTitle = p.TabTitle,
+                    PreserveAxisRange = p.PreserveAxisRange,
+                    Correction = p.Correction
                 });
             }
             profile.HotKeyJoystickName = this.HotKeyJoystickName;
@@ -171,7 +173,9 @@ namespace JoystickCurves
                     DestinationDevice = p.DestinationDevice,
                     SourceAxis = p.SourceAxis,
                     SourceDevice = p.SourceDevice,
-                    TabTitle = p.TabTitle
+                    TabTitle = p.TabTitle,
+                    PreserveAxisRange = p.PreserveAxisRange,
+                    Correction = p.Correction
                 });
             }
             profile.HotKeyJoystickName = this.HotKeyJoystickName;
@@ -216,6 +220,19 @@ namespace JoystickCurves
         {
             get;set;
         }
+        [XmlAttribute]
+        public double Correction
+        {
+            get;
+            set;
+        }
+        [XmlAttribute]
+        public bool PreserveAxisRange
+        {
+            get;
+            set;
+        }
+
         [XmlElement]
         public BezierCurvePoints CurvePoints
         {

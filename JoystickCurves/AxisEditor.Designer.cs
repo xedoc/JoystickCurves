@@ -28,7 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
-            JoystickCurves.BezierCurvePoints bezierCurvePoints2 = new JoystickCurves.BezierCurvePoints();
+            JoystickCurves.BezierCurvePoints bezierCurvePoints1 = new JoystickCurves.BezierCurvePoints();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(AxisEditor));
             this.comboSourceAxis = new System.Windows.Forms.ComboBox();
             this.label1 = new System.Windows.Forms.Label();
@@ -41,6 +41,9 @@
             this.label4 = new System.Windows.Forms.Label();
             this.comboDestAxis = new System.Windows.Forms.ComboBox();
             this.groupBoxCurve = new System.Windows.Forms.GroupBox();
+            this.checkBoxPreserveAxisRange = new System.Windows.Forms.CheckBox();
+            this.label5 = new System.Windows.Forms.Label();
+            this.trimmerTrackBar = new JoystickCurves.TrimmerTrackBar();
             this.curveResponse = new JoystickCurves.BezierCurve();
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
@@ -60,7 +63,7 @@
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(6, 44);
+            this.label1.Location = new System.Drawing.Point(21, 44);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(29, 13);
             this.label1.TabIndex = 2;
@@ -74,7 +77,7 @@
             this.groupBox1.Controls.Add(this.comboSourceAxis);
             this.groupBox1.Location = new System.Drawing.Point(5, 3);
             this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(283, 88);
+            this.groupBox1.Size = new System.Drawing.Size(283, 70);
             this.groupBox1.TabIndex = 5;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Source (Physical device)";
@@ -106,7 +109,7 @@
             this.groupBox2.Controls.Add(this.comboDestAxis);
             this.groupBox2.Location = new System.Drawing.Point(294, 3);
             this.groupBox2.Name = "groupBox2";
-            this.groupBox2.Size = new System.Drawing.Size(300, 88);
+            this.groupBox2.Size = new System.Drawing.Size(300, 70);
             this.groupBox2.TabIndex = 5;
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "Destination (Virtual joystick)";
@@ -133,7 +136,7 @@
             // label4
             // 
             this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(5, 44);
+            this.label4.Location = new System.Drawing.Point(20, 44);
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(29, 13);
             this.label4.TabIndex = 6;
@@ -154,13 +157,52 @@
             this.groupBoxCurve.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+            this.groupBoxCurve.Controls.Add(this.checkBoxPreserveAxisRange);
+            this.groupBoxCurve.Controls.Add(this.label5);
+            this.groupBoxCurve.Controls.Add(this.trimmerTrackBar);
             this.groupBoxCurve.Controls.Add(this.curveResponse);
-            this.groupBoxCurve.Location = new System.Drawing.Point(5, 92);
+            this.groupBoxCurve.Location = new System.Drawing.Point(5, 79);
             this.groupBoxCurve.Name = "groupBoxCurve";
-            this.groupBoxCurve.Size = new System.Drawing.Size(589, 307);
+            this.groupBoxCurve.Size = new System.Drawing.Size(590, 228);
             this.groupBoxCurve.TabIndex = 6;
             this.groupBoxCurve.TabStop = false;
             this.groupBoxCurve.Text = "Response Curve";
+            // 
+            // checkBoxPreserveAxisRange
+            // 
+            this.checkBoxPreserveAxisRange.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.checkBoxPreserveAxisRange.AutoSize = true;
+            this.checkBoxPreserveAxisRange.Location = new System.Drawing.Point(364, 200);
+            this.checkBoxPreserveAxisRange.Name = "checkBoxPreserveAxisRange";
+            this.checkBoxPreserveAxisRange.Size = new System.Drawing.Size(174, 17);
+            this.checkBoxPreserveAxisRange.TabIndex = 7;
+            this.checkBoxPreserveAxisRange.Text = "Preserve axis range(interpolate)";
+            this.checkBoxPreserveAxisRange.UseVisualStyleBackColor = true;
+            // 
+            // label5
+            // 
+            this.label5.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.label5.AutoSize = true;
+            this.label5.Location = new System.Drawing.Point(29, 201);
+            this.label5.Name = "label5";
+            this.label5.Size = new System.Drawing.Size(58, 13);
+            this.label5.TabIndex = 6;
+            this.label5.Text = "Correction:";
+            // 
+            // trimmerTrackBar
+            // 
+            this.trimmerTrackBar.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.trimmerTrackBar.Location = new System.Drawing.Point(88, 195);
+            this.trimmerTrackBar.Maximum = 32767;
+            this.trimmerTrackBar.Minimum = -32767;
+            this.trimmerTrackBar.Name = "trimmerTrackBar";
+            this.trimmerTrackBar.Percent = 0D;
+            this.trimmerTrackBar.Size = new System.Drawing.Size(271, 27);
+            this.trimmerTrackBar.TabIndex = 5;
+            this.trimmerTrackBar.Value = 0;
             // 
             // curveResponse
             // 
@@ -169,17 +211,18 @@
             | System.Windows.Forms.AnchorStyles.Right)));
             this.curveResponse.BackColor = System.Drawing.Color.White;
             this.curveResponse.HorizontalLines = 5;
-            this.curveResponse.Location = new System.Drawing.Point(6, 19);
+            this.curveResponse.Location = new System.Drawing.Point(6, 15);
             this.curveResponse.Name = "curveResponse";
             this.curveResponse.Padding = new System.Windows.Forms.Padding(10);
-            bezierCurvePoints2.DrawHeight = 262;
-            bezierCurvePoints2.DrawPoints = ((System.Collections.Generic.List<System.Drawing.Point>)(resources.GetObject("bezierCurvePoints2.DrawPoints")));
-            bezierCurvePoints2.DrawWidth = 557;
-            bezierCurvePoints2.PointsCount = 13;
-            bezierCurvePoints2.RawPoints = ((System.Collections.Generic.List<System.Drawing.PointF>)(resources.GetObject("bezierCurvePoints2.RawPoints")));
-            this.curveResponse.Points = bezierCurvePoints2;
+            bezierCurvePoints1.CurveResponseType = JoystickCurves.CurveResponseType.Multiplier;
+            bezierCurvePoints1.DrawHeight = 158;
+            bezierCurvePoints1.DrawPoints = ((System.Collections.Generic.List<System.Drawing.Point>)(resources.GetObject("bezierCurvePoints1.DrawPoints")));
+            bezierCurvePoints1.DrawWidth = 558;
+            bezierCurvePoints1.PointsCount = 13;
+            bezierCurvePoints1.RawPoints = ((System.Collections.Generic.List<System.Drawing.PointF>)(resources.GetObject("bezierCurvePoints1.RawPoints")));
+            this.curveResponse.Points = bezierCurvePoints1;
             this.curveResponse.PointsCount = 13;
-            this.curveResponse.Size = new System.Drawing.Size(577, 282);
+            this.curveResponse.Size = new System.Drawing.Size(578, 178);
             this.curveResponse.TabIndex = 1;
             this.curveResponse.OnCurveChange += new System.EventHandler<System.EventArgs>(this.curveResponse_OnCurveChange);
             // 
@@ -191,12 +234,13 @@
             this.Controls.Add(this.groupBox2);
             this.Controls.Add(this.groupBox1);
             this.Name = "AxisEditor";
-            this.Size = new System.Drawing.Size(597, 406);
+            this.Size = new System.Drawing.Size(598, 310);
             this.groupBox1.ResumeLayout(false);
             this.groupBox1.PerformLayout();
             this.groupBox2.ResumeLayout(false);
             this.groupBox2.PerformLayout();
             this.groupBoxCurve.ResumeLayout(false);
+            this.groupBoxCurve.PerformLayout();
             this.ResumeLayout(false);
 
         }
@@ -215,5 +259,8 @@
         private System.Windows.Forms.ComboBox comboDestAxis;
         private System.Windows.Forms.GroupBox groupBoxCurve;
         private JoystickCurves.BezierCurve curveResponse;
+        private System.Windows.Forms.CheckBox checkBoxPreserveAxisRange;
+        private System.Windows.Forms.Label label5;
+        private TrimmerTrackBar trimmerTrackBar;
     }
 }

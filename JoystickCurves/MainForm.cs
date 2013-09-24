@@ -260,6 +260,19 @@ namespace JoystickCurves
                 }
             }
 
+            if (pTab.Correction != 0)
+            {
+                var c = (int)(32767.0f * pTab.Correction / 100.0f);
+                if (pTab.PreserveAxisRange)
+                {
+                    newValue = (int)((32767.0f - (newValue<c?-1:1) * c) * newValue / 32767.0f + c);
+                }
+                else
+                {
+                    newValue += c;
+                }
+            }
+
             virtualDevice.Set(destAxis, newValue);           
 
         }
@@ -601,6 +614,8 @@ namespace JoystickCurves
                         DestinationDevice = axisEditor.CurrentDestDevice,
                         SourceAxis = axisEditor.CurrentSourceAxis,
                         SourceDevice = axisEditor.CurrentSourceDevice,
+                        Correction = axisEditor.Correction,
+                        PreserveAxisRange = axisEditor.PreserveAxisRange,
                         TabTitle = axisEditor.Title,                                                
                     });
                 }
@@ -995,11 +1010,11 @@ namespace JoystickCurves
             var templateTab = tabAxis.TabPages[tabAxis.TabPages.Count-1];
             var newTabPage = new TabPage("Axis " + tab.TabCount) { Name = "tabAxis" };
 
-            var newAxisEditor = new AxisEditor() { 
+            var newAxisEditor = new AxisEditor() {                 
                 Location = new Point( templateTab.Padding.Left, templateTab.Padding.Top ), 
                 Size = new Size(templateTab.Width - Padding.Left - Padding.Right, templateTab.Height - Padding.Top - Padding.Bottom),               
-                Index = tabAxis.TabPages.Count - 1,
-                Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right | AnchorStyles.Top
+                Index = tabAxis.TabPages.Count - 1
+                //Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right | AnchorStyles.Top
             };
             newAxisEditor.CurveResponseType = CurveResponseType.Multiplier;
             newAxisEditor.ResetCurve();
@@ -1162,6 +1177,8 @@ namespace JoystickCurves
                     axisEditor.CurrentDestDevice = p.DestinationDevice;
                     axisEditor.CurrentSourceAxis = p.SourceAxis;
                     axisEditor.CurrentSourceDevice = p.SourceDevice;
+                    axisEditor.PreserveAxisRange = p.PreserveAxisRange;
+                    axisEditor.Correction = p.Correction;
                     axisEditor.Title = String.IsNullOrEmpty(p.TabTitle) || p.TabTitle == NOTSET ? String.Format("Axis {0}", _currentProfile.Tabs.IndexOf(p) + 1) : p.TabTitle;
                     axisEditor.CurveResponseType = p.CurvePoints.CurveResponseType;
 

@@ -32,7 +32,7 @@
     <CreateWebPageOnPublish>true</CreateWebPageOnPublish>
     <WebPage>publish.htm</WebPage>
     <OpenBrowserOnPublish>false</OpenBrowserOnPublish>
-    <ApplicationRevision>11</ApplicationRevision>
+    <ApplicationRevision>12</ApplicationRevision>
     <ApplicationVersion>0.0.3.%2a</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
     <PublishWizardCompleted>true</PublishWizardCompleted>
@@ -135,6 +135,12 @@
       <DependentUpon>SettingsForm.cs</DependentUpon>
     </Compile>
     <Compile Include="SteamAPI.cs" />
+    <Compile Include="TrimmerTrackBar.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="TrimmerTrackBar.Designer.cs">
+      <DependentUpon>TrimmerTrackBar.cs</DependentUpon>
+    </Compile>
     <Compile Include="Utils.cs" />
     <Compile Include="AxisEditor.cs">
       <SubType>UserControl</SubType>
@@ -207,6 +213,9 @@
     </Compile>
     <EmbeddedResource Include="SettingsForm.resx">
       <DependentUpon>SettingsForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="TrimmerTrackBar.resx">
+      <DependentUpon>TrimmerTrackBar.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="ValueInput.resx">
       <DependentUpon>ValueInput.cs</DependentUpon>

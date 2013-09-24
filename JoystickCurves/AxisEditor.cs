@@ -245,6 +245,19 @@ namespace JoystickCurves
             get;
             set;
         }
+
+        public bool PreserveAxisRange
+        {
+            get { return checkBoxPreserveAxisRange.Checked; }
+            set { Utils.SetProperty<CheckBox, bool>(checkBoxPreserveAxisRange, "Checked", value); }
+        }
+
+        public double Correction
+        {
+            get { return trimmerTrackBar.Percent; }
+            set { trimmerTrackBar.Percent = value; }
+        }
+
         public static implicit operator ProfileTab(AxisEditor axisEditor)
         {            
             axisEditor.CurrentCurve.ScaleRawPoints();
@@ -255,6 +268,8 @@ namespace JoystickCurves
                 DestinationDevice = axisEditor.CurrentDestDevice,
                 SourceAxis = axisEditor.CurrentSourceAxis,
                 SourceDevice = axisEditor.CurrentSourceDevice,
+                Correction = axisEditor.Correction,
+                PreserveAxisRange = axisEditor.PreserveAxisRange,                
                 TabTitle = axisEditor.CurrentSourceAxis
             };
 
@@ -279,5 +294,7 @@ namespace JoystickCurves
             if (OnChange != null)
                 OnChange(this, EventArgs.Empty);
         }
+
+        
     }
 }
