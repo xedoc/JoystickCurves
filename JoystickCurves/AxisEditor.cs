@@ -58,6 +58,14 @@ namespace JoystickCurves
             _selectedDestDevice = NOTSET;
             _selectedSourceAxis = NOTSET;
             _selectedSourceDevice = NOTSET;
+
+            trimmerTrackBar.OnChange += new EventHandler<EventArgs>(trimmerTrackBar_OnChange);
+        }
+
+        void trimmerTrackBar_OnChange(object sender, EventArgs e)
+        {
+            if (OnChange != null)
+                OnChange(this, EventArgs.Empty);
         }
         public CurveResponseType CurveResponseType
         {
@@ -249,13 +257,18 @@ namespace JoystickCurves
         public bool PreserveAxisRange
         {
             get { return checkBoxPreserveAxisRange.Checked; }
-            set { Utils.SetProperty<CheckBox, bool>(checkBoxPreserveAxisRange, "Checked", value); }
+            set { 
+                    Utils.SetProperty<CheckBox, bool>(checkBoxPreserveAxisRange, "Checked", value);
+                    if (OnChange != null)
+                        OnChange(this, EventArgs.Empty);
+            }
         }
 
         public double Correction
         {
             get { return trimmerTrackBar.Percent; }
-            set { trimmerTrackBar.Percent = value; }
+            set {   trimmerTrackBar.Percent = value;
+            }
         }
 
         public static implicit operator ProfileTab(AxisEditor axisEditor)

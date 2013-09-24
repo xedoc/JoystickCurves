@@ -12,6 +12,7 @@ namespace JoystickCurves
     public partial class TrimmerTrackBar : UserControl
     {
         private double percent;
+        public event EventHandler<EventArgs> OnChange;
         public TrimmerTrackBar()
         {
             InitializeComponent();
@@ -32,13 +33,19 @@ namespace JoystickCurves
         public int Value
         {
             get{ return trackBar1.Value;}
-            set { trackBar1.Value = value; }
+            set { trackBar1.Value = value; 
+            
+            }
         }
 
         public double Percent
         {
             get { return percent; }
-            set { percent = value; Value = (int)((double)Maximum * (double)percent / 100.0f); }
+            set { 
+                    percent = value; Value = (int)((double)Maximum * (double)percent / 100.0f);
+                    if (OnChange != null)
+                        OnChange(this, EventArgs.Empty);
+            }
         }
 
         private void trackBar1_ValueChanged(object sender, EventArgs e)

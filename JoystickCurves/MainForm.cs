@@ -52,7 +52,7 @@ namespace JoystickCurves
         private object lockWarThunder = new object();
         private object lockSaitek = new object();
         private CurrentAircraft currentAircraft;
-
+        private AxisEditor currentAxisEditor;
         private Steam _steam;
         private SaitekMFD _saitek;
         
@@ -259,10 +259,13 @@ namespace JoystickCurves
                         break;
                 }
             }
+            
+           
 
             if (pTab.Correction != 0)
             {
                 var c = (int)(32767.0f * pTab.Correction / 100.0f);
+
                 if (pTab.PreserveAxisRange)
                 {
                     newValue = (int)((32767.0f - (newValue<c?-1:1) * c) * newValue / 32767.0f + c);
@@ -272,6 +275,12 @@ namespace JoystickCurves
                     newValue += c;
                 }
             }
+            
+            
+            if (newValue < -32767)
+                newValue = -32767;
+            else if (newValue > 32767)
+                newValue = 32767;
 
             virtualDevice.Set(destAxis, newValue);           
 
@@ -997,7 +1006,7 @@ namespace JoystickCurves
                 var curve = new BezierCurvePoints();
                 curve.PointsCount = DEFPOINTSCOUNT;
                 axisEditor.CurrentCurve.Reset();
-                axisEditor.CurveResponseType = CurveResponseType.Multiplier;
+                axisEditor.CurveResponseType = CurveResponseType.Multiplier;                
                 SetupEditorComboBoxes();
                 _currentProfile.Tabs.Add(axisEditor);
             }
