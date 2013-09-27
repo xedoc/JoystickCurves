@@ -18,7 +18,7 @@ namespace JoystickCurves
         private const String trackString = "^.*?try to select aircraft (.*)$";
         private BGWorker bwReader;
         private WTFolders wtFolders;
-
+        private object lockRead = new object();
 
         private readonly byte[] xorBytes = {
 	        0x82,0x87,0x97,0x40,0x8D,0x8B,0x46,0x0B,0xBB,0x73,0x94,0x03,0xE5,0xB3,0x83,0x53, 
@@ -77,15 +77,21 @@ namespace JoystickCurves
 
             if (!Directory.Exists(DebugFolder))
                 return;
+            
+            if (timerLatestLog == null)
+                timerLatestLog = new Timer(new TimerCallback(timerLatestLogCallback), null, 0, POLL_LASTLOG);
+            else
+                timerLatestLog.Change(0, POLL_LASTLOG);
 
-            timerLatestLog = new Timer(new TimerCallback(timerLatestLogCallback), null, 0, POLL_LASTLOG);
         }
         private void timerLatestLogCallback( object o )
         {
             if( !String.IsNullOrEmpty( DebugFolder ))
             {
                 var files = new DirectoryInfo(DebugFolder);
-                var newestLog = files.GetFiles().OrderByDescending(f => f.LastWriteTime).FirstOrDefault(f => f.Extension.ToLower() == logExtension);
+                var newestLog = files.GetFiles().OrderByDescending(f => f.LastWriteTime).FirstOrDefault(
+                    f => f.Extension.ToLower() == logExtension);
+
                 if (newestLog.FullName != CurrentFile && !String.IsNullOrEmpty(newestLog.FullName))
                 {
                     CurrentFile = newestLog.FullName;
@@ -115,56 +121,59 @@ namespace JoystickCurves
         {
             if (String.IsNullOrEmpty(CurrentFile))
                 return;
-            
-            int xorIndex = 0;
-            String CurString = String.Empty;
-            List<Byte> bytes = new List<byte>();
 
-            using (var fileStream = new FileStream(CurrentFile, FileMode.Open, 
-                              FileAccess.Read, FileShare.ReadWrite))
+            lock (lockRead)
             {
-                var airCraft = String.Empty;
-                while (true)
-                {
-                    if (bwReader.CancelationPending)
-                        break;
+                int xorIndex = 0;
+                String CurString = String.Empty;
+                List<Byte> bytes = new List<byte>();
 
-                    if (xorIndex >= xorBytes.Count()) xorIndex = 0;
-                    var xoredByte = fileStream.ReadByte();
-                    if (xoredByte >= 0)
+                using (var fileStream = new FileStream(CurrentFile, FileMode.Open,
+                                  FileAccess.Read, FileShare.ReadWrite))
+                {
+                    var airCraft = String.Empty;
+                    while (true)
                     {
-                        var nextChar = (byte)(xoredByte ^ xorBytes[xorIndex++]);
-                        if (nextChar == 0x0A || nextChar == 0x0D)
+                        if (bwReader.CancelationPending)
+                            break;
+
+                        if (xorIndex >= xorBytes.Count()) xorIndex = 0;
+                        var xoredByte = fileStream.ReadByte();
+                        if (xoredByte >= 0)
                         {
-                            if (bytes.Count > 0)
+                            var nextChar = (byte)(xoredByte ^ xorBytes[xorIndex++]);
+                            if (nextChar == 0x0A || nextChar == 0x0D)
                             {
-                                CurString = Encoding.UTF8.GetString(bytes.ToArray());
-                                if (OnNewLine != null)
-                                    OnNewLine(this, new EventArgsString() { Value = CurString });
-   
+                                if (bytes.Count > 0)
+                                {
+                                    CurString = Encoding.UTF8.GetString(bytes.ToArray());
+                                    if (OnNewLine != null)
+                                        OnNewLine(this, new EventArgsString() { Value = CurString });
+
                                     var t = Re.GetSubString(CurString, trackString, 1);
                                     if (!string.IsNullOrEmpty(t))
                                         airCraft = Thread.CurrentThread.CurrentCulture.TextInfo.ToTitleCase(t.Replace("_", " "));
 
-                                bytes.Clear();
-                                CurString = String.Empty;
+                                    bytes.Clear();
+                                    CurString = String.Empty;
+                                }
+                            }
+                            else
+                            {
+                                bytes.Add(nextChar);
                             }
                         }
                         else
                         {
-                            bytes.Add(nextChar);
+                            if (!String.IsNullOrEmpty(airCraft) && airCraft != AircraftName)
+                            {
+                                AircraftName = airCraft;
+
+                            }
+
+
+                            Thread.Sleep(50);
                         }
-                    }
-                    else
-                    {
-                        if (!String.IsNullOrEmpty(airCraft) && airCraft != AircraftName)
-                        {
-                            AircraftName = airCraft;
-
-                        }
-
-
-                        Thread.Sleep(50);
                     }
                 }
             }

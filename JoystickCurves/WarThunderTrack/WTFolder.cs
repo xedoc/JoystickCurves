@@ -23,11 +23,15 @@ namespace JoystickCurves
 
         public void StartPoll()
         {
-            pollWTProcess = new Timer(new TimerCallback(poolWTProcessCallback), null, 0, POLL_PERIOD);
+            if (pollWTProcess == null)
+                pollWTProcess = new Timer(new TimerCallback(poolWTProcessCallback), null, 0, POLL_PERIOD);
+            else
+                pollWTProcess.Change(0, POLL_PERIOD);
         }
         public void StopPoll()
         {
-            pollWTProcess.Change(Timeout.Infinite, Timeout.Infinite);
+            if( pollWTProcess != null )
+                pollWTProcess.Change(Timeout.Infinite, Timeout.Infinite);
         }
 
         private void poolWTProcessCallback(object o)
