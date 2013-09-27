@@ -96,11 +96,13 @@ namespace JoystickCurves
                 {
                     CurrentFile = newestLog.FullName;
                     if (bwReader != null)
+                    {
                         try
                         {
                             bwReader.Stop();
                         }
                         catch { }
+                    }
 
                     bwReader = new BGWorker(ReadLines, null);
                 }
