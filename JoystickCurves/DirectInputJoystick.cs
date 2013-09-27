@@ -68,7 +68,7 @@ namespace JoystickCurves
                 try
                 {
                     _device.Poll();
-                    queue = _device.GetBufferedData();
+                    queue = _device.GetBufferedData();                    
 
                     if (queue != null)
                     {
@@ -248,7 +248,37 @@ namespace JoystickCurves
                 _actionMap[k].Add(actions[k]);
             }
         }
-       
+
+        public int Get(JoystickOffset offset)
+        {
+            try
+            {
+                var state = _device.CurrentJoystickState;
+                switch (offset)
+                {
+                    case JoystickOffset.X:
+                        return state.X;
+                    case JoystickOffset.Y:
+                        return state.Y;
+                    case JoystickOffset.Z:
+                        return state.Z;
+                    case JoystickOffset.RX:
+                        return state.Rz;
+                    case JoystickOffset.RY:
+                        return state.Ry;
+                    case JoystickOffset.RZ:
+                        return state.Rz;
+                    case JoystickOffset.Slider0:
+                        return state.GetSlider()[0];
+                    case JoystickOffset.Slider1:
+                        return state.GetSlider()[0];
+                }
+            }
+            catch { return 0; }
+            
+            
+            return 0;
+        }
         public void Set(JoystickOffset offset, int value)
         {
             

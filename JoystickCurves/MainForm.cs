@@ -885,6 +885,7 @@ namespace JoystickCurves
                         axisEditor.SourceAxis = DIUtils.AxisNames.ToList(); 
                         axisEditor.DestinationAxis = DIUtils.AxisNames.ToList();
                         axisEditor.OnChange += new EventHandler<EventArgs>(axisEditor_OnChange);
+                        axisEditor.OnTrimChange += new EventHandler<EventArgs>(axisEditor_OnTrimChange);
                     }
                 }
             }
@@ -892,6 +893,35 @@ namespace JoystickCurves
             
             }
             
+        }
+
+        void axisEditor_OnTrimChange(object sender, EventArgs e)
+        {
+   
+            if (currentAxisEditor.Correction != 0)
+            {
+                _currentProfile.Tabs[currentAxisEditor.Index] = currentAxisEditor;
+                var srcDevName = currentAxisEditor.CurrentSourceDevice;
+                if (String.IsNullOrEmpty(srcDevName))
+                    return;
+
+                var srcDevice = _deviceManager.Joysticks.Where(d => d.Name == srcDevName).FirstOrDefault();
+                if (srcDevice == null)
+                    return;
+
+                var srcAxis = DIUtils.ID(currentAxisEditor.CurrentSourceAxis);
+
+                ActionSetVJoy(new DirectInputData()
+                {
+                    JoystickOffset = srcAxis,
+                    DeviceName = currentAxisEditor.CurrentSourceDevice,
+                    Type = DIDataType.Joystick,
+                    Min = -32767,
+                    Max = 32767,
+                    Value = srcDevice.Get(srcAxis)
+
+                });
+            }
         }
 
         private void UpdateAxisBindings()
@@ -955,6 +985,7 @@ namespace JoystickCurves
                 copyCurveToToolStripMenuItem.DropDownItems.Add(a);
 
             var axisEditor = tabAxis.SelectedTab.Controls[0] as AxisEditor;
+            currentAxisEditor = axisEditor;
             if (axisEditor.CurveResponseType == CurveResponseType.Multiplier)
             {
                 value.Checked = false;
@@ -979,7 +1010,6 @@ namespace JoystickCurves
 
             UpdateAxisBindings();
             UpdateCurveActions();
-            
 
             if (axisEditor.CurveResponseType == CurveResponseType.Multiplier && !multiplier.Checked)
             {
@@ -1614,7 +1644,7 @@ namespace JoystickCurves
         private void timer1_Tick(object sender, EventArgs e)
         {
             return;
-            var virtualDevice = _deviceManager.Joysticks.ToList().FirstOrDefault(
+/*            var virtualDevice = _deviceManager.Joysticks.ToList().FirstOrDefault(
                 gc => gc.Type == DeviceType.Virtual );
 
             if (virtualDevice == null)
@@ -1623,7 +1653,7 @@ namespace JoystickCurves
             curX -= 5000;
             if (curX <= -32767)
                 curX = 32767;
-            virtualDevice.Set(JoystickOffset.X, curX);
+            virtualDevice.Set(JoystickOffset.X, curX);*/
         }
 
         private void multiplerToolStripMenuItem_CheckedChanged(object sender, EventArgs e)
