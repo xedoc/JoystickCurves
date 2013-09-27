@@ -31,6 +31,7 @@ namespace JoystickCurves
         private BindingSource _destContrBSource, _sourceContrBSource, _destAxisBSource, _sourceAxisBSource;
         private string _selectedDestDevice, _selectedDestAxis, _selectedSourceDevice, _selectedSourceAxis;
         public event EventHandler<EventArgs> OnChange;
+        public event EventHandler<EventArgs> OnTrimChange;
         private object lockRead = new object();
         private CurveResponseType _curveResponseType;
         CurveShapeType _curveType;
@@ -64,8 +65,8 @@ namespace JoystickCurves
 
         void trimmerTrackBar_OnChange(object sender, EventArgs e)
         {
-            if (OnChange != null)
-                OnChange(this, EventArgs.Empty);
+            if (OnTrimChange != null)
+                OnTrimChange(this, EventArgs.Empty);
         }
         public CurveResponseType CurveResponseType
         {
@@ -259,8 +260,8 @@ namespace JoystickCurves
             get { return checkBoxPreserveAxisRange.Checked; }
             set { 
                     Utils.SetProperty<CheckBox, bool>(checkBoxPreserveAxisRange, "Checked", value);
-                    if (OnChange != null)
-                        OnChange(this, EventArgs.Empty);
+                    if (OnTrimChange != null)
+                        OnTrimChange(this, EventArgs.Empty);
             }
         }
 
@@ -306,6 +307,11 @@ namespace JoystickCurves
         {
             if (OnChange != null)
                 OnChange(this, EventArgs.Empty);
+        }
+
+        private void checkBoxPreserveAxisRange_CheckedChanged(object sender, EventArgs e)
+        {
+            PreserveAxisRange = checkBoxPreserveAxisRange.Checked;
         }
 
         

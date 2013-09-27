@@ -173,29 +173,30 @@
             this.checkBoxPreserveAxisRange.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.checkBoxPreserveAxisRange.AutoSize = true;
-            this.checkBoxPreserveAxisRange.Location = new System.Drawing.Point(364, 200);
+            this.checkBoxPreserveAxisRange.Location = new System.Drawing.Point(319, 200);
             this.checkBoxPreserveAxisRange.Name = "checkBoxPreserveAxisRange";
-            this.checkBoxPreserveAxisRange.Size = new System.Drawing.Size(174, 17);
+            this.checkBoxPreserveAxisRange.Size = new System.Drawing.Size(119, 17);
             this.checkBoxPreserveAxisRange.TabIndex = 7;
-            this.checkBoxPreserveAxisRange.Text = "Preserve axis range(interpolate)";
+            this.checkBoxPreserveAxisRange.Text = "Preserve axis range";
             this.checkBoxPreserveAxisRange.UseVisualStyleBackColor = true;
+            this.checkBoxPreserveAxisRange.CheckedChanged += new System.EventHandler(this.checkBoxPreserveAxisRange_CheckedChanged);
             // 
             // label5
             // 
             this.label5.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.label5.AutoSize = true;
-            this.label5.Location = new System.Drawing.Point(29, 201);
+            this.label5.Location = new System.Drawing.Point(11, 200);
             this.label5.Name = "label5";
-            this.label5.Size = new System.Drawing.Size(58, 13);
+            this.label5.Size = new System.Drawing.Size(30, 13);
             this.label5.TabIndex = 6;
-            this.label5.Text = "Correction:";
+            this.label5.Text = "Trim:";
             // 
             // trimmerTrackBar
             // 
             this.trimmerTrackBar.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.trimmerTrackBar.Location = new System.Drawing.Point(88, 195);
+            this.trimmerTrackBar.Location = new System.Drawing.Point(42, 194);
             this.trimmerTrackBar.Maximum = 32767;
             this.trimmerTrackBar.Minimum = -32767;
             this.trimmerTrackBar.Name = "trimmerTrackBar";
