@@ -50,7 +50,11 @@ namespace JoystickCurves
         [DllImport("DIRECTOUTPUT.DLL", EntryPoint = "DirectOutput_Enumerate")]
         public static extern int DirectOutput_Enumerate(EnumerateCallbackDelegate pfnCb, int pCtx);        
         [DllImport("DIRECTOUTPUT.DLL", EntryPoint = "DirectOutput_AddPage")]
-        unsafe public static extern int DirectOutput_AddPage(void* hDevice, int dwPage, [MarshalAs(UnmanagedType.LPWStr)] string wszValue);
+        //unsafe public static extern int DirectOutput_AddPage(void* hDevice, int dwPage, [MarshalAs(UnmanagedType.LPWStr)] string wszValue, int dwFlags);
+        unsafe public static extern int DirectOutput_AddPage(void* hDevice, int dwPage, int dwFlags);
+
+        const UInt32 E_PAGENOTACTIVE = 0xFF040001;
+
         #endregion
 
         PageCallbackDelegate pageCallback;
@@ -58,7 +62,7 @@ namespace JoystickCurves
         private const string PROGRAMNAME = "JoystickCurves";
         void* m_hDevice = null;
         private const string REGPATH = @"SOFTWARE\Saitek\DirectOutput";
-
+        private bool activeset = false;
         public event EventHandler<EventArgs> OnInit;
         public event EventHandler<EventArgs> OnError;
         public event EventHandler<SaitekEventArgs> OnPageChange;
@@ -191,20 +195,26 @@ namespace JoystickCurves
         public void SetText(int pageNumber, int line, string text)
         {
             text = text.PadRight(16, ' ');
-            var result = DirectOutput_SetString(m_hDevice, pageNumber, line, (text.Length > 16 ? 16 : text.Length), text);
-            Debug.Print( "DirectOutput_SetString result = {0}", result );
+            int result = DirectOutput_SetString(m_hDevice, pageNumber, line, (text.Length > 16 ? 16 : text.Length), text);
+            
+            Debug.Print( "DirectOutput_SetString result = {0} page: {1} line: {2}", result, pageNumber, line );
 
         }
         public void AddPage(int number, string pageName)
         {
+            int result = 0;
             if (ApiVersion == 6)
             {
-                DirectOutput_AddPage(m_hDevice, number, pageName, false );
+                result = DirectOutput_AddPage(m_hDevice, number, pageName, activeset?false:true );
+                activeset = true;
             }
             else
             {
-                DirectOutput_AddPage(m_hDevice, number, pageName);
+                result = DirectOutput_AddPage(m_hDevice, number, 1);//activeset?0:1);
+                activeset = true;
             }
+           
+            Debug.Print("DirectOutput_AddPage result = {0}", result);
         }
 
         public int DeviceCallback(void* hDevice, bool bAdded, int lContext)
