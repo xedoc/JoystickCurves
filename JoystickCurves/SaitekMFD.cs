@@ -72,11 +72,16 @@ namespace JoystickCurves
         {
             Unacquiring = false;
 
-            AddSaitekDllPath();
+            ApiDLLFound = AddSaitekDllPath();
             
 
             if (OnInit != null)
                 OnInit(this, EventArgs.Empty);
+        }
+        public bool ApiDLLFound
+        {
+            get;
+            set;
         }
         public int ApiVersion
         {
@@ -102,6 +107,9 @@ namespace JoystickCurves
 
         public bool Acquire()
         {
+            if (!ApiDLLFound)
+                return false;
+
             Acquiring = true;
 
             Acquired = false;
@@ -194,6 +202,9 @@ namespace JoystickCurves
         }
         public void SetText(int pageNumber, int line, string text)
         {
+            if (!Acquired)
+                return;
+
             text = text.PadRight(16, ' ');
             int result = DirectOutput_SetString(m_hDevice, pageNumber, line, (text.Length > 16 ? 16 : text.Length), text);
             
@@ -202,6 +213,9 @@ namespace JoystickCurves
         }
         public void AddPage(int number, string pageName)
         {
+            if (!Acquired)
+                return;
+
             int result = 0;
             if (ApiVersion == 6)
             {

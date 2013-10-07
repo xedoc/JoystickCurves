@@ -71,7 +71,9 @@ namespace JoystickCurves
             {
                 _joystick.RelinquishVJD(_deviceid);
             }
-            catch { }
+            catch {
+                Debug.Print("VJoyEizikovich::Unacquire exception");
+            }
         }
         public override bool Acquire()
         {
@@ -149,7 +151,9 @@ namespace JoystickCurves
                     var val = (value + AXISLIMIT) / 2;
                     _joystick.SetAxis(val, _deviceid, axis);
                 }
-                catch { }
+                catch {
+                    Debug.Print("VJoyEizikovich::SetAxis exception");
+                }
             }
         }
         public override void SetContPOV(int value, uint pov_number)

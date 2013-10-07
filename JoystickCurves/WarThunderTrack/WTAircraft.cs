@@ -39,7 +39,13 @@ namespace JoystickCurves
             GameName = "War Thunder";
             wtFolders = new WTFolders();
             wtFolders.OnFolderChange += new EventHandler<EventArgs>(wtFolders_OnFolderChange);
+            wtFolders.OnError += new EventHandler<EventArgsString>(wtFolders_OnError);
 
+        }
+
+        void wtFolders_OnError(object sender, EventArgsString e)
+        {
+            RaiseError(new EventArgsString() { Name = e.Name, Value = e.Value });
         }
 
         void wtFolders_OnFolderChange(object sender, EventArgs e)
@@ -63,7 +69,9 @@ namespace JoystickCurves
                 wtFolders.StopPoll();
                 bwReader.Stop();
             }
-            catch { }
+            catch {
+                Debug.Print("WTAircraft::StopPoll exception");
+            }
 
 
         }
@@ -101,7 +109,9 @@ namespace JoystickCurves
                         {
                             bwReader.Stop();
                         }
-                        catch { }
+                        catch {
+                            Debug.Print("WTAircraft::timerLatestLogCallback exception");
+                        }
                     }
 
                     bwReader = new BGWorker(ReadLines, null);

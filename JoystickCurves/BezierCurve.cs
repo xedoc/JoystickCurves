@@ -207,6 +207,22 @@ namespace JoystickCurves
             }
 
         }
+        private void DrawOriginalLine(PaintEventArgs e)
+        {
+            Pen pen = new Pen(Color.LightSlateGray);
+
+            switch (_points.CurveResponseType)
+            {
+                case CurveResponseType.Values:
+                    e.Graphics.DrawLine(pen, new Point(Padding.Left, _drawRectangle.Height + Padding.Top), new Point(_drawRectangle.Width + Padding.Left, Padding.Top));
+                    break;
+                case CurveResponseType.Multiplier:
+                    e.Graphics.DrawLine(pen, new Point(Padding.Left, Padding.Top), new Point(_drawRectangle.Width + Padding.Left, Padding.Top));
+                    break;
+
+            }
+            
+        }
         private void DrawHorizontalLines(PaintEventArgs e)
         {
             var dashValues = new Single[2] { 5, 5 };
@@ -270,6 +286,7 @@ namespace JoystickCurves
         void Curve_Paint(object sender, PaintEventArgs e)
         {
             DrawHorizontalLines(e);
+            DrawOriginalLine(e);
             DrawCurve(e);
         }
     }

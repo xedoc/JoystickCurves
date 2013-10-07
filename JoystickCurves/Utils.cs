@@ -34,7 +34,9 @@ namespace JoystickCurves
                     t.InvokeMember(methodName, BindingFlags.Instance | BindingFlags.InvokeMethod | BindingFlags.Public, null, ctrl, new object[] { value });
                 }
             }
-            catch { }
+            catch {
+                Debug.Print("Utils::CallMethod exception");
+            }
 
         }
 

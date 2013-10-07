@@ -32,6 +32,7 @@ namespace JoystickCurves
         private object lockAxisBinding = new object();
         private bool closeTesterContextMenu = true;
         private const int DEFPOINTSCOUNT = 13;
+        private ToolTip errorToolTip;
         private const string ANY = "Any";
         private const string NOTSET = "Not set";
         private const string NEWPROFILE = "<New profile...>";
@@ -51,6 +52,7 @@ namespace JoystickCurves
         private object lockHotJoystick = new object();
         private object lockWarThunder = new object();
         private object lockSaitek = new object();
+        private object lockExclusiveSwitch = new object();
         private CurrentAircraft currentAircraft;
         private AxisEditor currentAxisEditor;
         private Steam _steam;
@@ -71,7 +73,11 @@ namespace JoystickCurves
 
             InitializeComponent();
 
-          
+            errorToolTip = new ToolTip();
+            errorToolTip.SetToolTip(labelCurrentAircraft, WAITSPAWN);
+            errorToolTip.InitialDelay = 0;
+            errorToolTip.UseFading = true;
+
             checkBoxHotKey.DataBindings.Add(new Binding("Checked", this, "WaitingHotKey",false,DataSourceUpdateMode.OnPropertyChanged,null));
 
             _virtualJoysticks = new List<VirtualJoystick>();
@@ -125,7 +131,9 @@ namespace JoystickCurves
                                 _saitek.AddPage(1, "JoystickCurves");
                             }
                         }
-                        catch { }
+                        catch {
+                            Debug.Print("Connect Saitek exception");
+                        }
                     }
                 }
             }
@@ -213,6 +221,7 @@ namespace JoystickCurves
             }
             catch 
             {
+                Debug.Print("CheckRunningInstances() Exception");
                 appMutex = new Mutex(true, INSTANCENAME);
                 GC.KeepAlive(appMutex);
                 return false;
@@ -252,7 +261,7 @@ namespace JoystickCurves
                 {
                     case CurveResponseType.Multiplier:
                         newValue = (int)((float)data.Value * y);
-                        Debug.Print(String.Format("y: {0}, value: {1}", y, newValue));
+                        //Debug.Print(String.Format("y: {0}, value: {1}", y, newValue));
                         break;
                     case CurveResponseType.Values:
                         newValue = (int)(y * 32767.0f * (data.Value < 0 ? -1 : 1));
@@ -293,9 +302,9 @@ namespace JoystickCurves
             foreach (var srcDevName in srcDeviceNames)
             {
                 var actionMap = _currentProfile.Tabs.Where(
-                    t => t.SourceAxis != NOTSET && t.DestinationAxis != NOTSET).Select(
-                    t => new KeyValuePair<JoystickOffset, Action<DirectInputData>>(DIUtils.ID(t.SourceAxis), ActionSetVJoy)).ToDictionary(
-                    t => t.Key, t => t.Value);
+                    t => t.SourceAxis != NOTSET && t.DestinationAxis != NOTSET && t.SourceDevice == srcDevName).Select(
+                    t => new KeyValuePair<JoystickOffset, Action<DirectInputData>>(DIUtils.ID(t.SourceAxis), ActionSetVJoy)).GroupBy(t => t.Key).ToDictionary(
+                    t => t.Key, t => t.FirstOrDefault().Value);
 
                 var srcDevice = _deviceManager.Joysticks.Where(d => d.Name == srcDevName).FirstOrDefault();
                 if (srcDevice != null)
@@ -318,8 +327,6 @@ namespace JoystickCurves
                     //Acquire if it isn't acquired yet
                 }
             });
-
-
         }
 
         private void ActionSetTesterVirtualX(DirectInputData data)
@@ -502,6 +509,12 @@ namespace JoystickCurves
         {
             switch (e.PropertyName)
             {
+                case "exclusiveDirectInput":
+                    lock (lockExclusiveSwitch)
+                    {
+                        _deviceManager.SwitchExclusiveDirectInput(_settings.exclusiveDirectInput);
+                    }
+                    break;
                 case "generalAutoStart":
                     if (_settings.generalAutoStart)
                     {
@@ -561,11 +574,24 @@ namespace JoystickCurves
                     if (currentAircraft == null)
                     {
                         currentAircraft = new WTAircraft();
-                        currentAircraft.AircraftChange += new EventHandler<EventArgsString>(wtCurrentAircraft_AircraftChange);
+                        currentAircraft.OnError += new EventHandler<EventArgsString>(currentAircraft_OnError);
+                        currentAircraft.AircraftChange += new EventHandler<EventArgsString>(wtCurrentAircraft_AircraftChange);                        
                         currentAircraft.StartPoll();
                     }
 
                 }
+            }
+        }
+
+        void currentAircraft_OnError(object sender, EventArgsString e)
+        {
+            try
+            {
+                Utils.SetProperty<Label, String>(labelCurrentAircraft, "Text", e.Value);
+                errorToolTip.SetToolTip(labelCurrentAircraft, e.Value);
+            }
+            catch {
+                Debug.Print("Current aircraft raised an exception");
             }
         }
 
@@ -598,7 +624,9 @@ namespace JoystickCurves
                         currentAircraft.StopPoll();
                         currentAircraft = null;
                     }
-                    catch { }
+                    catch {
+                        Debug.Print("DisconnectWarThunder error");
+                    }
                 }
             }
         }
@@ -622,7 +650,7 @@ namespace JoystickCurves
                         DestinationAxis = axisEditor.CurrentDestAxis,
                         DestinationDevice = axisEditor.CurrentDestDevice,
                         SourceAxis = axisEditor.CurrentSourceAxis,
-                        SourceDevice = axisEditor.CurrentSourceDevice,
+                        SourceDevice = axisEditor.CurrentSourceDevice,                        
                         Correction = axisEditor.Correction,
                         PreserveAxisRange = axisEditor.PreserveAxisRange,
                         TabTitle = axisEditor.Title,                                                
@@ -635,6 +663,8 @@ namespace JoystickCurves
             profile.JoystickHotKey = _currentProfile.JoystickHotKey;
             profile.MouseHotKey = _currentProfile.MouseHotKey;
             profile.KeyboardHotKey = _currentProfile.KeyboardHotKey;
+            profile.BindGame = _currentProfile.BindGame;
+            profile.BindVehicle = _currentProfile.BindVehicle;
 
             return profile;
         }
@@ -889,7 +919,8 @@ namespace JoystickCurves
                     }
                 }
             }
-            catch { 
+            catch {
+                Debug.Print("SetupEditorComboBoxes exception");
             
             }
             
@@ -988,13 +1019,13 @@ namespace JoystickCurves
             currentAxisEditor = axisEditor;
             if (axisEditor.CurveResponseType == CurveResponseType.Multiplier)
             {
-                value.Checked = false;
                 multiplier.Checked = true;
+                value.Checked = false;
             }
             else
             {
-                multiplier.Checked = false;
                 value.Checked = true;
+                multiplier.Checked = false;
             }
         }
 
@@ -1013,13 +1044,13 @@ namespace JoystickCurves
 
             if (axisEditor.CurveResponseType == CurveResponseType.Multiplier && !multiplier.Checked)
             {
-                value.Checked = false;
                 multiplier.Checked = true;
+                value.Checked = false;
             }
-            else if (!value.Checked)
+            else if (axisEditor.CurveResponseType == CurveResponseType.Values && !value.Checked)
             {
-                multiplier.Checked = false;
                 value.Checked = true;
+                multiplier.Checked = false;
             }
         }
 
@@ -1244,7 +1275,9 @@ namespace JoystickCurves
                         Utils.SetProperty<CheckBox, Boolean>(checkBoxBindAircraft, "Checked", false);
                     }
                 }
-                catch { }
+                catch {
+                    Debug.Print("SetCurrentProfile exception");
+                }
 
 
                 var hotkey = "Hot Key";
@@ -1685,6 +1718,7 @@ namespace JoystickCurves
                 case "value":
                 {
                     multiplier.Checked = false;
+                    value.Checked = true;
                     var axisEditor = tabAxis.SelectedTab.Controls[0] as AxisEditor;
                     axisEditor.CurveResponseType = CurveResponseType.Values;
                     //axisEditor.ResetCurve();
@@ -1693,6 +1727,7 @@ namespace JoystickCurves
                 case "multiplier":
                 {
                     value.Checked = false;
+                    multiplier.Checked = true;
                     var axisEditor = tabAxis.SelectedTab.Controls[0] as AxisEditor;
                     axisEditor.CurveResponseType = CurveResponseType.Multiplier;
                     //axisEditor.ResetCurve();
@@ -1705,6 +1740,11 @@ namespace JoystickCurves
         {            
             var checkbox = sender as CheckBox;
             var label = labelCurrentAircraft;
+
+            if (String.IsNullOrEmpty(currentAircraft.AircraftName) ||
+                String.IsNullOrEmpty(currentAircraft.GameName))
+                return;
+
 
             if (checkbox.Checked)
             {
@@ -1719,6 +1759,7 @@ namespace JoystickCurves
                             p.BindGame = String.Empty;
                             p.BindVehicle = String.Empty;
                         }
+
                     });
                     _currentProfile.BindVehicle = currentAircraft.AircraftName;
                     _currentProfile.BindGame = currentAircraft.GameName;

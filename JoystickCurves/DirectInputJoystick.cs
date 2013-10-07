@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Microsoft.DirectX;
 using Microsoft.DirectX.DirectInput;
 using System.Threading;
 using System.Diagnostics;
@@ -30,6 +31,7 @@ namespace JoystickCurves
                                                      JoystickOffset.Slider0, 
                                                      JoystickOffset.Slider1};
 
+        private bool _exclusive;
         private Timer _pollTimer;
         private Device _device;
         private Dictionary<JoystickOffset, HashSet<Action<DirectInputData>>> _actionMap = new Dictionary<JoystickOffset, HashSet<Action<DirectInputData>>>();
@@ -42,12 +44,14 @@ namespace JoystickCurves
             Name = name;
             Type = DeviceType.NotSet;
             Acquired = false;
+            ExclusiveMode = false;
         }
         public DirectInputJoystick( DeviceInstance dev, DeviceType type )
         {
             DeviceInstance = dev;
             Type = type;
             Acquired = false;
+            ExclusiveMode = false;
             
             _pollTimer = new Timer(new TimerCallback(poll_Tick), null, Timeout.Infinite, Timeout.Infinite);
             OnAcquire += new EventHandler<EventArgs>(Joystick_OnAcquire);
@@ -60,6 +64,9 @@ namespace JoystickCurves
         }
         private void poll_Tick(object o)
         {
+            if (!Acquired)
+                return;
+            
             lock (pollLock)
             {
                 HashSet<Action<DirectInputData>> action;
@@ -118,6 +125,8 @@ namespace JoystickCurves
                 }
                 catch
                 {
+                    Acquired = false;
+                    Debug.Print("Joystick poll tick exception");
                     _pollTimer.Change(Timeout.Infinite, Timeout.Infinite);
                     if (OnError != null)
                         OnError(this, EventArgs.Empty);
@@ -151,29 +160,53 @@ namespace JoystickCurves
         {
             get { return _device.Caps.NumberPointOfViews;}
         }
+        public bool ExclusiveMode
+        {
+            get { return _exclusive; }
+            set {
+                if (value != _exclusive)
+                {
+                    _exclusive = value;
+                    if (Acquired )
+                    {
+                        Unacquire();
+                        Acquire();
+                    }
+                }
+            }
+
+        }
         public void Unacquire()
         {
-            Acquired = false;
-            _pollTimer.Change(Timeout.Infinite, Timeout.Infinite);
-            _actionMap.Clear();
-            try
+            lock (pollLock)
             {
-                _device.Unacquire();
-            }
-            catch { }
+                    Acquired = false;
+                    _pollTimer.Change(Timeout.Infinite, Timeout.Infinite);
 
-            if (Type == DeviceType.Virtual)
-            {
+                _actionMap.Clear();
                 try
                 {
-                    _virtualJoystick.Unacquire();
+                    _device.Unacquire();
                 }
-                catch { }
-            }
-            if (OnUnacquire != null)
-                OnUnacquire(this, EventArgs.Empty);
-        }
+                catch {
+                    Debug.Print("Joystick unacquire exception");
+                }
 
+                if (Type == DeviceType.Virtual)
+                {
+                    try
+                    {
+                        _virtualJoystick.Unacquire();
+                    }
+                    catch {
+                        Debug.Print("Virtual joystick unacquire exception");
+                    }
+                }
+                if (OnUnacquire != null)
+                    OnUnacquire(this, EventArgs.Empty);
+            }
+        }
+        
         public void Acquire()
         {
             try
@@ -181,8 +214,9 @@ namespace JoystickCurves
                 _device = new Device(Guid);
                 _device.SetDataFormat(DeviceDataFormat.Joystick);
                 _device.Properties.BufferSize = 16;
+                Debug.Print("Exclusive: {0} {1}", Name, _exclusive);
                 _device.SetCooperativeLevel(Process.GetCurrentProcess().MainWindowHandle,
-                    CooperativeLevelFlags.NonExclusive | CooperativeLevelFlags.Background);
+                    (_exclusive ? CooperativeLevelFlags.Exclusive : CooperativeLevelFlags.NonExclusive) | (_exclusive ? CooperativeLevelFlags.Foreground : CooperativeLevelFlags.Background));
 
 
                 foreach (DeviceObjectInstance d in _device.Objects)
@@ -193,18 +227,28 @@ namespace JoystickCurves
                 _device.Properties.AxisModeAbsolute = true;
                 _device.Acquire();
 
+                _pollTimer.Change(0, POLL_INTERVAL);
+                Acquired = true;
+                if (OnAcquire != null)
+                    OnAcquire(this, EventArgs.Empty);
             }
-            catch
+            catch (OtherApplicationHasPriorityException)
             {
+                Acquired = false;
+                LastErrorMessage = Name + " couldn't be used in exclusive mode!";
+                Debug.Print(LastErrorMessage);
                 if (OnError != null)
                     OnError(this, EventArgs.Empty);
 
                 return;
             }
-            _pollTimer.Change(0, POLL_INTERVAL);
-            
-            if (OnAcquire != null)
-                OnAcquire(this, EventArgs.Empty);
+            catch
+            {
+                Debug.Print("DirectInputJoystick::Acquire exception");
+                LastErrorMessage = "DirectInput acquire error!";
+                if (OnError != null)
+                    OnError(this, EventArgs.Empty);
+            }
         }
         public void DeleteAction(Action<DirectInputData> action)
         {
@@ -274,7 +318,10 @@ namespace JoystickCurves
                         return state.GetSlider()[0];
                 }
             }
-            catch { return 0; }
+            catch {
+                Debug.Print("Get joystick value exception");
+                return 0; 
+            }
             
             
             return 0;

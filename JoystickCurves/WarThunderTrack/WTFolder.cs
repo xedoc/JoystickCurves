@@ -15,7 +15,7 @@ namespace JoystickCurves
         private const String processName = "aces";
         private const int POLL_PERIOD = 30 * 1000;
         public event EventHandler<EventArgs> OnFolderChange;
-
+        public event EventHandler<EventArgsString> OnError;
 
         public WTFolders()
         {
@@ -54,7 +54,11 @@ namespace JoystickCurves
                     }
                 }
             }
-            catch { }
+            catch (Exception e) {
+                Debug.Print("WTFolder::poolWTProcessCallback exception");
+                if (OnError != null)
+                    OnError(this, new EventArgsString() { Name = "Get process folder", Value = e.Message });
+            }
         }
 
         public String BaseFolder

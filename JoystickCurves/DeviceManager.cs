@@ -20,8 +20,13 @@ namespace JoystickCurves
         private Timer _pollTimer;
         private const int POLLINTERVAL = 3000;
         private HotKey _currentHotkey;
+        private object lockRefreshJoysticks = new object();
+        private object lockRefreshMouses = new object();
+        private object lockRefreshKeyboards= new object();
+        private Properties.Settings _settings;
         public DeviceManager()
         {
+            _settings = Properties.Settings.Default;
             Joysticks = new List<DirectInputJoystick>();
             Mouses = new List<DirectInputMouse>();
             Keyboards = new List<DirectInputKeyboard>();
@@ -62,42 +67,54 @@ namespace JoystickCurves
                 Mouses.Remove((DirectInputMouse)sender);
             }
         }
-
-        public void RefreshMouseList()
+        public void SwitchExclusiveDirectInput(bool exclusive)
         {
-            List<DeviceInstance> mouseInstances;
-            mouseInstances = Utils.DevList(Manager.GetDevices(DeviceClass.Pointer, EnumDevicesFlags.AttachedOnly));
-
-            if (Mouses == null)
-                Mouses = new List<DirectInputMouse>();
-
-            Mouses.Where(dev => !mouseInstances.Exists(d => dev.Guid == d.InstanceGuid)).ToList().ForEach(
-                gc => { gc.Unacquire(); Mouses.Remove(gc); }
-            );
-
-            var addList = mouseInstances.Where(d => !Mouses.Exists(dev => dev.Guid == d.InstanceGuid));
-
-            if (addList == null || addList.Count() <= 0)
-                return;
-
-            foreach (DeviceInstance dev in addList)
+            foreach (DirectInputJoystick joystick in Joysticks)
             {
-                var mouse = new DirectInputMouse(dev);
-                mouse.OnError +=new EventHandler<EventArgs>(OnNoNeed);
-                mouse.OnUnacquire += new EventHandler<EventArgs>(OnNoNeed);
-
-                Mouses.Add(mouse);
-                if (Mouses.Where(d => d.Name.StartsWith(mouse.Name)).Count() > 1)
+                if (joystick.Type == DeviceType.Physical)
                 {
-                    Mouses.Where(d => d.Name.StartsWith(mouse.Name) && d.Index == 0).ToList().ForEach(
-                            d => d.Index = Mouses.Max(dm => dm.Index) + 1
-                        );
+                    joystick.ExclusiveMode = exclusive;
                 }
             }
+        }
+        public void RefreshMouseList()
+        {
+            lock (lockRefreshMouses)
+            {
+                List<DeviceInstance> mouseInstances;
+                mouseInstances = Utils.DevList(Manager.GetDevices(DeviceClass.Pointer, EnumDevicesFlags.AttachedOnly));
 
-            if (OnMouseList != null)
-                OnMouseList(this, EventArgs.Empty);
+                if (Mouses == null)
+                    Mouses = new List<DirectInputMouse>();
 
+                Mouses.Where(dev => !mouseInstances.Exists(d => dev.Guid == d.InstanceGuid)).ToList().ForEach(
+                    gc => { gc.Unacquire(); Mouses.Remove(gc); }
+                );
+
+                var addList = mouseInstances.Where(d => !Mouses.Exists(dev => dev.Guid == d.InstanceGuid));
+
+                if (addList == null || addList.Count() <= 0)
+                    return;
+
+                foreach (DeviceInstance dev in addList)
+                {
+                    var mouse = new DirectInputMouse(dev);
+                    mouse.OnError += new EventHandler<EventArgs>(OnNoNeed);
+                    mouse.OnUnacquire += new EventHandler<EventArgs>(OnNoNeed);
+
+                    Mouses.Add(mouse);
+                    if (Mouses.Where(d => d.Name.StartsWith(mouse.Name)).Count() > 1)
+                    {
+                        Mouses.Where(d => d.Name.StartsWith(mouse.Name) && d.Index == 0).ToList().ForEach(
+                                d => d.Index = Mouses.Max(dm => dm.Index) + 1
+                            );
+                    }
+                }
+
+                if (OnMouseList != null)
+                    OnMouseList(this, EventArgs.Empty);
+
+            }
         }
         public HotKey GetHotKey(HotKey key)
         {
@@ -129,120 +146,131 @@ namespace JoystickCurves
 
         public void RefreshKeyboardList()
         {
-            List<DeviceInstance> keyboardInstances;
-            keyboardInstances = Utils.DevList(Manager.GetDevices(DeviceClass.Keyboard, EnumDevicesFlags.AttachedOnly));
-
-            if (Keyboards == null)
-                Keyboards = new List<DirectInputKeyboard>();
-
-            Keyboards.Where(dev => !keyboardInstances.Exists(d => dev.Guid == d.InstanceGuid)).ToList().ForEach(
-                gc => { gc.Unacquire(); Keyboards.Remove(gc); }
-            );
-
-            var addList = keyboardInstances.Where(d => !Keyboards.Exists(dev => dev.Guid == d.InstanceGuid));
-
-            if (addList == null || addList.Count() <= 0)
-                return;
-
-            foreach (DeviceInstance dev in addList)
+            lock (lockRefreshKeyboards)
             {
-                var keyboard = new DirectInputKeyboard(dev);
-                keyboard.OnError += new EventHandler<EventArgs>(OnNoNeed);
-                keyboard.OnUnacquire += new EventHandler<EventArgs>(OnNoNeed);
+                List<DeviceInstance> keyboardInstances;
+                keyboardInstances = Utils.DevList(Manager.GetDevices(DeviceClass.Keyboard, EnumDevicesFlags.AttachedOnly));
 
-                Keyboards.Add(keyboard);
-                if (Keyboards.Where(d => d.Name.StartsWith(keyboard.Name)).Count() > 1)
+                if (Keyboards == null)
+                    Keyboards = new List<DirectInputKeyboard>();
+
+                Keyboards.Where(dev => !keyboardInstances.Exists(d => dev.Guid == d.InstanceGuid)).ToList().ForEach(
+                    gc => { gc.Unacquire(); Keyboards.Remove(gc); }
+                );
+
+                var addList = keyboardInstances.Where(d => !Keyboards.Exists(dev => dev.Guid == d.InstanceGuid));
+
+                if (addList == null || addList.Count() <= 0)
+                    return;
+
+                foreach (DeviceInstance dev in addList)
                 {
-                    Keyboards.Where(d => d.Name.StartsWith(keyboard.Name) && d.Index == 0).ToList().ForEach(
-                            d => d.Index = Keyboards.Max(dm => dm.Index) + 1
-                        );
-                }
-            }
+                    var keyboard = new DirectInputKeyboard(dev);
+                    keyboard.OnError += new EventHandler<EventArgs>(OnNoNeed);
+                    keyboard.OnUnacquire += new EventHandler<EventArgs>(OnNoNeed);
 
-            if (OnKeyboardList != null)
-                OnKeyboardList(this, EventArgs.Empty);
+                    Keyboards.Add(keyboard);
+                    if (Keyboards.Where(d => d.Name.StartsWith(keyboard.Name)).Count() > 1)
+                    {
+                        Keyboards.Where(d => d.Name.StartsWith(keyboard.Name) && d.Index == 0).ToList().ForEach(
+                                d => d.Index = Keyboards.Max(dm => dm.Index) + 1
+                            );
+                    }
+                }
+
+                if (OnKeyboardList != null)
+                    OnKeyboardList(this, EventArgs.Empty);
+            }
 
         }
 
         public void RefreshJoystickList()
         {
-            List<DeviceInstance> joystickInstances;
-            var devices = Manager.GetDevices(DeviceClass.GameControl, EnumDevicesFlags.AttachedOnly );
-
-            joystickInstances= Utils.DevList(devices);
-
-            if (Joysticks == null)
-                Joysticks = new List<DirectInputJoystick>();
-
-            Joysticks.Where(dev => !joystickInstances.Exists(d => dev.Guid == d.InstanceGuid)).ToList().ForEach(
-                gc => { gc.Unacquire(); Joysticks.Remove(gc); }
-            );
-           
-            var addList = joystickInstances.Where(d => !Joysticks.Exists(dev => dev.Guid == d.InstanceGuid));
-            
-            if (addList == null || addList.Count() <= 0)
-                return;
-
-            foreach (DeviceInstance dev in addList)
-            {                
-                var joystick = new DirectInputJoystick(dev, GetDeviceType(dev.ProductName));
-                joystick.OnError += new EventHandler<EventArgs>(OnNoNeed);
-                joystick.OnUnacquire += new EventHandler<EventArgs>(OnNoNeed);
-
-                
-                Joysticks.Add(joystick);
-                if (Joysticks.Where(d => d.Name.StartsWith(joystick.Name)).Count() > 1)
-                {
-                    Joysticks.Where(d => d.Name.StartsWith(joystick.Name) && d.Index == 0).ToList().ForEach(
-                            d => d.Index = Joysticks.Max(dm => dm.Index) + 1
-                        );
-                }
-            }
-
-            if ( Joysticks.Exists( j => j.Type == DeviceType.Virtual && j.VirtualJoystick == null ))
+            lock (lockRefreshJoysticks)
             {
-                foreach (var joystick in Joysticks.Where(j => j.Type == DeviceType.Virtual))
+                List<DeviceInstance> joystickInstances;
+                var devices = Manager.GetDevices(DeviceClass.GameControl, EnumDevicesFlags.AttachedOnly);
+
+                joystickInstances = Utils.DevList(devices);
+
+                if (Joysticks == null)
+                    Joysticks = new List<DirectInputJoystick>();
+
+                Joysticks.Where(dev => !joystickInstances.Exists(d => dev.Guid == d.InstanceGuid)).ToList().ForEach(
+                    gc => { gc.Unacquire(); Joysticks.Remove(gc); }
+                );
+
+                var addList = joystickInstances.Where(d => !Joysticks.Exists(dev => dev.Guid == d.InstanceGuid));
+
+                if (addList == null || addList.Count() <= 0)
+                    return;
+
+                foreach (DeviceInstance dev in addList)
                 {
-                    joystick.OnButtonDown += new EventHandler<CustomEventArgs<DirectInputData>>(gameController_OnButtonDown);
-                }
-                if (Joysticks.Exists(j => j.Name.Contains("vJoy") == true))
-                {
-                    for (uint i = 1; i <= 16; i++)
+                    var joystick = new DirectInputJoystick(dev, GetDeviceType(dev.ProductName));
+                    if (joystick.Type == DeviceType.Physical)
+                        joystick.ExclusiveMode = _settings.exclusiveDirectInput;
+
+                    joystick.OnError += new EventHandler<EventArgs>(OnNoNeed);
+                    joystick.OnUnacquire += new EventHandler<EventArgs>(OnNoNeed);
+
+
+                    Joysticks.Add(joystick);
+                    if (Joysticks.Where(d => d.Name.StartsWith(joystick.Name)).Count() > 1)
                     {
-                        if (!Joysticks.Exists(j => j.VirtualJoystick != null && j.VirtualJoystick.DeviceID == i))
+                        Joysticks.Where(d => d.Name.StartsWith(joystick.Name) && d.Index == 0).ToList().ForEach(
+                                d => d.Index = Joysticks.Max(dm => dm.Index) + 1
+                            );
+                    }
+                }
+
+                if (Joysticks.Exists(j => j.Type == DeviceType.Virtual && j.VirtualJoystick == null))
+                {
+                    foreach (var joystick in Joysticks.Where(j => j.Type == DeviceType.Virtual))
+                    {
+                        joystick.OnButtonDown += new EventHandler<CustomEventArgs<DirectInputData>>(gameController_OnButtonDown);
+                    }
+                    if (Joysticks.Exists(j => j.Name.Contains("vJoy") == true))
+                    {
+                        for (uint i = 1; i <= 16; i++)
                         {
-
-                            var vjoy = new VJoyEizikovich(i);
-
-                            if (vjoy.isAcquired)
+                            if (!Joysticks.Exists(j => j.VirtualJoystick != null && j.VirtualJoystick.DeviceID == i))
                             {
-                                vjoy.SetButton(vjoy.DeviceID, true);
-                                vjoy.Unacquire();
-                            }
 
+                                var vjoy = new VJoyEizikovich(i);
+
+                                if (vjoy.isAcquired)
+                                {
+                                    vjoy.SetButton(vjoy.DeviceID, true);
+                                    vjoy.Unacquire();
+                                }
+
+                            }
+                        }
+                    }
+                    else if (Joysticks.Exists(j => j.Name.Contains("VJoy") == true))
+                    {
+                        for (uint i = 0; i <= 1; i++)
+                        {
+                            try
+                            {
+                                var hvjoy = new VJoyHeadsoft(i);
+                                if (hvjoy.isAcquired)
+                                {
+                                    hvjoy.SetButton(hvjoy.DeviceID, true);
+                                    hvjoy.Unacquire();
+                                }
+                            }
+                            catch {
+                                Debug.Print("Refresh joysticks exception");
+                            }
                         }
                     }
                 }
-                else if (Joysticks.Exists(j => j.Name.Contains("VJoy") == true))
-                {
-                    for (uint i = 0; i <= 1; i++)
-                    {
-                        try
-                        {
-                            var hvjoy = new VJoyHeadsoft(i);
-                            if (hvjoy.isAcquired)
-                            {
-                                hvjoy.SetButton(hvjoy.DeviceID, true);
-                                hvjoy.Unacquire();
-                            }
-                        }
-                        catch { }
-                    }
-                }
+
+                if (OnJoystickList != null)
+                    OnJoystickList(this, EventArgs.Empty);
             }
-
-            if (OnJoystickList != null)
-                OnJoystickList(this, EventArgs.Empty);
         }
         void gameController_OnButtonDown(object sender, CustomEventArgs<DirectInputData> e)
         {

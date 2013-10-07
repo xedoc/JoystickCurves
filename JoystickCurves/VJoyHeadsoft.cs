@@ -73,7 +73,9 @@ namespace JoystickCurves
             {
                 _joystick.Shutdown();
             }
-            catch { }
+            catch {
+                Debug.Print("VJoyHeadsoft::Unacquire exception");
+            }
         }
         public override bool Acquire()
         {
@@ -375,7 +377,14 @@ namespace JoystickCurves
         {
             lock (lockUpdate)
             {
-                return VJoy_UpdateJoyState(id, ref m_joyState[id]);
+                try
+                {
+                    return VJoy_UpdateJoyState(id, ref m_joyState[id]);
+                }
+                catch {
+                    Debug.Print("VJoyHeadsoft::Update exception");
+                    return false;
+                }
             }
         }
 

@@ -46,6 +46,7 @@ namespace JoystickCurves
                 }
                 catch
                 {
+                    Debug.Print("DirectInputMouse::poll_tick exception");
                     _pollTimer.Change(Timeout.Infinite, Timeout.Infinite);
                     if (OnError != null)
                         OnError(this, EventArgs.Empty);
@@ -111,7 +112,9 @@ namespace JoystickCurves
             {
                 _device.Unacquire();
             }
-            catch { }
+            catch {
+                Debug.Print("DirectInputMouse::Unacquire exception");
+            }
             if (OnUnacquire != null)
                 OnUnacquire(this, EventArgs.Empty);
         }
@@ -131,6 +134,7 @@ namespace JoystickCurves
             }
             catch
             {
+                Debug.Print("DirectInputMouse::Acquire exception");
                 return;
             }
             _pollTimer.Change(0, POLL_INTERVAL);

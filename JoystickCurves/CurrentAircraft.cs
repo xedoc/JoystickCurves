@@ -24,6 +24,8 @@ namespace JoystickCurves
     public abstract class CurrentAircraft
     {
         public event EventHandler<EventArgsString> AircraftChange;
+        public event EventHandler<EventArgsString> OnError;
+
         public String currentName;
                                     
         protected virtual void OnAircraftChange(EventArgsString e)
@@ -31,6 +33,12 @@ namespace JoystickCurves
             if (AircraftChange != null)
                 AircraftChange(this, e);
         }
+        protected void RaiseError(EventArgsString e)
+        {
+            if (OnError != null)
+                OnError(this, e);
+        }
+
         public virtual void StartPoll()
         {
         }
@@ -46,7 +54,7 @@ namespace JoystickCurves
             }
             set
             {
-                if( value != currentName ) 
+                if( value != currentName && !String.IsNullOrEmpty(value) ) 
                 {
                     currentName = value;
                     OnAircraftChange(new EventArgsString() { Name = GameName, Value = currentName });

@@ -24,6 +24,17 @@ namespace JoystickCurves
     {
         private const int POLL_INTERVAL = 10;
         private string _name;
+        public String LastErrorMessage
+        {
+            get;
+            set;
+
+        }
+        public int LastErrorCode
+        {
+            get;
+            set;
+        }
 
         public bool Acquired
         {

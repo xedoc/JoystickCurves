@@ -573,6 +573,7 @@ namespace JoystickCurves
             }
             catch
             {
+                Debug.Print("SteamAPI::GetUserAvatar exception");
                 return null;
             }
         }
@@ -933,6 +934,7 @@ namespace JoystickCurves
                 }
                 catch
                 {
+                    Debug.Print("SteamAPI::steamRequest POST exception");
 
                 }
 
@@ -950,6 +952,7 @@ namespace JoystickCurves
             }
             catch
             {
+                Debug.Print("SteamAPI::steamRequest GET exception");
                 return null;
             }
         }
