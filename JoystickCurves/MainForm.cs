@@ -52,11 +52,14 @@ namespace JoystickCurves
         private object lockHotJoystick = new object();
         private object lockWarThunder = new object();
         private object lockSaitek = new object();
+        private object lockNetwork = new object();
         private object lockExclusiveSwitch = new object();
         private CurrentAircraft currentAircraft;
         private AxisEditor currentAxisEditor;
         private Steam _steam;
         private SaitekMFD _saitek;
+
+        private NetworkServer netServer;
         
         SettingsForm settingsForm;
 
@@ -291,7 +294,11 @@ namespace JoystickCurves
             else if (newValue > 32767)
                 newValue = 32767;
 
-            virtualDevice.Set(destAxis, newValue);           
+            virtualDevice.Set(destAxis, newValue);
+            if (_settings.enableJoystickServer)
+            {
+                ThreadPool.QueueUserWorkItem( f=> netServer.SendToAll( new JoystickState() { n = destAxis.ToString(), v = newValue } ));
+            }
 
         }
         private void UpdateCurveActions()
@@ -555,6 +562,16 @@ namespace JoystickCurves
                         ThreadPool.QueueUserWorkItem(t => DisconnectWarThunder());
                     }
                     break;
+                case "enableJoystickServer":
+                    if (_settings.enableJoystickServer)
+                    {
+                        ThreadPool.QueueUserWorkItem(t => ConnectNetworkServer());
+                    }
+                    else
+                    {
+                        ThreadPool.QueueUserWorkItem(t => DisconnectNetworkServer());
+                    }
+                    break;
             }
 
         }
@@ -718,9 +735,10 @@ namespace JoystickCurves
         private void MainForm_Shown(object sender, EventArgs e)
         {
             Text = String.Format("{0} Dev. ver: {1}", Text, GetRunningVersion());
-            ConnectSteam();
-            ConnectSaitek();
-            ConnectWarThunder();
+            ThreadPool.QueueUserWorkItem(f => ConnectSteam());
+            ThreadPool.QueueUserWorkItem( f => ConnectSaitek());
+            ThreadPool.QueueUserWorkItem( f => ConnectWarThunder());
+            ThreadPool.QueueUserWorkItem( f => ConnectNetworkServer());
             LoadSettings();
 
             _deviceManager = new DeviceManager();
@@ -730,6 +748,28 @@ namespace JoystickCurves
 
 
         }
+        private void DisconnectNetworkServer()
+        {
+            lock (lockNetwork)
+            {
+                if( netServer != null && netServer.Running )
+                netServer.Stop();
+            }
+        }
+        private void ConnectNetworkServer()
+        {
+            lock (lockNetwork)
+            {
+                if (_settings.enableJoystickServer)
+                {
+                    if (netServer == null)
+                        netServer = new NetworkServer(_settings.joystickServerPort);
+
+                    netServer.Start();
+                }
+            }
+        }
+
         private void UpdateDevices()
         {
             SetupTesterContextMenus();
@@ -1357,9 +1397,14 @@ namespace JoystickCurves
         }
         private void Exit()
         {
-            UnacquireDevices();
-            DisconnectSaitek();
+            ThreadPool.QueueUserWorkItem( f=> UnacquireDevices());
+            ThreadPool.QueueUserWorkItem( f=> DisconnectSaitek());
+            ThreadPool.QueueUserWorkItem( f=> DisconnectWarThunder());
+            ThreadPool.QueueUserWorkItem( f=> DisconnectSteam());
+            ThreadPool.QueueUserWorkItem( f=> DisconnectNetworkServer());
+
             SaveSettings();
+            Thread.Sleep(2000);
         }
         private void exitToolStripMenuItem_Click(object sender, EventArgs e)
         {

@@ -65,5 +65,11 @@
     <Setting Name="exclusiveDirectInput" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">False</Value>
     </Setting>
+    <Setting Name="enableJoystickServer" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
+    <Setting Name="joystickServerPort" Type="System.String" Scope="User">
+      <Value Profile="(Default)">54545</Value>
+    </Setting>
   </Settings>
 </SettingsFile>

@@ -271,5 +271,29 @@ namespace JoystickCurves.Properties {
                 this["exclusiveDirectInput"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool enableJoystickServer {
+            get {
+                return ((bool)(this["enableJoystickServer"]));
+            }
+            set {
+                this["enableJoystickServer"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("54545")]
+        public string joystickServerPort {
+            get {
+                return ((string)(this["joystickServerPort"]));
+            }
+            set {
+                this["joystickServerPort"] = value;
+            }
+        }
     }
 }

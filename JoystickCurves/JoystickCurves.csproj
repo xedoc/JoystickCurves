@@ -32,7 +32,7 @@
     <CreateWebPageOnPublish>true</CreateWebPageOnPublish>
     <WebPage>publish.htm</WebPage>
     <OpenBrowserOnPublish>false</OpenBrowserOnPublish>
-    <ApplicationRevision>5</ApplicationRevision>
+    <ApplicationRevision>6</ApplicationRevision>
     <ApplicationVersion>0.0.4.%2a</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
     <PublishWizardCompleted>true</PublishWizardCompleted>
@@ -85,7 +85,14 @@
     </Reference>
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
+    <Reference Include="SuperSocket.SocketBase">
+      <HintPath>..\WebSocket\Reference\SuperSocket\Net40\Release\SuperSocket.SocketBase.dll</HintPath>
+    </Reference>
+    <Reference Include="SuperSocket.SocketEngine">
+      <HintPath>..\WebSocket\Reference\SuperSocket\Net40\Release\SuperSocket.SocketEngine.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
+    <Reference Include="System.configuration" />
     <Reference Include="System.Core" />
     <Reference Include="System.Design" />
     <Reference Include="System.DirectoryServices" />
@@ -130,6 +137,7 @@
     <Compile Include="InputBox.Designer.cs">
       <DependentUpon>InputBox.cs</DependentUpon>
     </Compile>
+    <Compile Include="NetworkServer.cs" />
     <Compile Include="SaitekMFD.cs" />
     <Compile Include="Settings.cs" />
     <Compile Include="SettingsForm.cs">
@@ -290,6 +298,10 @@
     <ProjectReference Include="..\mycontrol\mycontrol.csproj">
       <Project>{3E26D5F2-9EFF-4F76-9711-79E611F61ACB}</Project>
       <Name>mycontrol</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\WebSocket\SuperWebSocket\SuperWebSocket.csproj">
+      <Project>{2DC79E40-BB70-4F6A-B378-905F2FBC6E97}</Project>
+      <Name>SuperWebSocket</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

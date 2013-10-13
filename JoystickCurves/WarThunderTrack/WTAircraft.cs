@@ -64,10 +64,13 @@ namespace JoystickCurves
         {
             try
             {
+                if( timerLatestLog != null )
+                    timerLatestLog.Change(Timeout.Infinite, Timeout.Infinite);
 
-                timerLatestLog.Change(Timeout.Infinite, Timeout.Infinite);
-                wtFolders.StopPoll();
-                bwReader.Stop();
+                if (wtFolders != null)
+                    wtFolders.StopPoll();
+                if( bwReader != null )
+                    bwReader.Stop();
             }
             catch {
                 Debug.Print("WTAircraft::StopPoll exception");

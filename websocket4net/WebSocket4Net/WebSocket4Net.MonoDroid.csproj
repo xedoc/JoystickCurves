@@ -1,0 +1,125 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>8.0.30703</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{119C56BD-C133-4D7B-9C33-0F8CE1B1B61E}</ProjectGuid>
+    <ProjectTypeGuids>{EFBA0AD7-5A72-4C68-AF49-83D382785DCF};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>WebSocket4Net</RootNamespace>
+    <AssemblyName>WebSocket4Net</AssemblyName>
+    <FileAlignment>512</FileAlignment>
+    <GenerateSerializationAssemblies>Off</GenerateSerializationAssemblies>
+    <AndroidSupportedAbis>armeabi</AndroidSupportedAbis>
+    <AndroidStoreUncompressedFileExtensions />
+    <MandroidI18n />
+    <TargetFrameworkVersion>v2.1</TargetFrameworkVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>..\bin\monodroid22\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <AndroidLinkMode>None</AndroidLinkMode>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>..\bin\monodroid22\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <AndroidLinkMode>SdkOnly</AndroidLinkMode>
+    <AndroidUseSharedRuntime>false</AndroidUseSharedRuntime>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="mscorlib" />
+    <Reference Include="SimpleJson">
+      <HintPath>..\Reference\SimpleJson\MD22\SimpleJson.dll</HintPath>
+    </Reference>
+    <Reference Include="SuperSocket.ClientEngine.Common">
+      <HintPath>..\Reference\SuperSocket.ClientEngine\MD22\$(Configuration)\SuperSocket.ClientEngine.Common.dll</HintPath>
+    </Reference>
+    <Reference Include="SuperSocket.ClientEngine.Core">
+      <HintPath>..\Reference\SuperSocket.ClientEngine\MD22\$(Configuration)\SuperSocket.ClientEngine.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="SuperSocket.ClientEngine.Protocol">
+      <HintPath>..\Reference\SuperSocket.ClientEngine\MD22\$(Configuration)\SuperSocket.ClientEngine.Protocol.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Command\BadRequest.cs" />
+    <Compile Include="Command\Binary.cs" />
+    <Compile Include="Command\Close.cs" />
+    <Compile Include="Command\Handshake.cs" />
+    <Compile Include="Command\Ping.cs" />
+    <Compile Include="Command\Pong.cs" />
+    <Compile Include="Command\Text.cs" />
+    <Compile Include="Command\WebSocketCommandBase.cs" />
+    <Compile Include="DataReceivedEventArgs.cs" />
+    <Compile Include="Extensions.cs" />
+    <Compile Include="GlobalAssemblyInfo.cs" />
+    <Compile Include="IJsonExecutor.cs" />
+    <Compile Include="JsonExecutor.cs" />
+    <Compile Include="JsonWebSocket.cs" />
+    <Compile Include="JsonWebSocket.Net.cs" />
+    <Compile Include="MessageReceivedEventArgs.cs" />
+    <Compile Include="OpCode.cs" />
+    <Compile Include="Properties\AssemblyInfo.MonoDroid.cs" />
+    <Compile Include="Protocol\CloseStatusCodeHybi10.cs" />
+    <Compile Include="Protocol\CloseStatusCodeRfc6455.cs" />
+    <Compile Include="Protocol\DraftHybi00DataReader.cs" />
+    <Compile Include="Protocol\DraftHybi00HandshakeReader.cs" />
+    <Compile Include="Protocol\DraftHybi00Processor.cs" />
+    <Compile Include="Protocol\DraftHybi10DataReader.cs" />
+    <Compile Include="Protocol\DraftHybi10HandshakeReader.cs" />
+    <Compile Include="Protocol\DraftHybi10Processor.cs" />
+    <Compile Include="Protocol\FramePartReader\DataFramePartReader.cs" />
+    <Compile Include="Protocol\FramePartReader\ExtendedLenghtReader.cs" />
+    <Compile Include="Protocol\FramePartReader\FixPartReader.cs" />
+    <Compile Include="Protocol\FramePartReader\IDataFramePartReader.cs" />
+    <Compile Include="Protocol\FramePartReader\MaskKeyReader.cs" />
+    <Compile Include="Protocol\FramePartReader\PayloadDataReader.cs" />
+    <Compile Include="Protocol\HandshakeReader.cs" />
+    <Compile Include="Protocol\ICloseStatusCode.cs" />
+    <Compile Include="Protocol\IProtocolProcessor.cs" />
+    <Compile Include="Protocol\ProtocolProcessorBase.cs" />
+    <Compile Include="Protocol\ProtocolProcessorFactory.cs" />
+    <Compile Include="Protocol\ReaderBase.cs" />
+    <Compile Include="Protocol\Rfc6455Processor.cs" />
+    <Compile Include="Protocol\WebSocketDataFrame.cs" />
+    <Compile Include="WebSocket.cs" />
+    <Compile Include="WebSocket.Net.cs" />
+    <Compile Include="WebSocketCommandInfo.cs" />
+    <Compile Include="WebSocketContext.cs" />
+    <Compile Include="WebSocketState.cs" />
+    <Compile Include="WebSocketVersion.cs" />
+  </ItemGroup>
+  <Import Project="$(MSBuildExtensionsPath)\Novell\Novell.MonoDroid.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>set mddir="%25ProgramFiles(x86)%25\Reference Assemblies\Microsoft\Framework\MonoAndroid\v1.0"
+if not exist %25mddir%25 (
+    set mddir="%25ProgramFiles%25\Reference Assemblies\Microsoft\Framework\MonoAndroid\v1.0"
+)
+"$(SolutionDir)Tools\ILMerge" /keyfile:"$(SolutionDir)websocket4net.snk" /targetplatform:v4,%25mddir%25 /ndebug /out:$(TargetDir)WebSocket4Net.dll $(TargetDir)WebSocket4Net.dll $(TargetDir)SuperSocket.ClientEngine.Common.dll $(TargetDir)SuperSocket.ClientEngine.Core.dll $(TargetDir)SuperSocket.ClientEngine.Protocol.dll $(TargetDir)SimpleJson.dll
+del $(TargetDir)SuperSocket.ClientEngine.Common.*
+del $(TargetDir)SuperSocket.ClientEngine.Core.*
+del $(TargetDir)SuperSocket.ClientEngine.Protocol.*
+del $(TargetDir)SimpleJson.dll</PostBuildEvent>
+  </PropertyGroup>
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>
