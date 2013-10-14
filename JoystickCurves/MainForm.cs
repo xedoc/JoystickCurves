@@ -13,6 +13,7 @@ using System.Threading;
 using Microsoft.DirectX.DirectInput;
 using System.IO;
 using System.Xml;
+using System.Runtime.ExceptionServices;
 
 namespace JoystickCurves
 {
@@ -297,7 +298,7 @@ namespace JoystickCurves
             virtualDevice.Set(destAxis, newValue);
             if (_settings.enableJoystickServer)
             {
-                ThreadPool.QueueUserWorkItem( f=> netServer.SendToAll( new JoystickState() { n = destAxis.ToString(), v = newValue } ));
+                netServer.SendToAll( new JoystickState() { n = destAxis.ToString(), v = newValue } );
             }
 
         }

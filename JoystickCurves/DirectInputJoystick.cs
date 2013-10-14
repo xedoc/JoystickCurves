@@ -216,7 +216,7 @@ namespace JoystickCurves
                 _device.Properties.BufferSize = 16;
                 Debug.Print("Exclusive: {0} {1}", Name, _exclusive);
                 _device.SetCooperativeLevel(Process.GetCurrentProcess().MainWindowHandle,
-                    (_exclusive ? CooperativeLevelFlags.Exclusive : CooperativeLevelFlags.NonExclusive) | (_exclusive ? CooperativeLevelFlags.Foreground : CooperativeLevelFlags.Background));
+                   CooperativeLevelFlags.NonExclusive|CooperativeLevelFlags.Background);
 
 
                 foreach (DeviceObjectInstance d in _device.Objects)

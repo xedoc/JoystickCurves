@@ -375,6 +375,7 @@ namespace JoystickCurves
 
         public bool Update(int id)
         {
+            
             lock (lockUpdate)
             {
                 try

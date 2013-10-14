@@ -50,7 +50,7 @@ namespace JoystickCurves
                     ws = new WebSocketServer();
                     ws.Setup(Port);
                     ws.NewSessionConnected += new SuperSocket.SocketBase.SessionHandler<WebSocketSession>(ws_NewSessionConnected);
-                    ws.SessionClosed += new SuperSocket.SocketBase.SessionHandler<WebSocketSession, SuperSocket.SocketBase.CloseReason>(ws_SessionClosed);
+                    ws.SessionClosed += new SuperSocket.SocketBase.SessionHandler<WebSocketSession, SuperSocket.SocketBase.CloseReason>(ws_SessionClosed);                   
                     ws.Start();
                 }
                 catch { 
@@ -73,19 +73,17 @@ namespace JoystickCurves
                 {
                     foreach (WebSocketSession session in ws.GetAllSessions())
                     {
-                        SendCurrentState(session, state);
+                        var jsonContent = JsonConvert.SerializeObject(state);
+                        SendCurrentState(session, jsonContent);
                     }
                 }
                 catch { };
             }
 
         }
-        void SendCurrentState(WebSocketSession session, JoystickState state)
-        {
-            if (String.IsNullOrEmpty(state.n))
-                return;
-
-            ThreadPool.QueueUserWorkItem(f => session.Send( JsonConvert.SerializeObject(state) ));
+        void SendCurrentState(WebSocketSession session, String content)
+        {           
+            ThreadPool.QueueUserWorkItem(f => session.Send( content ));
         }
         void ws_SessionClosed(WebSocketSession session, SuperSocket.SocketBase.CloseReason value)
         {
