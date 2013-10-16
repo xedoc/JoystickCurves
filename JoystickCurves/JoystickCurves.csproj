@@ -85,8 +85,12 @@
     </Reference>
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
-    <Reference Include="SuperSocket.SocketBase">
-      <HintPath>..\WebSocket\SuperWebSocket\bin\Release\SuperSocket.SocketBase.dll</HintPath>
+    <Reference Include="SuperSocket.SocketBase, Version=1.5.4.0, Culture=neutral, PublicKeyToken=6c80000676988ebb, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\WebSocket\Reference\SuperSocket\Net40\Release\SuperSocket.SocketBase.dll</HintPath>
+    </Reference>
+    <Reference Include="SuperSocket.SocketEngine">
+      <HintPath>..\WebSocket\Reference\SuperSocket\Net40\Release\SuperSocket.SocketEngine.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.configuration" />
