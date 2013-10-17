@@ -747,7 +747,6 @@ namespace JoystickCurves
             _deviceManager.OnKeyboardList += new EventHandler<EventArgs>(deviceManager_OnKeyboardList);
             _deviceManager.OnMouseList += new EventHandler<EventArgs>(deviceManager_OnMouseList);
 
-
         }
         private void DisconnectNetworkServer()
         {
@@ -767,6 +766,8 @@ namespace JoystickCurves
                         netServer = new NetworkServer(_settings.joystickServerPort);
 
                     netServer.Start();
+                    //ThreadPool.QueueUserWorkItem(f => startTest());
+
                 }
             }
         }
@@ -1843,6 +1844,19 @@ namespace JoystickCurves
             Debug.Print(currentAircraft.AircraftName);
         }
  */
+        private void startTest()
+        {
+            string[] axis = { "X", "Y", "RZ", "Z" };
+            var r = new Random();
+            var r2 = new Random();
+            int rnd;
+            while (true)
+            {
+                rnd = r.Next(-32768, 32768);
+
+                netServer.SendToAll(new JoystickState() { n = axis[r2.Next(0,3)], v = rnd });
+            }
+        }
     }
 
 }
