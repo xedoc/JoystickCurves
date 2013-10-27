@@ -298,7 +298,11 @@ namespace JoystickCurves
             virtualDevice.Set(destAxis, newValue);
             if (_settings.enableJoystickServer)
             {
-                netServer.SendToAll( new JoystickState() { n = destAxis.ToString(), v = newValue } );
+                try
+                {
+                    netServer.SendToAll(new JoystickState() { n = destAxis.ToString(), v = newValue });
+                }
+                catch { }
             }
 
         }

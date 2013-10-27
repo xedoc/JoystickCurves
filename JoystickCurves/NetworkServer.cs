@@ -84,7 +84,9 @@ namespace JoystickCurves
         }
         void SendCurrentState(WebSocketSession session, String content)
         {
-            session.Send(content);           
+            //session.TrySend(content);
+            session.SendResponse(content);
+        //    session.Send(content);
         }
         void ws_SessionClosed(WebSocketSession session, SuperSocket.SocketBase.CloseReason value)
         {
