@@ -11,18 +11,61 @@ using System.Diagnostics;
 
 namespace JoystickCurves
 {
-
+    public class JoyStateFlag
+    {
+        public String name
+        {
+            get;set;
+        }
+        public int value
+        {
+            get;set;
+        }
+        public bool changed
+        {
+            get;set;
+        }
+    }
     public class NetworkServer
     {
+        private const int SENDPERIOD = 16;
         private int _port;
         private WebSocketServer ws;
         private object lockSend = new object();
         private object lockConnect = new object();
+        private Timer sendTimer;
+        private List<JoyStateFlag> joystateflags;
         public NetworkServer( String listenPort )
         {
             int.TryParse(listenPort, out _port);
             Port = _port;
             Running = false;
+            sendTimer = new Timer(sendTimerCallback, null, Timeout.Infinite, Timeout.Infinite);
+            joystateflags = new List<JoyStateFlag>();
+
+        }
+        private void sendTimerCallback(object state)
+        {
+            lock (lockSend)
+            {
+                try
+                {
+                    if (joystateflags.Exists(f => f.changed == true))
+                    {
+                        var tempList = joystateflags.ToList();
+                        foreach (var jstate in tempList.Where(f => f.changed == true))
+                        {
+                            var allSessions = ws.GetAllSessions();
+                            var jsonContent = JsonConvert.SerializeObject(new JoystickState() { n = jstate.name, v = jstate.value });
+                            foreach (WebSocketSession session in allSessions)
+                            {
+                                SendCurrentState(session, jsonContent);
+                            }
+                        }
+                    }
+                }
+                catch { };
+            }
 
         }
         public bool Running
@@ -52,6 +95,7 @@ namespace JoystickCurves
                     ws.NewSessionConnected += new SuperSocket.SocketBase.SessionHandler<WebSocketSession>(ws_NewSessionConnected);
                     ws.SessionClosed += new SuperSocket.SocketBase.SessionHandler<WebSocketSession, SuperSocket.SocketBase.CloseReason>(ws_SessionClosed);                   
                     ws.Start();
+                    sendTimer.Change(0, SENDPERIOD);
                 }
                 catch { 
                     Running = false; 
@@ -67,19 +111,12 @@ namespace JoystickCurves
             if (!Running )
                 return;
 
-            lock (lockSend)
-            {
-                try
-                {
-                    var allSessions = ws.GetAllSessions();
-                    var jsonContent = JsonConvert.SerializeObject(state);
-                    foreach (WebSocketSession session in allSessions)
-                    {
-                        SendCurrentState(session, jsonContent);
-                    }
-                }
-                catch { };
-            }
+            if (!joystateflags.Exists(f => f.name == state.n))
+                joystateflags.Add(new JoyStateFlag() { name = state.n, value = state.v, changed = true });
+            else
+                joystateflags.ForEach(n => { if (n.name == state.n) { n.value = state.v; n.changed = true; } });
+            
+
 
         }
         void SendCurrentState(WebSocketSession session, String content)
@@ -107,6 +144,7 @@ namespace JoystickCurves
             try
             {
                 ws.Stop();
+                sendTimer.Change(Timeout.Infinite, Timeout.Infinite);
             }
             catch { };
 
