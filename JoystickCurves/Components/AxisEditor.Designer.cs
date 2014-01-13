@@ -28,7 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
-            JoystickCurves.BezierCurvePoints bezierCurvePoints1 = new JoystickCurves.BezierCurvePoints();
+            JoystickCurves.BezierCurvePoints bezierCurvePoints2 = new JoystickCurves.BezierCurvePoints();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(AxisEditor));
             this.comboSourceAxis = new System.Windows.Forms.ComboBox();
             this.label1 = new System.Windows.Forms.Label();
@@ -41,13 +41,17 @@
             this.label4 = new System.Windows.Forms.Label();
             this.comboDestAxis = new System.Windows.Forms.ComboBox();
             this.groupBoxCurve = new System.Windows.Forms.GroupBox();
+            this.label6 = new System.Windows.Forms.Label();
+            this.numericFilterLevel = new System.Windows.Forms.NumericUpDown();
             this.checkBoxPreserveAxisRange = new System.Windows.Forms.CheckBox();
             this.label5 = new System.Windows.Forms.Label();
             this.trimmerTrackBar = new JoystickCurves.TrimmerTrackBar();
             this.curveResponse = new JoystickCurves.BezierCurve();
+            this.checkVirtualTest = new System.Windows.Forms.CheckBox();
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
             this.groupBoxCurve.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.numericFilterLevel)).BeginInit();
             this.SuspendLayout();
             // 
             // comboSourceAxis
@@ -157,23 +161,52 @@
             this.groupBoxCurve.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+            this.groupBoxCurve.Controls.Add(this.checkVirtualTest);
+            this.groupBoxCurve.Controls.Add(this.label6);
+            this.groupBoxCurve.Controls.Add(this.numericFilterLevel);
             this.groupBoxCurve.Controls.Add(this.checkBoxPreserveAxisRange);
             this.groupBoxCurve.Controls.Add(this.label5);
             this.groupBoxCurve.Controls.Add(this.trimmerTrackBar);
             this.groupBoxCurve.Controls.Add(this.curveResponse);
             this.groupBoxCurve.Location = new System.Drawing.Point(5, 79);
             this.groupBoxCurve.Name = "groupBoxCurve";
-            this.groupBoxCurve.Size = new System.Drawing.Size(590, 228);
+            this.groupBoxCurve.Size = new System.Drawing.Size(590, 273);
             this.groupBoxCurve.TabIndex = 6;
             this.groupBoxCurve.TabStop = false;
             this.groupBoxCurve.Text = "Response Curve";
+            // 
+            // label6
+            // 
+            this.label6.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.label6.AutoSize = true;
+            this.label6.Location = new System.Drawing.Point(454, 247);
+            this.label6.Name = "label6";
+            this.label6.Size = new System.Drawing.Size(84, 13);
+            this.label6.TabIndex = 11;
+            this.label6.Text = "Noise filter level:";
+            // 
+            // numericFilterLevel
+            // 
+            this.numericFilterLevel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.numericFilterLevel.Location = new System.Drawing.Point(544, 244);
+            this.numericFilterLevel.Maximum = new decimal(new int[] {
+            15,
+            0,
+            0,
+            0});
+            this.numericFilterLevel.Name = "numericFilterLevel";
+            this.numericFilterLevel.Size = new System.Drawing.Size(36, 20);
+            this.numericFilterLevel.TabIndex = 10;
+            this.numericFilterLevel.ValueChanged += new System.EventHandler(this.numericFilterLevel_ValueChanged);
             // 
             // checkBoxPreserveAxisRange
             // 
             this.checkBoxPreserveAxisRange.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.checkBoxPreserveAxisRange.AutoSize = true;
-            this.checkBoxPreserveAxisRange.Location = new System.Drawing.Point(319, 200);
+            this.checkBoxPreserveAxisRange.Checked = true;
+            this.checkBoxPreserveAxisRange.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.checkBoxPreserveAxisRange.Location = new System.Drawing.Point(115, 245);
             this.checkBoxPreserveAxisRange.Name = "checkBoxPreserveAxisRange";
             this.checkBoxPreserveAxisRange.Size = new System.Drawing.Size(119, 17);
             this.checkBoxPreserveAxisRange.TabIndex = 7;
@@ -186,7 +219,7 @@
             this.label5.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.label5.AutoSize = true;
-            this.label5.Location = new System.Drawing.Point(11, 200);
+            this.label5.Location = new System.Drawing.Point(7, 246);
             this.label5.Name = "label5";
             this.label5.Size = new System.Drawing.Size(30, 13);
             this.label5.TabIndex = 6;
@@ -196,14 +229,12 @@
             // 
             this.trimmerTrackBar.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.trimmerTrackBar.Location = new System.Drawing.Point(42, 194);
-            this.trimmerTrackBar.Maximum = 32767;
-            this.trimmerTrackBar.Minimum = -32767;
+            this.trimmerTrackBar.Location = new System.Drawing.Point(37, 237);
             this.trimmerTrackBar.Name = "trimmerTrackBar";
             this.trimmerTrackBar.Percent = 0D;
-            this.trimmerTrackBar.Size = new System.Drawing.Size(271, 27);
+            this.trimmerTrackBar.Size = new System.Drawing.Size(84, 27);
             this.trimmerTrackBar.TabIndex = 5;
-            this.trimmerTrackBar.Value = 0;
+            this.trimmerTrackBar.Value = 0D;
             // 
             // curveResponse
             // 
@@ -215,17 +246,29 @@
             this.curveResponse.Location = new System.Drawing.Point(6, 15);
             this.curveResponse.Name = "curveResponse";
             this.curveResponse.Padding = new System.Windows.Forms.Padding(10);
-            bezierCurvePoints1.CurveResponseType = JoystickCurves.CurveResponseType.Multiplier;
-            bezierCurvePoints1.DrawHeight = 158;
-            bezierCurvePoints1.DrawPoints = ((System.Collections.Generic.List<System.Drawing.Point>)(resources.GetObject("bezierCurvePoints1.DrawPoints")));
-            bezierCurvePoints1.DrawWidth = 558;
-            bezierCurvePoints1.PointsCount = 13;
-            bezierCurvePoints1.RawPoints = ((System.Collections.Generic.List<System.Drawing.PointF>)(resources.GetObject("bezierCurvePoints1.RawPoints")));
-            this.curveResponse.Points = bezierCurvePoints1;
+            bezierCurvePoints2.CurveResponseType = JoystickCurves.CurveResponseType.Multiplier;
+            bezierCurvePoints2.DrawHeight = 158;
+            bezierCurvePoints2.DrawPoints = ((System.Collections.Generic.List<System.Drawing.Point>)(resources.GetObject("bezierCurvePoints2.DrawPoints")));
+            bezierCurvePoints2.DrawWidth = 558;
+            bezierCurvePoints2.PointsCount = 13;
+            bezierCurvePoints2.RawPoints = ((System.Collections.Generic.List<System.Drawing.PointF>)(resources.GetObject("bezierCurvePoints2.RawPoints")));
+            this.curveResponse.Points = bezierCurvePoints2;
             this.curveResponse.PointsCount = 13;
-            this.curveResponse.Size = new System.Drawing.Size(578, 178);
+            this.curveResponse.Size = new System.Drawing.Size(578, 216);
             this.curveResponse.TabIndex = 1;
             this.curveResponse.OnCurveChange += new System.EventHandler<System.EventArgs>(this.curveResponse_OnCurveChange);
+            // 
+            // checkVirtualTest
+            // 
+            this.checkVirtualTest.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.checkVirtualTest.AutoSize = true;
+            this.checkVirtualTest.Location = new System.Drawing.Point(312, 245);
+            this.checkVirtualTest.Name = "checkVirtualTest";
+            this.checkVirtualTest.Size = new System.Drawing.Size(119, 17);
+            this.checkVirtualTest.TabIndex = 12;
+            this.checkVirtualTest.Text = "Virtual axis test loop";
+            this.checkVirtualTest.UseVisualStyleBackColor = true;
+            this.checkVirtualTest.CheckedChanged += new System.EventHandler(this.checkVirtualTest_CheckedChanged);
             // 
             // AxisEditor
             // 
@@ -235,13 +278,14 @@
             this.Controls.Add(this.groupBox2);
             this.Controls.Add(this.groupBox1);
             this.Name = "AxisEditor";
-            this.Size = new System.Drawing.Size(598, 310);
+            this.Size = new System.Drawing.Size(598, 355);
             this.groupBox1.ResumeLayout(false);
             this.groupBox1.PerformLayout();
             this.groupBox2.ResumeLayout(false);
             this.groupBox2.PerformLayout();
             this.groupBoxCurve.ResumeLayout(false);
             this.groupBoxCurve.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.numericFilterLevel)).EndInit();
             this.ResumeLayout(false);
 
         }
@@ -263,5 +307,8 @@
         private System.Windows.Forms.CheckBox checkBoxPreserveAxisRange;
         private System.Windows.Forms.Label label5;
         private TrimmerTrackBar trimmerTrackBar;
+        private System.Windows.Forms.Label label6;
+        private System.Windows.Forms.NumericUpDown numericFilterLevel;
+        private System.Windows.Forms.CheckBox checkVirtualTest;
     }
 }

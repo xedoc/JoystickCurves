@@ -97,11 +97,6 @@ namespace JoystickCurves
             checkBoxHotKey.Text = devicetext + text;
         }
 
-        void hotKeys_OnChange(object sender, EventArgs e)
-        {
-            SetupHotkeyList();
-        }
-
         private void textBox1_TextChanged(object sender, EventArgs e)
         {
             if (oldLogin != textBox1.Text)
@@ -164,26 +159,6 @@ namespace JoystickCurves
 
         #endregion
 
-        private void checkBoxHotKey_CheckedChanged(object sender, EventArgs e)
-        {
-            if (checkBoxHotKey.Checked)
-            {
-
-                var _curHotkey = listHotKeys.SelectedItem as HotKey;
-                if (_curHotkey != null)
-                {
-                    checkBoxHotKey.Enabled = false;
-                    listHotKeys.Enabled = false;
-                    checkBoxHold.Enabled = false;                    
-                    if (OnHotKeyRequest != null)
-                        OnHotKeyRequest(this, new HotKeyArgs(_curHotkey));
-                }
-                else
-                {
-                    checkBoxHotKey.Checked = false;
-                }
-            }
-        }
 
         public void UpdateHotKey(HotKey key)
         {

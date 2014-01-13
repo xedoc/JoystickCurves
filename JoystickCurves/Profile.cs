@@ -4,9 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Configuration;
 using System.Xml.Serialization;
+
 namespace JoystickCurves 
 {
-    public class Profile
+    [Serializable]
+    public class Profile : XmlSerializableBase<Profile>
     {
         private const string NOTSET = "Not set";
 
@@ -136,6 +138,7 @@ namespace JoystickCurves
                     {
                         RawPoints = p.CurvePoints.RawPoints,                        
                         DrawHeight = p.CurvePoints.DrawHeight,
+                        CurveResponseType = p.CurvePoints.CurveResponseType,
                         DrawWidth = p.CurvePoints.DrawWidth
                     },
                     DestinationAxis = p.DestinationAxis,
@@ -144,7 +147,8 @@ namespace JoystickCurves
                     SourceDevice = p.SourceDevice,
                     TabTitle = p.TabTitle,
                     PreserveAxisRange = p.PreserveAxisRange,
-                    Correction = p.Correction
+                    Correction = p.Correction,
+                    FilterLevel = p.FilterLevel
                 });
             }
             profile.HotKeyJoystickName = this.HotKeyJoystickName;
@@ -167,6 +171,7 @@ namespace JoystickCurves
                     {
                         RawPoints = p.CurvePoints.RawPoints,
                         DrawHeight = p.CurvePoints.DrawHeight,
+                        CurveResponseType = p.CurvePoints.CurveResponseType,
                         DrawWidth = p.CurvePoints.DrawWidth
                     },
                     DestinationAxis = p.DestinationAxis,
@@ -175,7 +180,8 @@ namespace JoystickCurves
                     SourceDevice = p.SourceDevice,
                     TabTitle = p.TabTitle,
                     PreserveAxisRange = p.PreserveAxisRange,
-                    Correction = p.Correction
+                    Correction = p.Correction,
+                    FilterLevel = p.FilterLevel
                 });
             }
             profile.HotKeyJoystickName = this.HotKeyJoystickName;
@@ -186,7 +192,8 @@ namespace JoystickCurves
             profile.KeyboardHotKey = this.KeyboardHotKey;
         }
     }
-    public class ProfileTab
+    [Serializable]
+    public class ProfileTab : XmlSerializableBase<ProfileTab>
     {
         private object lockPoints = new object();
         private BezierCurvePoints _curvePoints;
@@ -222,6 +229,12 @@ namespace JoystickCurves
         }
         [XmlAttribute]
         public double Correction
+        {
+            get;
+            set;
+        }
+        [XmlAttribute]
+        public int FilterLevel
         {
             get;
             set;

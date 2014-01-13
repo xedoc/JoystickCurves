@@ -27,12 +27,17 @@ namespace JoystickCurves
             bw.RunWorkerCompleted += Complete;
             bw.RunWorkerAsync();
         }
+        public bool IsComplete
+        {
+            get;
+            set;
+        }
         public void Stop()
         {
             //bw.DoWork -= DoWork;
             //bw.RunWorkerCompleted -= Complete;
             //if (bw.IsBusy)
-                bw.CancelAsync();
+            bw.CancelAsync();
             bw.Dispose();
         }
         public bool CancelationPending
@@ -41,7 +46,7 @@ namespace JoystickCurves
         }
         private void DoWork(object sender, DoWorkEventArgs e)
         {
-
+            IsComplete = false;
             if (_startFunc != null)
                 _startFunc();
         }
@@ -49,6 +54,8 @@ namespace JoystickCurves
         {
             if (_completeFunc != null)
                 _completeFunc();
+
+            IsComplete = true;
         }
     }
 }

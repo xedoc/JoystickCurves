@@ -14,6 +14,7 @@ using Microsoft.DirectX.DirectInput;
 using System.IO;
 using System.Xml;
 using System.Runtime.ExceptionServices;
+using JoystickCurves.Components;
 
 namespace JoystickCurves
 {
@@ -27,11 +28,13 @@ namespace JoystickCurves
         private Dictionary<String, Dictionary<JoystickOffset, DirectInputData>> _axisBinding;
         private List<VirtualJoystick> _virtualJoysticks;
         private Profile _currentProfile;
+        private bool settingsUnsaved = false;
         private bool waitingHotkey = false;
         private bool _suspendTabActions = false;
         private String _currentContextMenu;
         private object lockAxisBinding = new object();
         private bool closeTesterContextMenu = true;
+        private bool formLoaded = false;
         private const int DEFPOINTSCOUNT = 13;
         private ToolTip errorToolTip;
         private const string ANY = "Any";
@@ -42,6 +45,8 @@ namespace JoystickCurves
         private const string DISABLEDOPTION = "Disabled in settings";
         private const string PROFILEDEFNAME = "New Profile";
         private const string PRESSKEY = "Press Key";
+        private const string JCPROFILEEXT = ".jcprofile"; 
+        private const string JCAXISEXT = ".jcaxis";
         private bool isExit = false;
         private Mutex appMutex;
         private const string INSTANCENAME = "JoystickCurvesInstance";
@@ -55,6 +60,8 @@ namespace JoystickCurves
         private object lockSaitek = new object();
         private object lockNetwork = new object();
         private object lockExclusiveSwitch = new object();
+        private TabPage lastSelectedTab;
+        private TabControl clickedTab;
         private CurrentAircraft currentAircraft;
         private AxisEditor currentAxisEditor;
         private Steam _steam;
@@ -237,6 +244,8 @@ namespace JoystickCurves
 
         private void ActionSetVJoy(DirectInputData data)
         {
+            if (timerTest.Enabled)
+                return;
             if (data == null)
                 return;
 
@@ -592,7 +601,6 @@ namespace JoystickCurves
                 }
                 else
                 {
-                    Utils.SetProperty<Label, String>(labelCurrentAircraft, "Text", WAITSPAWN);
                     if (currentAircraft == null)
                     {
                         currentAircraft = new WTAircraft();
@@ -600,6 +608,7 @@ namespace JoystickCurves
                         currentAircraft.AircraftChange += new EventHandler<EventArgsString>(wtCurrentAircraft_AircraftChange);                        
                         currentAircraft.StartPoll();
                     }
+                    Utils.SetProperty<Label, String>(labelCurrentAircraft, "Text", WAITSPAWN);
 
                 }
             }
@@ -619,16 +628,25 @@ namespace JoystickCurves
 
         void wtCurrentAircraft_AircraftChange(object sender, EventArgsString e)
         {
-            if (!checkBoxBindAircraft.Checked)
+
+            try
             {
-                Utils.SetProperty<Label, String>(labelCurrentAircraft, "Text", e.Value);
+                if (!checkBoxBindAircraft.Checked)
+                {
+                    Utils.SetProperty<Label, String>(labelCurrentAircraft, "Text", e.Value);
+                }
+                Debug.Print("WT aircraft changed {0}", currentAircraft.AircraftName);
+
+                var bindedProfile = _profileManager.Profiles.FirstOrDefault(p => p.BindVehicle == currentAircraft.AircraftName && p.BindGame == currentAircraft.GameName);
+                if (bindedProfile != null && bindedProfile.Title != _currentProfile.Title)
+                {
+                    Debug.Print("Set profile on aircraft change {0} aircraft: {1}", bindedProfile.Title, currentAircraft.AircraftName);
+                    Utils.CallMethod<Form>(this, "SetCurrentProfile", bindedProfile.Title);
+                }
             }
-            
-            var bindedProfile = _profileManager.Profiles.FirstOrDefault(p => p.BindVehicle == currentAircraft.AircraftName && p.BindGame == currentAircraft.GameName);
-            if (bindedProfile != null && bindedProfile.Title != _currentProfile.Title)
+            catch (Exception ex)
             {
-                Debug.Print("Set profile on aircraft change {0} aircraft: {1}", bindedProfile.Title, currentAircraft.AircraftName);
-                Utils.CallMethod<Form>(this, "SetCurrentProfile", bindedProfile.Title);
+                Debug.Print("WT Aircraft change exception {0} {1}", ex.Message, ex.StackTrace);
             }
 
 
@@ -664,19 +682,23 @@ namespace JoystickCurves
             {
                 if (p.Controls.Count > 0)
                 {
-                    var axisEditor = p.Controls[0] as AxisEditor;
-                    axisEditor.CurrentCurve.ScaleRawPoints();
-                    profile.Tabs.Add(new ProfileTab()
+                    if (p.Controls[0].GetType() == typeof(AxisEditor))
                     {
-                        CurvePoints = axisEditor.CurrentCurve,
-                        DestinationAxis = axisEditor.CurrentDestAxis,
-                        DestinationDevice = axisEditor.CurrentDestDevice,
-                        SourceAxis = axisEditor.CurrentSourceAxis,
-                        SourceDevice = axisEditor.CurrentSourceDevice,                        
-                        Correction = axisEditor.Correction,
-                        PreserveAxisRange = axisEditor.PreserveAxisRange,
-                        TabTitle = axisEditor.Title,                                                
-                    });
+                        var axisEditor = p.Controls[0] as AxisEditor;
+                        axisEditor.CurrentCurve.ScaleRawPoints();
+                        profile.Tabs.Add(new ProfileTab()
+                        {
+                            CurvePoints = axisEditor.CurrentCurve,
+                            DestinationAxis = axisEditor.CurrentDestAxis,
+                            DestinationDevice = axisEditor.CurrentDestDevice,
+                            SourceAxis = axisEditor.CurrentSourceAxis,
+                            SourceDevice = axisEditor.CurrentSourceDevice,                        
+                            Correction = axisEditor.Correction,
+                            FilterLevel = axisEditor.FilterLevel,
+                            PreserveAxisRange = axisEditor.PreserveAxisRange,
+                            TabTitle = axisEditor.Title,                                                
+                        });
+                    }
                 }
             }
             profile.HotKeyJoystickName = _currentProfile.HotKeyJoystickName;
@@ -706,8 +728,11 @@ namespace JoystickCurves
 
         private void UnacquireDevices()
         {
-            foreach (var d in _deviceManager.Joysticks.ToList())
-                d.Unacquire();
+            if (_deviceManager != null)
+            {
+                foreach (var d in _deviceManager.Joysticks.ToList())
+                    d.Unacquire();
+            }
         }
 
         private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
@@ -720,7 +745,8 @@ namespace JoystickCurves
                 e.Cancel = true;
             }
 
-            Exit();
+            if (!Exit())
+                e.Cancel = true;
             
         }
         private void MinimizeToTray()
@@ -750,6 +776,7 @@ namespace JoystickCurves
             _deviceManager.OnJoystickList += new EventHandler<EventArgs>(deviceManager_OnJoystickList);
             _deviceManager.OnKeyboardList += new EventHandler<EventArgs>(deviceManager_OnKeyboardList);
             _deviceManager.OnMouseList += new EventHandler<EventArgs>(deviceManager_OnMouseList);
+
 
         }
         private void DisconnectNetworkServer()
@@ -946,6 +973,7 @@ namespace JoystickCurves
             if (_deviceManager == null)
                 return;
 
+            SettingsChanged = true;
             try
             {
 
@@ -953,15 +981,23 @@ namespace JoystickCurves
                 {
                     if (tp.Controls.Count > 0)
                     {
-                        AxisEditor axisEditor = tp.Controls[0] as AxisEditor;
+                        var childControl = tp.Controls[0];
 
-                        //
-                        axisEditor.SourceControllers = _deviceManager.Joysticks.Where(d => d.Type == DeviceType.Physical).Select(d => d.Name).ToList();
-                        axisEditor.DestinationControllers = _deviceManager.Joysticks.Where(d => d.Type == DeviceType.Virtual).Select(d => d.Name).ToList();
-                        axisEditor.SourceAxis = DIUtils.AxisNames.ToList(); 
-                        axisEditor.DestinationAxis = DIUtils.AxisNames.ToList();
-                        axisEditor.OnChange += new EventHandler<EventArgs>(axisEditor_OnChange);
-                        axisEditor.OnTrimChange += new EventHandler<EventArgs>(axisEditor_OnTrimChange);
+                        if (childControl.GetType() == typeof(AxisEditor))
+                        {
+                            AxisEditor axisEditor = childControl as AxisEditor;
+
+                            //
+                            axisEditor.SourceControllers = _deviceManager.Joysticks.Where(d => d.Type == DeviceType.Physical).Select(d => d.Name).ToList();
+                            axisEditor.DestinationControllers = _deviceManager.Joysticks.Where(d => d.Type == DeviceType.Virtual).Select(d => d.Name).ToList();
+                            axisEditor.SourceAxis = DIUtils.AxisNames.ToList();
+                            axisEditor.DestinationAxis = DIUtils.AxisNames.ToList();
+                            axisEditor.OnChange += new EventHandler<EventArgs>(axisEditor_OnChange);
+                            axisEditor.OnTrimChange += new EventHandler<EventArgs>(axisEditor_OnTrimChange);
+                            axisEditor.OnFilterChange += new EventHandler<EventArgs>(axisEditor_OnFilterChange);
+                            axisEditor.OnTestStart += new EventHandler<EventArgs>(axisEditor_OnTestStart);
+                            axisEditor.OnTestEnd += new EventHandler<EventArgs>(axisEditor_OnTestEnd);
+                        }
                     }
                 }
             }
@@ -970,6 +1006,34 @@ namespace JoystickCurves
             
             }
             
+        }
+
+        void axisEditor_OnTestEnd(object sender, EventArgs e)
+        {
+            timerTest.Stop();
+            timerTest.Enabled = false;
+        }
+
+        void axisEditor_OnTestStart(object sender, EventArgs e)
+        {
+            timerTest.Enabled = true;
+            timerTest.Start();
+        }
+
+        void axisEditor_OnFilterChange(object sender, EventArgs e)
+        {
+            _currentProfile.Tabs[currentAxisEditor.Index] = currentAxisEditor;
+            var srcDevName = currentAxisEditor.CurrentSourceDevice;
+            if (String.IsNullOrEmpty(srcDevName))
+                return;
+
+            var srcDevice = _deviceManager.Joysticks.Where(d => d.Name == srcDevName).FirstOrDefault();
+            if (srcDevice == null)
+                return;
+
+            var srcAxis = DIUtils.ID(currentAxisEditor.CurrentSourceAxis);
+
+            srcDevice.SetAxisFilter(srcAxis, currentAxisEditor.FilterLevel);
         }
 
         void axisEditor_OnTrimChange(object sender, EventArgs e)
@@ -1011,29 +1075,33 @@ namespace JoystickCurves
                 {                    
                     if (tp.Controls.Count > 0)
                     {
-                        AxisEditor axisEditor = tp.Controls[0] as AxisEditor;
-                        if (axisEditor.CurrentDestDevice != NOTSET && axisEditor.CurrentDestAxis != NOTSET && axisEditor.CurrentSourceAxis != NOTSET )
-                        {
-                            if (_axisBinding.ContainsKey(axisEditor.CurrentSourceDevice))
-                            {
-                                if (!_axisBinding[axisEditor.CurrentSourceDevice].ContainsKey(DIUtils.ID(axisEditor.CurrentSourceAxis)))
-                                {
-                                    _axisBinding[axisEditor.CurrentSourceDevice].Add(DIUtils.ID(axisEditor.CurrentSourceAxis), new DirectInputData()
-                                    {
-                                        JoystickOffset = DIUtils.ID(axisEditor.CurrentDestAxis),
-                                        DeviceName = axisEditor.CurrentDestDevice,
-                                        Type = DIDataType.Joystick,
-                                        Min = -32767,
-                                        Max = 32767,
-                                        Value = 0
+                        var childControl = tp.Controls[0];
 
-                                    });
-                                }
-                            }
-                            else
+                        if (childControl.GetType() == typeof(AxisEditor))
+                        {
+                            AxisEditor axisEditor = tp.Controls[0] as AxisEditor;
+                            if (axisEditor.CurrentDestDevice != NOTSET && axisEditor.CurrentDestAxis != NOTSET && axisEditor.CurrentSourceAxis != NOTSET)
                             {
-                            
-                                _axisBinding.Add(axisEditor.CurrentSourceDevice, new Dictionary<JoystickOffset, DirectInputData>{
+                                if (_axisBinding.ContainsKey(axisEditor.CurrentSourceDevice))
+                                {
+                                    if (!_axisBinding[axisEditor.CurrentSourceDevice].ContainsKey(DIUtils.ID(axisEditor.CurrentSourceAxis)))
+                                    {
+                                        _axisBinding[axisEditor.CurrentSourceDevice].Add(DIUtils.ID(axisEditor.CurrentSourceAxis), new DirectInputData()
+                                        {
+                                            JoystickOffset = DIUtils.ID(axisEditor.CurrentDestAxis),
+                                            DeviceName = axisEditor.CurrentDestDevice,
+                                            Type = DIDataType.Joystick,
+                                            Min = -32767,
+                                            Max = 32767,
+                                            Value = 0
+
+                                        });
+                                    }
+                                }
+                                else
+                                {
+
+                                    _axisBinding.Add(axisEditor.CurrentSourceDevice, new Dictionary<JoystickOffset, DirectInputData>{
                                 {
                                     DIUtils.ID(axisEditor.CurrentSourceAxis),
                                     new DirectInputData() { 
@@ -1046,6 +1114,7 @@ namespace JoystickCurves
                                     }
                                 }
                                 });
+                                }
                             }
                         }
 
@@ -1056,27 +1125,44 @@ namespace JoystickCurves
 
         private void SetupTabContextMenu()
         {
-            var axisList = DIUtils.AxisNames.ToList().Except(new string[] {tabAxis.SelectedTab.Text}).ToList();
-            copyCurveToToolStripMenuItem.DropDownItems.Clear();
-            foreach( var a in axisList )
-                copyCurveToToolStripMenuItem.DropDownItems.Add(a);
+            var childControl = tabAxis.SelectedTab.Controls[0];
+            if (childControl.GetType() == typeof(AxisEditor))
+            {
+                var axisList = DIUtils.AxisNames.ToList().Except(new string[] { tabAxis.SelectedTab.Text }).ToList();
+                copyCurveToToolStripMenuItem.DropDownItems.Clear();
+                foreach (var a in axisList)
+                    copyCurveToToolStripMenuItem.DropDownItems.Add(a);
 
-            var axisEditor = tabAxis.SelectedTab.Controls[0] as AxisEditor;
-            currentAxisEditor = axisEditor;
-            if (axisEditor.CurveResponseType == CurveResponseType.Multiplier)
-            {
-                multiplier.Checked = true;
-                value.Checked = false;
-            }
-            else
-            {
-                value.Checked = true;
-                multiplier.Checked = false;
+                var axisEditor = tabAxis.SelectedTab.Controls[0] as AxisEditor;
+                currentAxisEditor = axisEditor;
+                if (axisEditor.CurveResponseType == CurveResponseType.Multiplier)
+                {
+                    multiplier.Checked = true;
+                    value.Checked = false;
+                }
+                else
+                {
+                    value.Checked = true;
+                    multiplier.Checked = false;
+                }
             }
         }
 
+        public bool SettingsChanged
+        {
+            get { return settingsUnsaved; }
+            set { 
+                settingsUnsaved = value;
+                if( _deviceManager != null)
+                    Utils.SetProperty<System.Windows.Forms.Button,bool>( buttonSave, "Enabled",true);
+            }
+
+        }
+
+
         private void axisEditor_OnChange(object sender, EventArgs e)
         {
+            SettingsChanged = true;
             var axisEditor = sender as AxisEditor;
             var curText = Utils.GetProperty<TabPage>((TabPage)axisEditor.Parent, "Text").ToString();
             if( curText != axisEditor.CurrentSourceAxis )
@@ -1100,40 +1186,71 @@ namespace JoystickCurves
             }
         }
 
+        
         private void tabAxis_SelectedIndexChanged(object sender, EventArgs e)
         {
             if (_suspendTabActions)
                 return;
-
-            var tab = sender as TabControl;
-            if (tab.SelectedTab.Name == "tabAddNew")
-            {
-                var newTab = AddNewProfileTab(tab,true);
-                var axisEditor = newTab.Controls[0] as AxisEditor;
-                var curve = new BezierCurvePoints();
-                curve.PointsCount = DEFPOINTSCOUNT;
-                axisEditor.CurrentCurve.Reset();
-                axisEditor.CurveResponseType = CurveResponseType.Multiplier;                
-                SetupEditorComboBoxes();
-                _currentProfile.Tabs.Add(axisEditor);
-            }
             
-            SetupTabContextMenu();
+            clickedTab = sender as TabControl;
+            if (clickedTab.SelectedTab.Name == "tabAddNew")
+            {
+                clickedTab.SelectedTab.ContextMenuStrip = contextMenuAddTab;
+                contextMenuAddTab.Show(Cursor.Position);
+            }
+            else
+            {
+                lastSelectedTab = clickedTab.SelectedTab;
+                SetupTabContextMenu();
+            }
+
+
         }
 
-        private TabPage AddNewProfileTab(TabControl tab, bool select = false)
+        private TabPage AddNewMacroTab(TabControl tab, bool select = false)
         {
-            var templateTab = tabAxis.TabPages[tabAxis.TabPages.Count-1];
-            var newTabPage = new TabPage("Axis " + tab.TabCount) { Name = "tabAxis" };
+            var templateTab = tabAxis.TabPages[tabAxis.TabPages.Count - 1];
+            var newTabPage = new TabPage("Macro " + tab.TabCount) { Name = "tabMacro" };
 
-            var newAxisEditor = new AxisEditor() {                 
-                Location = new Point( templateTab.Padding.Left, templateTab.Padding.Top ), 
-                Size = new Size(templateTab.Width - Padding.Left - Padding.Right, templateTab.Height - Padding.Top - Padding.Bottom),               
+            var newMacroEditor = new MacroEditor()
+            {
+                Location = new Point(templateTab.Padding.Left, templateTab.Padding.Top),
+                Size = new Size(templateTab.Width - Padding.Left - Padding.Right, templateTab.Height - Padding.Top - Padding.Bottom),
                 Index = tabAxis.TabPages.Count - 1
-                //Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right | AnchorStyles.Top
             };
-            newAxisEditor.CurveResponseType = CurveResponseType.Multiplier;
-            newAxisEditor.ResetCurve();
+            newTabPage.Controls.Add(newMacroEditor);
+
+            tabAxis.TabPages.Insert(tabAxis.TabPages.Count - 1, newTabPage);
+            if (select)
+                tabAxis.SelectedTab = newTabPage;
+
+            return newTabPage;
+        }
+        private TabPage AddNewProfileTab(TabControl tab, bool select = false, AxisEditor template = null)
+        {
+            AxisEditor newAxisEditor;
+            TabPage newTabPage;
+            var templateTab = tabAxis.TabPages[tabAxis.TabPages.Count - 1];
+            if (template == null)
+            {
+                newTabPage = new TabPage("Axis " + tab.TabCount) { Name = "tabAxis" };
+
+                newAxisEditor = new AxisEditor()
+                {
+                    //Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right | AnchorStyles.Top
+                };
+                newAxisEditor.CurveResponseType = CurveResponseType.Multiplier;
+                newAxisEditor.ResetCurve();
+            }
+            else
+            {
+                newTabPage = new TabPage(template.CurrentSourceAxis) { Name = "tabAxis" };
+                newAxisEditor = template;
+            }
+            newAxisEditor.Location = new Point(templateTab.Padding.Left, templateTab.Padding.Top);
+            newAxisEditor.Size = new Size(templateTab.Width - Padding.Left - Padding.Right, templateTab.Height - Padding.Top - Padding.Bottom);
+            newAxisEditor.Index = tabAxis.TabPages.Count - 1;
+
             newTabPage.Controls.Add( newAxisEditor );
 
             tabAxis.TabPages.Insert(tabAxis.TabPages.Count - 1, newTabPage);
@@ -1221,23 +1338,33 @@ namespace JoystickCurves
                 SetCurrentProfile(selectedItem);
             }
         }
-        private Profile CreateNewProfile()
+        private Profile CreateNewProfile(String defname = PROFILEDEFNAME, Profile template = null)
         {
-            String profName = PROFILEDEFNAME;
+            String profName = defname;
+            Profile newProfile;
+            
             for (var i = 0; i <= _profileManager.Profiles.Count + 1; i++)
             {
-                profName = String.Format(String.Format("{0}{1}", PROFILEDEFNAME, i == 0 ? "" : " #" + i));
+                profName = String.Format(String.Format("{0}{1}", defname, i == 0 ? "" : " #" + i));
                 if (!_profileManager.Profiles.Exists(p => p.Title == profName))
                     break;
             }
-            var newProfile = new Profile(profName);
-            newProfile.Tabs.Add(new ProfileTab()
+            if (template == null)
             {
-                CurvePoints = new BezierCurvePoints(),
-                TabTitle = "Axis 1"
-            });
-            newProfile.Tabs[0].CurvePoints.PointsCount = DEFPOINTSCOUNT;
-            newProfile.Tabs[0].CurvePoints.Reset();
+                newProfile = new Profile(profName);
+                newProfile.Tabs.Add(new ProfileTab()
+                {
+                    CurvePoints = new BezierCurvePoints(),
+                    TabTitle = "Axis 1"
+                });
+                newProfile.Tabs[0].CurvePoints.PointsCount = DEFPOINTSCOUNT;
+                newProfile.Tabs[0].CurvePoints.Reset();
+            }
+            else
+            {
+                newProfile = template;
+                newProfile.Title = profName;
+            }
 
             _profileManager.Profiles.Add(newProfile);
             SetupProfileCombo();
@@ -1295,6 +1422,7 @@ namespace JoystickCurves
                     axisEditor.CurrentSourceDevice = p.SourceDevice;
                     axisEditor.PreserveAxisRange = p.PreserveAxisRange;
                     axisEditor.Correction = p.Correction;
+                    axisEditor.FilterLevel = p.FilterLevel;                    
                     axisEditor.Title = String.IsNullOrEmpty(p.TabTitle) || p.TabTitle == NOTSET ? String.Format("Axis {0}", _currentProfile.Tabs.IndexOf(p) + 1) : p.TabTitle;
                     axisEditor.CurveResponseType = p.CurvePoints.CurveResponseType;
 
@@ -1369,6 +1497,7 @@ namespace JoystickCurves
                     SendSteamMessage(_currentProfile.Title);
 
                 SetupEditorComboBoxes();
+                SettingsChanged = true;
                 this.ResumeLayout();
             }
         }
@@ -1401,16 +1530,33 @@ namespace JoystickCurves
             this.WindowState = FormWindowState.Normal;
             this.Activate();
         }
-        private void Exit()
+        private bool Exit()
         {
+            if (_settings.globalSaveOnExit)
+            {
+                if (_settings.globalAskSave)
+                {
+                    var result = MessageBox.Show("Save settings?", "Save settings?", MessageBoxButtons.YesNoCancel);
+                    if (result == System.Windows.Forms.DialogResult.Yes)
+                        SaveSettings();
+                    else if (result == System.Windows.Forms.DialogResult.Cancel)
+                        return false;
+                    
+                }
+                else
+                {
+                    SaveSettings();
+                }
+            }
+
             ThreadPool.QueueUserWorkItem( f=> UnacquireDevices());
             ThreadPool.QueueUserWorkItem( f=> DisconnectSaitek());
             ThreadPool.QueueUserWorkItem( f=> DisconnectWarThunder());
             ThreadPool.QueueUserWorkItem( f=> DisconnectSteam());
             ThreadPool.QueueUserWorkItem( f=> DisconnectNetworkServer());
 
-            SaveSettings();
             Thread.Sleep(2000);
+            return true;
         }
         private void exitToolStripMenuItem_Click(object sender, EventArgs e)
         {
@@ -1725,19 +1871,23 @@ namespace JoystickCurves
         }
 
         private int curX = 32767;
-        private void timer1_Tick(object sender, EventArgs e)
+        private void timerTest_Tick(object sender, EventArgs e)
         {
-            return;
-/*            var virtualDevice = _deviceManager.Joysticks.ToList().FirstOrDefault(
-                gc => gc.Type == DeviceType.Virtual );
-
-            if (virtualDevice == null)
+            _currentProfile.Tabs[currentAxisEditor.Index] = currentAxisEditor;
+            var dstDevName = currentAxisEditor.CurrentDestDevice;
+            if (String.IsNullOrEmpty(dstDevName))
+                return;
+            //var dstDevice = _deviceManager.Joysticks.ToList().FirstOrDefault(gc => gc.Type == DeviceType.Virtual && gc.Name == dstDevName);
+            var dstDevice = _deviceManager.Joysticks.Where(d => d.Name == dstDevName).FirstOrDefault();
+            if (dstDevice == null)
                 return;
 
-            curX -= 5000;
-            if (curX <= -32767)
-                curX = 32767;
-            virtualDevice.Set(JoystickOffset.X, curX);*/
+            var dstAxis = DIUtils.ID(currentAxisEditor.CurrentDestAxis);
+            var curValue = dstDevice.Get(dstAxis) + 200;
+            if( curValue + 200 > dstDevice.MaxAxisValue )
+                curValue = dstDevice.MinAxisValue;
+            
+            dstDevice.Set( dstAxis,  curValue );
         }
 
         private void multiplerToolStripMenuItem_CheckedChanged(object sender, EventArgs e)
@@ -1861,6 +2011,139 @@ namespace JoystickCurves
                 netServer.SendToAll(new JoystickState() { n = axis[r2.Next(0,3)], v = rnd });
             }
         }
+
+        private void buttonSave_Click(object sender, EventArgs e)
+        {
+            SaveSettings();
+            MessageBox.Show("Settings being saved!");
+        }
+
+        private void contextMenuAddTab_ItemClicked(object sender, ToolStripItemClickedEventArgs e)
+        {
+            if (e.ClickedItem.Name == "newAxisTab")
+            {
+                var newTab = AddNewProfileTab(clickedTab,true);
+                var axisEditor = newTab.Controls[0] as AxisEditor;
+                var curve = new BezierCurvePoints();
+                curve.PointsCount = DEFPOINTSCOUNT;
+                axisEditor.CurrentCurve.Reset();
+                axisEditor.CurveResponseType = CurveResponseType.Multiplier;
+                SetupEditorComboBoxes();
+                _currentProfile.Tabs.Add(axisEditor);
+
+            }
+            else if (e.ClickedItem.Name == "newMacroTab")
+            {
+                var newTab = AddNewMacroTab(clickedTab, true);
+            }
+
+        }
+
+        private void contextMenuAddTab_Closing(object sender, ToolStripDropDownClosingEventArgs e)
+        {
+            tabAxis.SelectTab(lastSelectedTab);
+        }
+
+
+
+        private void importToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                OpenFileDialog open = new OpenFileDialog();
+                open.Filter = "JC settings|*" + JCAXISEXT + ";*" + JCPROFILEEXT;
+                if (open.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+                {
+                    foreach (var filename in open.FileNames)
+                    {
+                        if (filename.EndsWith(JCAXISEXT, StringComparison.CurrentCultureIgnoreCase))
+                        {
+                            XmlTextReader file = new XmlTextReader(filename);
+                            ProfileTab tab = XmlSerializableBase<ProfileTab>.Deserialize(file);
+                            var newTab = AddNewProfileTab(tabAxis, true,tab);
+                            SetupEditorComboBoxes();
+                            SetupTabContextMenu();
+                            _currentProfile.Tabs.Add(tab);
+                        }
+                        else if (filename.EndsWith(JCPROFILEEXT, StringComparison.CurrentCultureIgnoreCase))
+                        {
+                            XmlTextReader file = new XmlTextReader(filename);
+                            Profile profile = XmlSerializableBase<Profile>.Deserialize(file);
+                            CreateNewProfile(profile.Title, profile);
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error reading settings file " + ex.Message + " " + ex.StackTrace, "Error");
+            }
+        }
+
+        private void exportProfileToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                SaveFileDialog save = new SaveFileDialog();
+                save.FileName = _currentProfile.Title;
+                foreach (var c in Path.GetInvalidFileNameChars())
+                {
+                    save.FileName = save.FileName.Replace(c, '_');
+                }
+
+                save.Filter = "JC profile|*" + JCPROFILEEXT;
+                save.DefaultExt = JCPROFILEEXT.Substring(1);
+                save.AddExtension = true;
+                if (save.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+                {
+                    if (!save.FileName.ToLower().EndsWith(JCPROFILEEXT))
+                        save.FileName += JCPROFILEEXT;
+                    System.IO.StreamWriter file = new System.IO.StreamWriter(save.FileName);
+                    _currentProfile.SerializeTo(file);
+                    file.Close();
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error saving settings file " + ex.Message + " " + ex.StackTrace, "Error");
+            }
+        }
+
+        private void exportAxisToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            var axisEditor = tabAxis.SelectedTab.Controls[0] as AxisEditor;
+            if (axisEditor != null)
+            {
+                try
+                {
+                    SaveFileDialog save = new SaveFileDialog();
+                    save.FileName = _currentProfile.Title + axisEditor.CurrentSourceAxis;
+                    foreach (var c in Path.GetInvalidFileNameChars())
+                    {
+                        save.FileName = save.FileName.Replace(c, '_');
+                    }
+                    save.Filter = "JC axis|*" + JCAXISEXT;
+                    save.DefaultExt = JCAXISEXT.Substring(1);
+                    save.AddExtension = true;
+                    if (save.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+                    {
+                        if (!save.FileName.ToLower().EndsWith(JCAXISEXT))
+                            save.FileName += JCAXISEXT;
+                        System.IO.StreamWriter file = new System.IO.StreamWriter(save.FileName);
+                        ProfileTab tab = axisEditor;
+                        tab.SerializeTo(file);
+                        file.Close();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Error saving settings file " + ex.Message + " " + ex.StackTrace, "Error");
+                }
+
+            }
+        }
+
+
     }
 
 }

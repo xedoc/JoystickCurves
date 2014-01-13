@@ -19,6 +19,7 @@ namespace JoystickCurves
         private BGWorker bwReader;
         private WTFolders wtFolders;
         private object lockRead = new object();
+        private object lockLastFile = new object();
 
         private readonly byte[] xorBytes = {
 	        0x82,0x87,0x97,0x40,0x8D,0x8B,0x46,0x0B,0xBB,0x73,0x94,0x03,0xE5,0xB3,0x83,0x53, 
@@ -99,27 +100,40 @@ namespace JoystickCurves
         {
             if( !String.IsNullOrEmpty( DebugFolder ))
             {
-                var files = new DirectoryInfo(DebugFolder);
-                var newestLog = files.GetFiles().OrderByDescending(f => f.LastWriteTime).FirstOrDefault(
-                    f => f.Extension.ToLower() == logExtension);
-
-                if (newestLog.FullName != CurrentFile && !String.IsNullOrEmpty(newestLog.FullName))
+                lock (lockLastFile)
                 {
-                    CurrentFile = newestLog.FullName;
-                    if (bwReader != null)
+                    var files = new DirectoryInfo(DebugFolder);
+                    var newestLog = files.GetFiles().OrderByDescending(f => f.LastWriteTime).FirstOrDefault(
+                        f => f.Extension.ToLower() == logExtension);
+
+                    Debug.Print("WTAircraft: Current file {0}", newestLog);
+
+                    if (String.IsNullOrEmpty(newestLog.FullName))
+                        return;
+
+                    if (newestLog.FullName != CurrentFile || 
+                        (bwReader != null && bwReader.IsComplete)
+                        )
                     {
-                        try
+                        CurrentFile = newestLog.FullName;
+                        if (bwReader != null)
                         {
-                            bwReader.Stop();
+                            try
+                            {
+                                Debug.Print("WTAircraft: stopping ReadLines() background job");
+                                bwReader.Stop();
+                                AircraftName = String.Empty;
+                            }
+                            catch
+                            {
+                                Debug.Print("WTAircraft::timerLatestLogCallback exception");
+                            }
                         }
-                        catch {
-                            Debug.Print("WTAircraft::timerLatestLogCallback exception");
-                        }
+                        Debug.Print("WTAircraft: ReadLines() started in background");
+                        bwReader = new BGWorker(ReadLines, null);
                     }
 
-                    bwReader = new BGWorker(ReadLines, null);
                 }
-
             }
         }
         private String DebugFolder
@@ -137,59 +151,66 @@ namespace JoystickCurves
             if (String.IsNullOrEmpty(CurrentFile))
                 return;
 
+            Debug.Print("WTAircraft entering ReadLines()", CurrentFile);
             lock (lockRead)
             {
+                Debug.Print("WTAircraft: reset params, start to read new log file");
                 int xorIndex = 0;
                 String CurString = String.Empty;
                 List<Byte> bytes = new List<byte>();
 
-                using (var fileStream = new FileStream(CurrentFile, FileMode.Open,
-                                  FileAccess.Read, FileShare.ReadWrite))
+                try
                 {
-                    var airCraft = String.Empty;
-                    while (true)
+                    using (var fileStream = new FileStream(CurrentFile, FileMode.Open,
+                                      FileAccess.Read, FileShare.ReadWrite))
                     {
-                        if (bwReader.CancelationPending)
-                            break;
-
-                        if (xorIndex >= xorBytes.Count()) xorIndex = 0;
-                        var xoredByte = fileStream.ReadByte();
-                        if (xoredByte >= 0)
+                        Debug.Print("WTAircraft: file opened {0}", CurrentFile);
+                        var airCraft = String.Empty;
+                        while (true)
                         {
-                            var nextChar = (byte)(xoredByte ^ xorBytes[xorIndex++]);
-                            if (nextChar == 0x0A || nextChar == 0x0D)
+                            if (bwReader.CancelationPending)
+                                break;
+
+                            if (xorIndex >= xorBytes.Count()) xorIndex = 0;
+                            var xoredByte = fileStream.ReadByte();
+                            if (xoredByte >= 0)
                             {
-                                if (bytes.Count > 0)
+                                var nextChar = (byte)(xoredByte ^ xorBytes[xorIndex++]);
+                                if (nextChar == 0x0A || nextChar == 0x0D)
                                 {
-                                    CurString = Encoding.UTF8.GetString(bytes.ToArray());
-                                    if (OnNewLine != null)
-                                        OnNewLine(this, new EventArgsString() { Value = CurString });
+                                    if (bytes.Count > 0)
+                                    {
+                                        CurString = Encoding.UTF8.GetString(bytes.ToArray());
+                                        if (OnNewLine != null)
+                                            OnNewLine(this, new EventArgsString() { Value = CurString });
 
-                                    var t = Re.GetSubString(CurString, trackString, 1);
-                                    if (!string.IsNullOrEmpty(t))
-                                        airCraft = Thread.CurrentThread.CurrentCulture.TextInfo.ToTitleCase(t.Replace("_", " "));
+                                        var t = Re.GetSubString(CurString, trackString, 1);
+                                        if (!string.IsNullOrEmpty(t))
+                                            airCraft = Thread.CurrentThread.CurrentCulture.TextInfo.ToTitleCase(t.Replace("_", " "));
 
-                                    bytes.Clear();
-                                    CurString = String.Empty;
+                                        bytes.Clear();
+                                        CurString = String.Empty;
+                                    }
+                                }
+                                else
+                                {
+                                    bytes.Add(nextChar);
                                 }
                             }
                             else
                             {
-                                bytes.Add(nextChar);
+                                if (!String.IsNullOrEmpty(airCraft) && airCraft != AircraftName)
+                                {
+                                    AircraftName = airCraft;
+                                }
+                                Thread.Sleep(50);
                             }
-                        }
-                        else
-                        {
-                            if (!String.IsNullOrEmpty(airCraft) && airCraft != AircraftName)
-                            {
-                                AircraftName = airCraft;
-
-                            }
-
-
-                            Thread.Sleep(50);
                         }
                     }
+                }
+                catch( Exception e )
+                {
+                    Debug.Print("WTAircraft::ReadLines {0}", e.Message);
                 }
             }
         }

@@ -32,8 +32,8 @@
     <CreateWebPageOnPublish>true</CreateWebPageOnPublish>
     <WebPage>publish.htm</WebPage>
     <OpenBrowserOnPublish>false</OpenBrowserOnPublish>
-    <ApplicationRevision>9</ApplicationRevision>
-    <ApplicationVersion>0.0.4.%2a</ApplicationVersion>
+    <ApplicationRevision>2</ApplicationRevision>
+    <ApplicationVersion>0.0.5.%2a</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
     <PublishWizardCompleted>true</PublishWizardCompleted>
     <BootstrapperEnabled>true</BootstrapperEnabled>
@@ -78,10 +78,12 @@
     <Reference Include="Microsoft.DirectX, Version=1.0.2902.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\Windows\Microsoft.NET\DirectX for Managed Code\1.0.2902.0\Microsoft.DirectX.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="Microsoft.DirectX.DirectInput, Version=1.0.2902.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>C:\Windows\Microsoft.NET\DirectX for Managed Code\1.0.2902.0\Microsoft.DirectX.DirectInput.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
@@ -118,12 +120,21 @@
     <Compile Include="..\..\..\Users\meshkov\Documents\GitHub\Ubiquitous\dotUtilities\Re.cs">
       <Link>Re.cs</Link>
     </Compile>
+    <Compile Include="AxisFilterKalman.cs" />
+    <Compile Include="AxisFilterMedian.cs" />
+    <Compile Include="CircularBuffer.cs" />
+    <Compile Include="Components\MacroEditor.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Components\MacroEditor.Designer.cs">
+      <DependentUpon>MacroEditor.cs</DependentUpon>
+    </Compile>
     <Compile Include="DirectInputData.cs" />
     <Compile Include="Button.cs" />
-    <Compile Include="DebugForm.cs">
+    <Compile Include="Forms\DebugForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="DebugForm.Designer.cs">
+    <Compile Include="Forms\DebugForm.Designer.cs">
       <DependentUpon>DebugForm.cs</DependentUpon>
     </Compile>
     <Compile Include="DirectInputDevice.cs" />
@@ -132,33 +143,34 @@
     <Compile Include="DirectInputKeyboard.cs" />
     <Compile Include="ExecutablePath.cs" />
     <Compile Include="HotKeys.cs" />
-    <Compile Include="InputBox.cs">
+    <Compile Include="Forms\InputBox.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="InputBox.Designer.cs">
+    <Compile Include="Forms\InputBox.Designer.cs">
       <DependentUpon>InputBox.cs</DependentUpon>
     </Compile>
     <Compile Include="NetworkServer.cs" />
     <Compile Include="SaitekMFD.cs" />
+    <Compile Include="ScriptEngine.cs" />
     <Compile Include="Settings.cs" />
-    <Compile Include="SettingsForm.cs">
+    <Compile Include="Forms\SettingsForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="SettingsForm.Designer.cs">
+    <Compile Include="Forms\SettingsForm.Designer.cs">
       <DependentUpon>SettingsForm.cs</DependentUpon>
     </Compile>
     <Compile Include="SteamAPI.cs" />
-    <Compile Include="TrimmerTrackBar.cs">
+    <Compile Include="Components\TrimmerTrackBar.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="TrimmerTrackBar.Designer.cs">
+    <Compile Include="Components\TrimmerTrackBar.Designer.cs">
       <DependentUpon>TrimmerTrackBar.cs</DependentUpon>
     </Compile>
     <Compile Include="Utils.cs" />
-    <Compile Include="AxisEditor.cs">
+    <Compile Include="Components\AxisEditor.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="AxisEditor.Designer.cs">
+    <Compile Include="Components\AxisEditor.Designer.cs">
       <DependentUpon>AxisEditor.cs</DependentUpon>
     </Compile>
     <Compile Include="BezierCurve.cs">
@@ -177,20 +189,20 @@
     <Compile Include="JoystickTester.Designer.cs">
       <DependentUpon>JoystickTester.cs</DependentUpon>
     </Compile>
-    <Compile Include="MainForm.cs">
+    <Compile Include="Forms\MainForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="MainForm.Designer.cs">
+    <Compile Include="Forms\MainForm.Designer.cs">
       <DependentUpon>MainForm.cs</DependentUpon>
     </Compile>
     <Compile Include="Profile.cs" />
     <Compile Include="ProfileManager.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="ValueInput.cs">
+    <Compile Include="Components\ValueInput.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="ValueInput.Designer.cs">
+    <Compile Include="Components\ValueInput.Designer.cs">
       <DependentUpon>ValueInput.cs</DependentUpon>
     </Compile>
     <Compile Include="VirtualJoystick.cs" />
@@ -200,17 +212,20 @@
     <Compile Include="CurrentAircraft.cs" />
     <Compile Include="WarThunderTrack\WTAircraft.cs" />
     <Compile Include="WarThunderTrack\WTFolder.cs" />
-    <EmbeddedResource Include="AxisEditor.resx">
+    <EmbeddedResource Include="Components\AxisEditor.resx">
       <DependentUpon>AxisEditor.cs</DependentUpon>
       <SubType>Designer</SubType>
     </EmbeddedResource>
-    <EmbeddedResource Include="DebugForm.resx">
+    <EmbeddedResource Include="Components\MacroEditor.resx">
+      <DependentUpon>MacroEditor.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\DebugForm.resx">
       <DependentUpon>DebugForm.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="InputBox.resx">
+    <EmbeddedResource Include="Forms\InputBox.resx">
       <DependentUpon>InputBox.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="MainForm.resx">
+    <EmbeddedResource Include="Forms\MainForm.resx">
       <DependentUpon>MainForm.cs</DependentUpon>
       <SubType>Designer</SubType>
     </EmbeddedResource>
@@ -224,13 +239,13 @@
       <DependentUpon>Resources.resx</DependentUpon>
       <DesignTime>True</DesignTime>
     </Compile>
-    <EmbeddedResource Include="SettingsForm.resx">
+    <EmbeddedResource Include="Forms\SettingsForm.resx">
       <DependentUpon>SettingsForm.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="TrimmerTrackBar.resx">
+    <EmbeddedResource Include="Components\TrimmerTrackBar.resx">
       <DependentUpon>TrimmerTrackBar.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="ValueInput.resx">
+    <EmbeddedResource Include="Components\ValueInput.resx">
       <DependentUpon>ValueInput.cs</DependentUpon>
     </EmbeddedResource>
     <None Include="app.config" />
@@ -282,12 +297,12 @@
   <ItemGroup>
     <PublishFile Include="vJoyInterfaceWrap">
       <Visible>False</Visible>
+      <PublishState>Include</PublishState>
+      <IncludeHash>True</IncludeHash>
       <Group>
       </Group>
       <TargetPath>
       </TargetPath>
-      <PublishState>Include</PublishState>
-      <IncludeHash>True</IncludeHash>
       <FileType>Assembly</FileType>
     </PublishFile>
   </ItemGroup>

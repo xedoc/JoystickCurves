@@ -34,6 +34,7 @@ namespace JoystickCurves
         private bool _exclusive;
         private Timer _pollTimer;
         private Device _device;
+        private Dictionary<JoystickOffset, AxisFilterMedian> _axisFilters = new Dictionary<JoystickOffset, AxisFilterMedian>();
         private Dictionary<JoystickOffset, HashSet<Action<DirectInputData>>> _actionMap = new Dictionary<JoystickOffset, HashSet<Action<DirectInputData>>>();
         private VirtualJoystick _virtualJoystick;
         private object lockSet = new object();
@@ -70,6 +71,7 @@ namespace JoystickCurves
             lock (pollLock)
             {
                 HashSet<Action<DirectInputData>> action;
+                AxisFilterMedian filter;
                 BufferedDataCollection queue = null;
 
                 try
@@ -95,15 +97,35 @@ namespace JoystickCurves
 
                             _actionMap.TryGetValue(dataType, out action);
 
+                            //Axis
                             if (dataType <= JoystickOffset.PointOfView3)
                             {
+                                _axisFilters.TryGetValue(dataType, out filter);
+
+/*                                if (filter != null && filter.Noise != null && eventArgs.Data.Value != MinAxisValue && eventArgs.Data.Value != MaxAxisValue)
+                                {
+                                    eventArgs.Data.Value = (int)filter.Correct((double)eventArgs.Data.Value);
+                                    Debug.Print(eventArgs.Data.Value.ToString());
+                                }
+*/
+                                if (filter != null && filter.Length > 0)
+                                {
+                                    if (filter.IsFilled && eventArgs.Data.Value != MinAxisValue && eventArgs.Data.Value != MaxAxisValue)
+                                    {
+                                        eventArgs.Data.Value = filter.Add((short)eventArgs.Data.Value);
+                                    }
+                                    else
+                                    {
+                                        filter.Add((short)eventArgs.Data.Value);
+                                    }
+                                }
                                 eventArgs.Data.Min = MinAxisValue;
                                 eventArgs.Data.Max = MaxAxisValue;
 
                                 if (OnAxisChange != null)
                                     OnAxisChange(this, eventArgs);
                             }
-                            else
+                            else //Button
                             {
                                 if (joyData.Value == (int)KeyState.Up)
                                 {
@@ -119,7 +141,7 @@ namespace JoystickCurves
                                 }
                             }
                             if (action != null)
-                                action.ToList().ForEach(a => a(joyData));
+                                action.ToList().ForEach(a => a(eventArgs.Data));
                         }
                     }
                 }
@@ -250,6 +272,26 @@ namespace JoystickCurves
                     OnError(this, EventArgs.Empty);
             }
         }
+        public void SetAxisFilter(JoystickOffset offset, int arrayLength)
+        {
+            AxisFilterMedian currentFilter;
+            try
+            {
+                if (!_axisFilters.TryGetValue(offset, out currentFilter))
+                {
+                    _axisFilters.Add(offset, new AxisFilterMedian( arrayLength * 4 ));
+                }
+                else
+                {
+                    _axisFilters[offset] = new AxisFilterMedian( arrayLength * 4 );
+                }
+            }
+            catch
+            {
+                Debug.Print("SetAxisFilter exception");
+            }
+
+        }
         public void DeleteAction(Action<DirectInputData> action)
         {
             if (action == null)
@@ -307,7 +349,7 @@ namespace JoystickCurves
                     case JoystickOffset.Z:
                         return state.Z;
                     case JoystickOffset.RX:
-                        return state.Rz;
+                        return state.Rx;
                     case JoystickOffset.RY:
                         return state.Ry;
                     case JoystickOffset.RZ:
@@ -315,7 +357,7 @@ namespace JoystickCurves
                     case JoystickOffset.Slider0:
                         return state.GetSlider()[0];
                     case JoystickOffset.Slider1:
-                        return state.GetSlider()[0];
+                        return state.GetSlider()[1];
                 }
             }
             catch {

@@ -38,38 +38,40 @@
             this.directorySearcher1 = new System.DirectoryServices.DirectorySearcher();
             this.settingsTree1 = new mycontrol.SettingsTree();
             this.settingsPage2 = new mycontrol.SettingsPage();
+            this.checkAskSave = new System.Windows.Forms.CheckBox();
+            this.checkSaveOnExit = new System.Windows.Forms.CheckBox();
             this.label8 = new System.Windows.Forms.Label();
             this.label7 = new System.Windows.Forms.Label();
             this.button1 = new System.Windows.Forms.Button();
+            this.checkExclusiveDI = new System.Windows.Forms.CheckBox();
+            this.checkBox3 = new System.Windows.Forms.CheckBox();
+            this.checkBox2 = new System.Windows.Forms.CheckBox();
+            this.checkBox1 = new System.Windows.Forms.CheckBox();
             this.settingsPage3 = new mycontrol.SettingsPage();
             this.label3 = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
             this.label1 = new System.Windows.Forms.Label();
+            this.textBox2 = new System.Windows.Forms.TextBox();
+            this.checkBox4 = new System.Windows.Forms.CheckBox();
+            this.textBox1 = new System.Windows.Forms.TextBox();
             this.settingsPage4 = new mycontrol.SettingsPage();
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
             this.label4 = new System.Windows.Forms.Label();
+            this.checkBox5 = new System.Windows.Forms.CheckBox();
             this.settingsPage5 = new mycontrol.SettingsPage();
             this.listHotKeys = new System.Windows.Forms.ListBox();
             this.checkBoxHotKey = new System.Windows.Forms.CheckBox();
             this.label5 = new System.Windows.Forms.Label();
             this.checkBoxHold = new System.Windows.Forms.CheckBox();
-            this.valueInput = new JoystickCurves.ValueInput();
-            this.settingsPage1 = new mycontrol.SettingsPage();
             this.settingsPage6 = new mycontrol.SettingsPage();
             this.label6 = new System.Windows.Forms.Label();
+            this.checkBox6 = new System.Windows.Forms.CheckBox();
+            this.settingsPage1 = new mycontrol.SettingsPage();
             this.settingsPage7 = new mycontrol.SettingsPage();
             this.label9 = new System.Windows.Forms.Label();
             this.textBoxServerIP = new System.Windows.Forms.TextBox();
             this.checkBoxServer = new System.Windows.Forms.CheckBox();
-            this.checkExclusiveDI = new System.Windows.Forms.CheckBox();
-            this.checkBox3 = new System.Windows.Forms.CheckBox();
-            this.checkBox2 = new System.Windows.Forms.CheckBox();
-            this.checkBox1 = new System.Windows.Forms.CheckBox();
-            this.textBox2 = new System.Windows.Forms.TextBox();
-            this.checkBox4 = new System.Windows.Forms.CheckBox();
-            this.textBox1 = new System.Windows.Forms.TextBox();
-            this.checkBox5 = new System.Windows.Forms.CheckBox();
-            this.checkBox6 = new System.Windows.Forms.CheckBox();
+            this.valueInput = new JoystickCurves.ValueInput();
             ((System.ComponentModel.ISupportInitialize)(this.settingsTree1.SplitContainer)).BeginInit();
             this.settingsTree1.SplitContainer.Panel2.SuspendLayout();
             this.settingsPage2.SuspendLayout();
@@ -113,8 +115,8 @@
             this.settingsTree1.SplitContainer.Panel2.Controls.Add(this.settingsPage3);
             this.settingsTree1.SplitContainer.Panel2.Controls.Add(this.settingsPage4);
             this.settingsTree1.SplitContainer.Panel2.Controls.Add(this.settingsPage5);
-            this.settingsTree1.SplitContainer.Panel2.Controls.Add(this.settingsPage1);
             this.settingsTree1.SplitContainer.Panel2.Controls.Add(this.settingsPage6);
+            this.settingsTree1.SplitContainer.Panel2.Controls.Add(this.settingsPage1);
             this.settingsTree1.SplitContainer.Panel2.Controls.Add(this.settingsPage7);
             this.settingsTree1.SplitContainer.Size = new System.Drawing.Size(474, 269);
             this.settingsTree1.SplitContainer.SplitterDistance = 148;
@@ -142,6 +144,8 @@
             // 
             // settingsPage2
             // 
+            this.settingsPage2.Controls.Add(this.checkAskSave);
+            this.settingsPage2.Controls.Add(this.checkSaveOnExit);
             this.settingsPage2.Controls.Add(this.label8);
             this.settingsPage2.Controls.Add(this.label7);
             this.settingsPage2.Controls.Add(this.button1);
@@ -159,11 +163,40 @@
             this.settingsPage2.Size = new System.Drawing.Size(322, 269);
             this.settingsPage2.TabIndex = 1;
             // 
+            // checkAskSave
+            // 
+            this.checkAskSave.AutoSize = true;
+            this.checkAskSave.Checked = global::JoystickCurves.Properties.Settings.Default.globalAskSave;
+            this.checkAskSave.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.checkAskSave.DataBindings.Add(new System.Windows.Forms.Binding("Checked", global::JoystickCurves.Properties.Settings.Default, "globalAskSave", true, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged));
+            this.checkAskSave.DataBindings.Add(new System.Windows.Forms.Binding("Enabled", global::JoystickCurves.Properties.Settings.Default, "globalSaveOnExit", true, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged));
+            this.checkAskSave.Enabled = global::JoystickCurves.Properties.Settings.Default.globalSaveOnExit;
+            this.checkAskSave.Location = new System.Drawing.Point(12, 105);
+            this.checkAskSave.Name = "checkAskSave";
+            this.checkAskSave.Size = new System.Drawing.Size(155, 17);
+            this.checkAskSave.TabIndex = 9;
+            this.checkAskSave.Text = "Ask to save settings on exit";
+            this.checkAskSave.UseVisualStyleBackColor = true;
+            // 
+            // checkSaveOnExit
+            // 
+            this.checkSaveOnExit.AutoSize = true;
+            this.checkSaveOnExit.Checked = global::JoystickCurves.Properties.Settings.Default.globalSaveOnExit;
+            this.checkSaveOnExit.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.checkSaveOnExit.DataBindings.Add(new System.Windows.Forms.Binding("Checked", global::JoystickCurves.Properties.Settings.Default, "globalSaveOnExit", true, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged));
+            this.checkSaveOnExit.Location = new System.Drawing.Point(12, 81);
+            this.checkSaveOnExit.Name = "checkSaveOnExit";
+            this.checkSaveOnExit.Size = new System.Drawing.Size(124, 17);
+            this.checkSaveOnExit.TabIndex = 8;
+            this.checkSaveOnExit.Text = "Save settings on exit";
+            this.checkSaveOnExit.UseVisualStyleBackColor = true;
+            // 
             // label8
             // 
             this.label8.AutoSize = true;
+            this.label8.Enabled = false;
             this.label8.Font = new System.Drawing.Font("Microsoft Sans Serif", 6.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.label8.Location = new System.Drawing.Point(11, 116);
+            this.label8.Location = new System.Drawing.Point(11, 202);
             this.label8.Name = "label8";
             this.label8.Size = new System.Drawing.Size(225, 12);
             this.label8.TabIndex = 7;
@@ -173,8 +206,9 @@
             // label7
             // 
             this.label7.AutoSize = true;
+            this.label7.Enabled = false;
             this.label7.Font = new System.Drawing.Font("Microsoft Sans Serif", 6.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.label7.Location = new System.Drawing.Point(11, 102);
+            this.label7.Location = new System.Drawing.Point(11, 188);
             this.label7.Name = "label7";
             this.label7.Size = new System.Drawing.Size(169, 12);
             this.label7.TabIndex = 6;
@@ -183,13 +217,63 @@
             // 
             // button1
             // 
-            this.button1.Location = new System.Drawing.Point(12, 173);
+            this.button1.Location = new System.Drawing.Point(12, 222);
             this.button1.Name = "button1";
             this.button1.Size = new System.Drawing.Size(96, 23);
             this.button1.TabIndex = 4;
             this.button1.Text = "Reset Settings";
             this.button1.UseVisualStyleBackColor = true;
             this.button1.Click += new System.EventHandler(this.button1_Click);
+            // 
+            // checkExclusiveDI
+            // 
+            this.checkExclusiveDI.AutoSize = true;
+            this.checkExclusiveDI.Checked = global::JoystickCurves.Properties.Settings.Default.exclusiveDirectInput;
+            this.checkExclusiveDI.DataBindings.Add(new System.Windows.Forms.Binding("Checked", global::JoystickCurves.Properties.Settings.Default, "exclusiveDirectInput", true, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged));
+            this.checkExclusiveDI.Enabled = false;
+            this.checkExclusiveDI.Location = new System.Drawing.Point(12, 168);
+            this.checkExclusiveDI.Name = "checkExclusiveDI";
+            this.checkExclusiveDI.Size = new System.Drawing.Size(163, 17);
+            this.checkExclusiveDI.TabIndex = 5;
+            this.checkExclusiveDI.Text = "Exclusive DirectInput access";
+            this.checkExclusiveDI.UseVisualStyleBackColor = true;
+            this.checkExclusiveDI.Visible = false;
+            // 
+            // checkBox3
+            // 
+            this.checkBox3.AutoSize = true;
+            this.checkBox3.Checked = global::JoystickCurves.Properties.Settings.Default.generalStartMinimized;
+            this.checkBox3.DataBindings.Add(new System.Windows.Forms.Binding("Checked", global::JoystickCurves.Properties.Settings.Default, "generalStartMinimized", true, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged));
+            this.checkBox3.Location = new System.Drawing.Point(12, 58);
+            this.checkBox3.Name = "checkBox3";
+            this.checkBox3.Size = new System.Drawing.Size(96, 17);
+            this.checkBox3.TabIndex = 3;
+            this.checkBox3.Text = "Start minimized";
+            this.checkBox3.UseVisualStyleBackColor = true;
+            // 
+            // checkBox2
+            // 
+            this.checkBox2.AutoSize = true;
+            this.checkBox2.Checked = global::JoystickCurves.Properties.Settings.Default.generalAutoStart;
+            this.checkBox2.DataBindings.Add(new System.Windows.Forms.Binding("Checked", global::JoystickCurves.Properties.Settings.Default, "generalAutoStart", true, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged));
+            this.checkBox2.Location = new System.Drawing.Point(12, 35);
+            this.checkBox2.Name = "checkBox2";
+            this.checkBox2.Size = new System.Drawing.Size(216, 17);
+            this.checkBox2.TabIndex = 2;
+            this.checkBox2.Text = "Start automatically when Windows starts";
+            this.checkBox2.UseVisualStyleBackColor = true;
+            // 
+            // checkBox1
+            // 
+            this.checkBox1.AutoSize = true;
+            this.checkBox1.Checked = global::JoystickCurves.Properties.Settings.Default.generalMinimizeOnClose;
+            this.checkBox1.DataBindings.Add(new System.Windows.Forms.Binding("Checked", global::JoystickCurves.Properties.Settings.Default, "generalMinimizeOnClose", true, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged));
+            this.checkBox1.Location = new System.Drawing.Point(12, 12);
+            this.checkBox1.Name = "checkBox1";
+            this.checkBox1.Size = new System.Drawing.Size(109, 17);
+            this.checkBox1.TabIndex = 1;
+            this.checkBox1.Text = "Minimize on close";
+            this.checkBox1.UseVisualStyleBackColor = true;
             // 
             // settingsPage3
             // 
@@ -216,7 +300,7 @@
             this.label3.Size = new System.Drawing.Size(339, 37);
             this.label3.TabIndex = 5;
             this.label3.Text = "* Add bot to the friend list of your main Steam account. Bot must have single fri" +
-    "end only!";
+                "end only!";
             // 
             // label2
             // 
@@ -235,6 +319,43 @@
             this.label1.Size = new System.Drawing.Size(83, 13);
             this.label1.TabIndex = 1;
             this.label1.Text = "Steam bot login:";
+            // 
+            // textBox2
+            // 
+            this.textBox2.DataBindings.Add(new System.Windows.Forms.Binding("Enabled", global::JoystickCurves.Properties.Settings.Default, "globalSteamEnable", true, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged));
+            this.textBox2.DataBindings.Add(new System.Windows.Forms.Binding("Text", global::JoystickCurves.Properties.Settings.Default, "steamPassword", true, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged));
+            this.textBox2.Enabled = global::JoystickCurves.Properties.Settings.Default.globalSteamEnable;
+            this.textBox2.Location = new System.Drawing.Point(94, 66);
+            this.textBox2.Name = "textBox2";
+            this.textBox2.PasswordChar = '*';
+            this.textBox2.Size = new System.Drawing.Size(100, 20);
+            this.textBox2.TabIndex = 2;
+            this.textBox2.Text = global::JoystickCurves.Properties.Settings.Default.steamPassword;
+            this.textBox2.TextChanged += new System.EventHandler(this.textBox2_TextChanged);
+            // 
+            // checkBox4
+            // 
+            this.checkBox4.AutoSize = true;
+            this.checkBox4.Checked = global::JoystickCurves.Properties.Settings.Default.globalSteamEnable;
+            this.checkBox4.DataBindings.Add(new System.Windows.Forms.Binding("Checked", global::JoystickCurves.Properties.Settings.Default, "globalSteamEnable", true, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged));
+            this.checkBox4.Location = new System.Drawing.Point(34, 12);
+            this.checkBox4.Name = "checkBox4";
+            this.checkBox4.Size = new System.Drawing.Size(201, 17);
+            this.checkBox4.TabIndex = 4;
+            this.checkBox4.Text = "Show current profile in Steam overlay";
+            this.checkBox4.UseVisualStyleBackColor = true;
+            // 
+            // textBox1
+            // 
+            this.textBox1.DataBindings.Add(new System.Windows.Forms.Binding("Enabled", global::JoystickCurves.Properties.Settings.Default, "globalSteamEnable", true, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged));
+            this.textBox1.DataBindings.Add(new System.Windows.Forms.Binding("Text", global::JoystickCurves.Properties.Settings.Default, "steamLogin", true, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged));
+            this.textBox1.Enabled = global::JoystickCurves.Properties.Settings.Default.globalSteamEnable;
+            this.textBox1.Location = new System.Drawing.Point(94, 40);
+            this.textBox1.Name = "textBox1";
+            this.textBox1.Size = new System.Drawing.Size(100, 20);
+            this.textBox1.TabIndex = 0;
+            this.textBox1.Text = global::JoystickCurves.Properties.Settings.Default.steamLogin;
+            this.textBox1.TextChanged += new System.EventHandler(this.textBox1_TextChanged);
             // 
             // settingsPage4
             // 
@@ -270,6 +391,18 @@
             this.label4.TabIndex = 1;
             this.label4.Text = "Scroll left wheel under display to switch a page:";
             // 
+            // checkBox5
+            // 
+            this.checkBox5.AutoSize = true;
+            this.checkBox5.Checked = global::JoystickCurves.Properties.Settings.Default.saitekX52ProEnable;
+            this.checkBox5.DataBindings.Add(new System.Windows.Forms.Binding("Checked", global::JoystickCurves.Properties.Settings.Default, "saitekX52ProEnable", true, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged));
+            this.checkBox5.Location = new System.Drawing.Point(17, 12);
+            this.checkBox5.Name = "checkBox5";
+            this.checkBox5.Size = new System.Drawing.Size(206, 17);
+            this.checkBox5.TabIndex = 0;
+            this.checkBox5.Text = "Enable Saitek X52 Pro display support";
+            this.checkBox5.UseVisualStyleBackColor = true;
+            // 
             // settingsPage5
             // 
             this.settingsPage5.Controls.Add(this.listHotKeys);
@@ -289,9 +422,10 @@
             // 
             // listHotKeys
             // 
-            this.listHotKeys.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
+            this.listHotKeys.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+                        | System.Windows.Forms.AnchorStyles.Left)
+                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.listHotKeys.Enabled = false;
             this.listHotKeys.FormattingEnabled = true;
             this.listHotKeys.Location = new System.Drawing.Point(13, 25);
             this.listHotKeys.MultiColumn = true;
@@ -304,17 +438,18 @@
             // 
             this.checkBoxHotKey.Appearance = System.Windows.Forms.Appearance.Button;
             this.checkBoxHotKey.AutoSize = true;
+            this.checkBoxHotKey.Enabled = false;
             this.checkBoxHotKey.Location = new System.Drawing.Point(13, 209);
             this.checkBoxHotKey.Name = "checkBoxHotKey";
             this.checkBoxHotKey.Size = new System.Drawing.Size(55, 23);
             this.checkBoxHotKey.TabIndex = 5;
             this.checkBoxHotKey.Text = "Hot Key";
             this.checkBoxHotKey.UseVisualStyleBackColor = true;
-            this.checkBoxHotKey.CheckedChanged += new System.EventHandler(this.checkBoxHotKey_CheckedChanged);
             // 
             // label5
             // 
             this.label5.AutoSize = true;
+            this.label5.Enabled = false;
             this.label5.Location = new System.Drawing.Point(10, 9);
             this.label5.Name = "label5";
             this.label5.Size = new System.Drawing.Size(271, 13);
@@ -324,41 +459,13 @@
             // checkBoxHold
             // 
             this.checkBoxHold.AutoSize = true;
+            this.checkBoxHold.Enabled = false;
             this.checkBoxHold.Location = new System.Drawing.Point(13, 238);
             this.checkBoxHold.Name = "checkBoxHold";
             this.checkBoxHold.Size = new System.Drawing.Size(101, 17);
             this.checkBoxHold.TabIndex = 3;
             this.checkBoxHold.Text = "Hold to activate";
             this.checkBoxHold.UseVisualStyleBackColor = true;
-            // 
-            // valueInput
-            // 
-            this.valueInput.BoolValue = false;
-            this.valueInput.FloatMax = 1F;
-            this.valueInput.FloatMin = 0F;
-            this.valueInput.FloatStep = 0.01F;
-            this.valueInput.FloatValue = 0F;
-            this.valueInput.IntMax = 0;
-            this.valueInput.IntMin = 0;
-            this.valueInput.IntStep = 0;
-            this.valueInput.IntValue = 0;
-            this.valueInput.Label = "Value";
-            this.valueInput.Location = new System.Drawing.Point(91, 207);
-            this.valueInput.Name = "valueInput";
-            this.valueInput.Size = new System.Drawing.Size(219, 25);
-            this.valueInput.StringValue = "";
-            this.valueInput.TabIndex = 6;
-            this.valueInput.Type = JoystickCurves.ValueInput.ValueType.Float;
-            // 
-            // settingsPage1
-            // 
-            this.settingsPage1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.settingsPage1.isActive = true;
-            this.settingsPage1.Location = new System.Drawing.Point(0, 0);
-            this.settingsPage1.Name = "settingsPage1";
-            this.settingsPage1.ParentNode = null;
-            this.settingsPage1.Size = new System.Drawing.Size(267, 191);
-            this.settingsPage1.TabIndex = 0;
             // 
             // settingsPage6
             // 
@@ -383,6 +490,28 @@
             this.label6.Size = new System.Drawing.Size(285, 12);
             this.label6.TabIndex = 1;
             this.label6.Text = "*Switch profile automatically on aircraft selection (online modes only)";
+            // 
+            // checkBox6
+            // 
+            this.checkBox6.AutoSize = true;
+            this.checkBox6.Checked = global::JoystickCurves.Properties.Settings.Default.warThunderTrackAircraft;
+            this.checkBox6.DataBindings.Add(new System.Windows.Forms.Binding("Checked", global::JoystickCurves.Properties.Settings.Default, "warThunderTrackAircraft", true, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged));
+            this.checkBox6.Location = new System.Drawing.Point(14, 12);
+            this.checkBox6.Name = "checkBox6";
+            this.checkBox6.Size = new System.Drawing.Size(174, 17);
+            this.checkBox6.TabIndex = 0;
+            this.checkBox6.Text = "Track aircraft selection in game";
+            this.checkBox6.UseVisualStyleBackColor = true;
+            // 
+            // settingsPage1
+            // 
+            this.settingsPage1.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.settingsPage1.isActive = true;
+            this.settingsPage1.Location = new System.Drawing.Point(0, 0);
+            this.settingsPage1.Name = "settingsPage1";
+            this.settingsPage1.ParentNode = null;
+            this.settingsPage1.Size = new System.Drawing.Size(267, 191);
+            this.settingsPage1.TabIndex = 0;
             // 
             // settingsPage7
             // 
@@ -429,115 +558,25 @@
             this.checkBoxServer.Text = "Enable joystick state server";
             this.checkBoxServer.UseVisualStyleBackColor = true;
             // 
-            // checkExclusiveDI
+            // valueInput
             // 
-            this.checkExclusiveDI.AutoSize = true;
-            this.checkExclusiveDI.Checked = global::JoystickCurves.Properties.Settings.Default.exclusiveDirectInput;
-            this.checkExclusiveDI.DataBindings.Add(new System.Windows.Forms.Binding("Checked", global::JoystickCurves.Properties.Settings.Default, "exclusiveDirectInput", true, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged));
-            this.checkExclusiveDI.Location = new System.Drawing.Point(12, 82);
-            this.checkExclusiveDI.Name = "checkExclusiveDI";
-            this.checkExclusiveDI.Size = new System.Drawing.Size(163, 17);
-            this.checkExclusiveDI.TabIndex = 5;
-            this.checkExclusiveDI.Text = "Exclusive DirectInput access";
-            this.checkExclusiveDI.UseVisualStyleBackColor = true;
-            this.checkExclusiveDI.Visible = false;
-            // 
-            // checkBox3
-            // 
-            this.checkBox3.AutoSize = true;
-            this.checkBox3.Checked = global::JoystickCurves.Properties.Settings.Default.generalStartMinimized;
-            this.checkBox3.DataBindings.Add(new System.Windows.Forms.Binding("Checked", global::JoystickCurves.Properties.Settings.Default, "generalStartMinimized", true, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged));
-            this.checkBox3.Location = new System.Drawing.Point(12, 58);
-            this.checkBox3.Name = "checkBox3";
-            this.checkBox3.Size = new System.Drawing.Size(96, 17);
-            this.checkBox3.TabIndex = 3;
-            this.checkBox3.Text = "Start minimized";
-            this.checkBox3.UseVisualStyleBackColor = true;
-            // 
-            // checkBox2
-            // 
-            this.checkBox2.AutoSize = true;
-            this.checkBox2.Checked = global::JoystickCurves.Properties.Settings.Default.generalAutoStart;
-            this.checkBox2.DataBindings.Add(new System.Windows.Forms.Binding("Checked", global::JoystickCurves.Properties.Settings.Default, "generalAutoStart", true, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged));
-            this.checkBox2.Location = new System.Drawing.Point(12, 35);
-            this.checkBox2.Name = "checkBox2";
-            this.checkBox2.Size = new System.Drawing.Size(216, 17);
-            this.checkBox2.TabIndex = 2;
-            this.checkBox2.Text = "Start automatically when Windows starts";
-            this.checkBox2.UseVisualStyleBackColor = true;
-            // 
-            // checkBox1
-            // 
-            this.checkBox1.AutoSize = true;
-            this.checkBox1.Checked = global::JoystickCurves.Properties.Settings.Default.generalMinimizeOnClose;
-            this.checkBox1.DataBindings.Add(new System.Windows.Forms.Binding("Checked", global::JoystickCurves.Properties.Settings.Default, "generalMinimizeOnClose", true, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged));
-            this.checkBox1.Location = new System.Drawing.Point(12, 12);
-            this.checkBox1.Name = "checkBox1";
-            this.checkBox1.Size = new System.Drawing.Size(109, 17);
-            this.checkBox1.TabIndex = 1;
-            this.checkBox1.Text = "Minimize on close";
-            this.checkBox1.UseVisualStyleBackColor = true;
-            // 
-            // textBox2
-            // 
-            this.textBox2.DataBindings.Add(new System.Windows.Forms.Binding("Enabled", global::JoystickCurves.Properties.Settings.Default, "globalSteamEnable", true, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged));
-            this.textBox2.DataBindings.Add(new System.Windows.Forms.Binding("Text", global::JoystickCurves.Properties.Settings.Default, "steamPassword", true, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged));
-            this.textBox2.Enabled = global::JoystickCurves.Properties.Settings.Default.globalSteamEnable;
-            this.textBox2.Location = new System.Drawing.Point(94, 66);
-            this.textBox2.Name = "textBox2";
-            this.textBox2.PasswordChar = '*';
-            this.textBox2.Size = new System.Drawing.Size(100, 20);
-            this.textBox2.TabIndex = 2;
-            this.textBox2.Text = global::JoystickCurves.Properties.Settings.Default.steamPassword;
-            this.textBox2.TextChanged += new System.EventHandler(this.textBox2_TextChanged);
-            // 
-            // checkBox4
-            // 
-            this.checkBox4.AutoSize = true;
-            this.checkBox4.Checked = global::JoystickCurves.Properties.Settings.Default.globalSteamEnable;
-            this.checkBox4.DataBindings.Add(new System.Windows.Forms.Binding("Checked", global::JoystickCurves.Properties.Settings.Default, "globalSteamEnable", true, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged));
-            this.checkBox4.Location = new System.Drawing.Point(34, 12);
-            this.checkBox4.Name = "checkBox4";
-            this.checkBox4.Size = new System.Drawing.Size(201, 17);
-            this.checkBox4.TabIndex = 4;
-            this.checkBox4.Text = "Show current profile in Steam overlay";
-            this.checkBox4.UseVisualStyleBackColor = true;
-            // 
-            // textBox1
-            // 
-            this.textBox1.DataBindings.Add(new System.Windows.Forms.Binding("Enabled", global::JoystickCurves.Properties.Settings.Default, "globalSteamEnable", true, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged));
-            this.textBox1.DataBindings.Add(new System.Windows.Forms.Binding("Text", global::JoystickCurves.Properties.Settings.Default, "steamLogin", true, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged));
-            this.textBox1.Enabled = global::JoystickCurves.Properties.Settings.Default.globalSteamEnable;
-            this.textBox1.Location = new System.Drawing.Point(94, 40);
-            this.textBox1.Name = "textBox1";
-            this.textBox1.Size = new System.Drawing.Size(100, 20);
-            this.textBox1.TabIndex = 0;
-            this.textBox1.Text = global::JoystickCurves.Properties.Settings.Default.steamLogin;
-            this.textBox1.TextChanged += new System.EventHandler(this.textBox1_TextChanged);
-            // 
-            // checkBox5
-            // 
-            this.checkBox5.AutoSize = true;
-            this.checkBox5.Checked = global::JoystickCurves.Properties.Settings.Default.saitekX52ProEnable;
-            this.checkBox5.DataBindings.Add(new System.Windows.Forms.Binding("Checked", global::JoystickCurves.Properties.Settings.Default, "saitekX52ProEnable", true, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged));
-            this.checkBox5.Location = new System.Drawing.Point(17, 12);
-            this.checkBox5.Name = "checkBox5";
-            this.checkBox5.Size = new System.Drawing.Size(206, 17);
-            this.checkBox5.TabIndex = 0;
-            this.checkBox5.Text = "Enable Saitek X52 Pro display support";
-            this.checkBox5.UseVisualStyleBackColor = true;
-            // 
-            // checkBox6
-            // 
-            this.checkBox6.AutoSize = true;
-            this.checkBox6.Checked = global::JoystickCurves.Properties.Settings.Default.warThunderTrackAircraft;
-            this.checkBox6.DataBindings.Add(new System.Windows.Forms.Binding("Checked", global::JoystickCurves.Properties.Settings.Default, "warThunderTrackAircraft", true, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged));
-            this.checkBox6.Location = new System.Drawing.Point(14, 12);
-            this.checkBox6.Name = "checkBox6";
-            this.checkBox6.Size = new System.Drawing.Size(174, 17);
-            this.checkBox6.TabIndex = 0;
-            this.checkBox6.Text = "Track aircraft selection in game";
-            this.checkBox6.UseVisualStyleBackColor = true;
+            this.valueInput.BoolValue = false;
+            this.valueInput.Enabled = false;
+            this.valueInput.FloatMax = 1F;
+            this.valueInput.FloatMin = 0F;
+            this.valueInput.FloatStep = 0.01F;
+            this.valueInput.FloatValue = 0F;
+            this.valueInput.IntMax = 0;
+            this.valueInput.IntMin = 0;
+            this.valueInput.IntStep = 0;
+            this.valueInput.IntValue = 0;
+            this.valueInput.Label = "Value";
+            this.valueInput.Location = new System.Drawing.Point(91, 207);
+            this.valueInput.Name = "valueInput";
+            this.valueInput.Size = new System.Drawing.Size(219, 25);
+            this.valueInput.StringValue = "";
+            this.valueInput.TabIndex = 6;
+            this.valueInput.Type = JoystickCurves.ValueInput.ValueType.Float;
             // 
             // SettingsForm
             // 
@@ -605,5 +644,7 @@
         private System.Windows.Forms.TextBox textBoxServerIP;
         private System.Windows.Forms.CheckBox checkBoxServer;
         private System.Windows.Forms.Label label9;
+        private System.Windows.Forms.CheckBox checkSaveOnExit;
+        private System.Windows.Forms.CheckBox checkAskSave;
     }
 }

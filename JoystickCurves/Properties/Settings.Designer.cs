@@ -295,5 +295,29 @@ namespace JoystickCurves.Properties {
                 this["joystickServerPort"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool globalSaveOnExit {
+            get {
+                return ((bool)(this["globalSaveOnExit"]));
+            }
+            set {
+                this["globalSaveOnExit"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool globalAskSave {
+            get {
+                return ((bool)(this["globalAskSave"]));
+            }
+            set {
+                this["globalAskSave"] = value;
+            }
+        }
     }
 }

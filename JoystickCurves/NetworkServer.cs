@@ -34,6 +34,7 @@ namespace JoystickCurves
         private object lockSend = new object();
         private object lockConnect = new object();
         private Timer sendTimer;
+        private bool isSending = false;
         private List<JoyStateFlag> joystateflags;
         public NetworkServer( String listenPort )
         {
@@ -46,8 +47,12 @@ namespace JoystickCurves
         }
         private void sendTimerCallback(object state)
         {
+            if (isSending)
+                return;
+
             lock (lockSend)
             {
+                isSending = true;
                 try
                 {
                     if (joystateflags.Exists(f => f.changed == true))
@@ -65,6 +70,7 @@ namespace JoystickCurves
                     }
                 }
                 catch { };
+                isSending = false;
             }
 
         }
@@ -93,6 +99,7 @@ namespace JoystickCurves
                     ws = new WebSocketServer();
                     ws.Setup(Port);                   
                     ws.NewSessionConnected += new SuperSocket.SocketBase.SessionHandler<WebSocketSession>(ws_NewSessionConnected);
+                    ws.NewDataReceived += new SuperSocket.SocketBase.SessionHandler<WebSocketSession, byte[]>(ws_NewDataReceived);
                     ws.SessionClosed += new SuperSocket.SocketBase.SessionHandler<WebSocketSession, SuperSocket.SocketBase.CloseReason>(ws_SessionClosed);                   
                     ws.Start();
                     sendTimer.Change(0, SENDPERIOD);
@@ -105,6 +112,11 @@ namespace JoystickCurves
                 Running = true;
             }
 
+        }
+
+        void ws_NewDataReceived(WebSocketSession session, byte[] value)
+        {
+            
         }
         public void SendToAll( JoystickState state )
         {
@@ -121,9 +133,7 @@ namespace JoystickCurves
         }
         void SendCurrentState(WebSocketSession session, String content)
         {
-            //session.TrySend(content);
-            session.SendResponse(content);
-        //    session.Send(content);
+            session.Send(content);
         }
         void ws_SessionClosed(WebSocketSession session, SuperSocket.SocketBase.CloseReason value)
         {

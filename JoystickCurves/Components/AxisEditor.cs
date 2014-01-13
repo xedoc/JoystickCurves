@@ -32,6 +32,9 @@ namespace JoystickCurves
         private string _selectedDestDevice, _selectedDestAxis, _selectedSourceDevice, _selectedSourceAxis;
         public event EventHandler<EventArgs> OnChange;
         public event EventHandler<EventArgs> OnTrimChange;
+        public event EventHandler<EventArgs> OnFilterChange;
+        public event EventHandler<EventArgs> OnTestStart;
+        public event EventHandler<EventArgs> OnTestEnd;
         private object lockRead = new object();
         private CurveResponseType _curveResponseType;
         CurveShapeType _curveType;
@@ -109,6 +112,8 @@ namespace JoystickCurves
                 _curveType = value;
             }
         }
+
+
         public int Index
         {
             get;
@@ -264,14 +269,37 @@ namespace JoystickCurves
                         OnTrimChange(this, EventArgs.Empty);
             }
         }
+        public int FilterLevel
+        {
+            get { return (int)numericFilterLevel.Value; }
+            set { Utils.SetProperty<NumericUpDown, decimal>(numericFilterLevel, "Value", (decimal)value);
+            if (OnFilterChange != null)
+                OnFilterChange(this, EventArgs.Empty);
+            }
+        }
 
         public double Correction
         {
             get { return trimmerTrackBar.Percent; }
-            set {   trimmerTrackBar.Percent = value;
-            }
+            set { Utils.SetProperty<TrimmerTrackBar, double>(trimmerTrackBar, "Percent", value); }
         }
 
+        public static implicit operator AxisEditor(ProfileTab tab)
+        {
+            var editor = new AxisEditor()
+            {
+                CurrentCurve = tab.CurvePoints,
+                CurrentDestAxis = tab.DestinationAxis,
+                CurrentDestDevice = tab.DestinationDevice,
+                CurrentSourceAxis = tab.SourceAxis,
+                CurrentSourceDevice = tab.SourceDevice,
+                Correction = tab.Correction,
+                PreserveAxisRange = tab.PreserveAxisRange,
+                FilterLevel = tab.FilterLevel
+            };
+
+            return editor;
+        }
         public static implicit operator ProfileTab(AxisEditor axisEditor)
         {            
             axisEditor.CurrentCurve.ScaleRawPoints();
@@ -284,7 +312,8 @@ namespace JoystickCurves
                 SourceDevice = axisEditor.CurrentSourceDevice,
                 Correction = axisEditor.Correction,
                 PreserveAxisRange = axisEditor.PreserveAxisRange,                
-                TabTitle = axisEditor.CurrentSourceAxis
+                TabTitle = axisEditor.CurrentSourceAxis,
+                FilterLevel = axisEditor.FilterLevel,                
             };
 
             return profileTab;
@@ -312,6 +341,27 @@ namespace JoystickCurves
         private void checkBoxPreserveAxisRange_CheckedChanged(object sender, EventArgs e)
         {
             PreserveAxisRange = checkBoxPreserveAxisRange.Checked;
+        }
+
+        private void numericFilterLevel_ValueChanged(object sender, EventArgs e)
+        {
+            FilterLevel = (int)numericFilterLevel.Value;
+            if (OnFilterChange != null)
+                OnFilterChange(this, EventArgs.Empty);
+        }
+
+        private void checkVirtualTest_CheckedChanged(object sender, EventArgs e)
+        {
+            if (checkVirtualTest.Checked)
+            {
+                if (OnTestStart != null)
+                    OnTestStart(this, EventArgs.Empty);
+            }
+            else
+            {
+                if (OnTestEnd != null)
+                    OnTestEnd(this, EventArgs.Empty);
+            }
         }
 
         

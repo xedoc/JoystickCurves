@@ -39,21 +39,26 @@ namespace JoystickCurves
             }
 
         }
-
+        
 
         public delegate void SetPropCallback(Control ctrl, string propName, object value);
         public static void SetProperty<TControl, TValue>(this TControl ctrl, string propName, TValue value) where TControl : Control
         {
-            if (ctrl.InvokeRequired)
+            try
             {
-                var d = new SetPropCallback(SetProperty);
-                ctrl.Invoke(d, new object[] { ctrl, propName, value });
+                if (ctrl.InvokeRequired)
+                {
+                    var d = new SetPropCallback(SetProperty);
+                    ctrl.Invoke(d, new object[] { ctrl, propName, value });
+                }
+                else
+                {
+                    Type t = ctrl.GetType();
+                    t.InvokeMember(propName, BindingFlags.Instance | BindingFlags.SetProperty | BindingFlags.Public, null, ctrl, new object[] { value });
+                }
             }
-            else
-            {
-                Type t = ctrl.GetType();
-                t.InvokeMember(propName, BindingFlags.Instance | BindingFlags.SetProperty | BindingFlags.Public, null, ctrl, new object[] { value });
-            }
+            catch { }
+
 
         }
         public delegate object GetPropCallback(Control ctrl, string propName);
@@ -184,7 +189,16 @@ namespace JoystickCurves
         public static void AddToStartup()
         {
             RegistryKey regKey = Registry.CurrentUser.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", true);
-            regKey.SetValue(Application.ProductName, Application.ExecutablePath.ToString());
+            var exePath = Application.ExecutablePath.ToString();            
+            var clickOnceApp = Environment.GetFolderPath(Environment.SpecialFolder.Programs) + @"\" + Application.ProductName + @"\" + Application.ProductName + @".appref-ms";
+
+            
+            if( File.Exists( clickOnceApp ) )
+                regKey.SetValue(Application.ProductName, clickOnceApp );
+            else
+                regKey.SetValue(Application.ProductName, exePath );
+
+            
             if (regKey.GetValue(Application.ProductName) == null)
             {
                 MessageBox.Show("Registry write error!");
@@ -221,6 +235,37 @@ namespace JoystickCurves
         public static FileVersionInfo FileVersion(string path)
         {
             return FileVersionInfo.GetVersionInfo(path);
+        }
+
+        public static double Median(double[] values)
+        {
+
+            if (values == null || values.Length == 0)
+                return 0D;
+
+            double[] sortedValues = (double[])values.Clone();
+            values.CopyTo(sortedValues, 0);
+            Array.Sort(sortedValues);
+
+            int length = sortedValues.Length;
+            int arrayCenter = length / 2;
+            double median = (length % 2 != 0) ? (double)sortedValues[arrayCenter] : ((double)sortedValues[arrayCenter] + (double)sortedValues[arrayCenter - 1]) / 2;
+            return median;
+        }
+        public static short Median(short[] values)
+        {
+
+            if (values == null || values.Length == 0)
+                return 0;
+
+            short[] sortedValues = (short[])values.Clone();
+            values.CopyTo(sortedValues, 0);
+            Array.Sort(sortedValues);
+
+            int length = sortedValues.Length;
+            int arrayCenter = length / 2;
+            short median = (short)((length % 2 != 0) ? sortedValues[arrayCenter] : (sortedValues[arrayCenter] + sortedValues[arrayCenter - 1]) / 2);
+            return median;
         }
 
     }

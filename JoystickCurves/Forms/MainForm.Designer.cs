@@ -42,6 +42,11 @@
             this.responseModifierToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.multiplier = new System.Windows.Forms.ToolStripMenuItem();
             this.value = new System.Windows.Forms.ToolStripMenuItem();
+            this.importExportToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.exportToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.exportProfileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.exportAxisToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.importToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.tabAddNew = new System.Windows.Forms.TabPage();
             this.imageList = new System.Windows.Forms.ImageList(this.components);
             this.contextMenuTester = new System.Windows.Forms.ContextMenuStrip(this.components);
@@ -68,9 +73,11 @@
             this.exitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.buttonSettings = new System.Windows.Forms.Button();
             this.checkBoxHotKey = new System.Windows.Forms.CheckBox();
-            this.timer1 = new System.Windows.Forms.Timer(this.components);
-            this.labelCurrentAircraft = new System.Windows.Forms.Label();
-            this.checkBoxBindAircraft = new System.Windows.Forms.CheckBox();
+            this.timerTest = new System.Windows.Forms.Timer(this.components);
+            this.buttonSave = new System.Windows.Forms.Button();
+            this.contextMenuAddTab = new System.Windows.Forms.ContextMenuStrip(this.components);
+            this.newAxisTab = new System.Windows.Forms.ToolStripMenuItem();
+            this.newMacroTab = new System.Windows.Forms.ToolStripMenuItem();
             this.joystickTester = new JoystickCurves.JoystickTester(this.components);
             this.label4 = new System.Windows.Forms.Label();
             this.label3 = new System.Windows.Forms.Label();
@@ -78,10 +85,13 @@
             this.labelYawPercent = new System.Windows.Forms.Label();
             this.labelRollPercent = new System.Windows.Forms.Label();
             this.labelPitchPercent = new System.Windows.Forms.Label();
+            this.checkBoxBindAircraft = new System.Windows.Forms.CheckBox();
+            this.labelCurrentAircraft = new System.Windows.Forms.Label();
             this.tabAxis.SuspendLayout();
             this.contextMenuTabPage.SuspendLayout();
             this.contextMenuTester.SuspendLayout();
             this.contextMenuTray.SuspendLayout();
+            this.contextMenuAddTab.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.joystickTester)).BeginInit();
             this.joystickTester.SuspendLayout();
             this.SuspendLayout();
@@ -109,9 +119,9 @@
             // 
             // tabAxis
             // 
-            this.tabAxis.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
+            this.tabAxis.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+                        | System.Windows.Forms.AnchorStyles.Left)
+                        | System.Windows.Forms.AnchorStyles.Right)));
             this.tabAxis.ContextMenuStrip = this.contextMenuTabPage;
             this.tabAxis.Controls.Add(this.tabAddNew);
             this.tabAxis.ImageList = this.imageList;
@@ -132,9 +142,10 @@
             this.streightenUpCurveToolStripMenuItem,
             this.deleteAxis,
             this.deleteCurrentProfileToolStripMenuItem,
-            this.responseModifierToolStripMenuItem});
+            this.responseModifierToolStripMenuItem,
+            this.importExportToolStripMenuItem});
             this.contextMenuTabPage.Name = "contextMenuTabPage";
-            this.contextMenuTabPage.Size = new System.Drawing.Size(177, 136);
+            this.contextMenuTabPage.Size = new System.Drawing.Size(177, 158);
             this.contextMenuTabPage.ItemClicked += new System.Windows.Forms.ToolStripItemClickedEventHandler(this.contextMenuTabPage_ItemClicked);
             // 
             // copyCurveToToolStripMenuItem
@@ -199,6 +210,45 @@
             this.value.Text = "Value";
             this.value.CheckedChanged += new System.EventHandler(this.valueToolStripMenuItem_CheckedChanged);
             this.value.Click += new System.EventHandler(this.multiplerToolStripMenuItem_Click);
+            // 
+            // importExportToolStripMenuItem
+            // 
+            this.importExportToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.exportToolStripMenuItem,
+            this.importToolStripMenuItem});
+            this.importExportToolStripMenuItem.Name = "importExportToolStripMenuItem";
+            this.importExportToolStripMenuItem.Size = new System.Drawing.Size(176, 22);
+            this.importExportToolStripMenuItem.Text = "Import/Export";
+            // 
+            // exportToolStripMenuItem
+            // 
+            this.exportToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.exportProfileToolStripMenuItem,
+            this.exportAxisToolStripMenuItem});
+            this.exportToolStripMenuItem.Name = "exportToolStripMenuItem";
+            this.exportToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.exportToolStripMenuItem.Text = "Export";
+            // 
+            // exportProfileToolStripMenuItem
+            // 
+            this.exportProfileToolStripMenuItem.Name = "exportProfileToolStripMenuItem";
+            this.exportProfileToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.exportProfileToolStripMenuItem.Text = "Export profile";
+            this.exportProfileToolStripMenuItem.Click += new System.EventHandler(this.exportProfileToolStripMenuItem_Click);
+            // 
+            // exportAxisToolStripMenuItem
+            // 
+            this.exportAxisToolStripMenuItem.Name = "exportAxisToolStripMenuItem";
+            this.exportAxisToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.exportAxisToolStripMenuItem.Text = "Export axis";
+            this.exportAxisToolStripMenuItem.Click += new System.EventHandler(this.exportAxisToolStripMenuItem_Click);
+            // 
+            // importToolStripMenuItem
+            // 
+            this.importToolStripMenuItem.Name = "importToolStripMenuItem";
+            this.importToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.importToolStripMenuItem.Text = "Import";
+            this.importToolStripMenuItem.Click += new System.EventHandler(this.importToolStripMenuItem_Click);
             // 
             // tabAddNew
             // 
@@ -405,7 +455,7 @@
             // buttonSettings
             // 
             this.buttonSettings.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.buttonSettings.Location = new System.Drawing.Point(909, 6);
+            this.buttonSettings.Location = new System.Drawing.Point(902, 2);
             this.buttonSettings.Name = "buttonSettings";
             this.buttonSettings.Size = new System.Drawing.Size(75, 23);
             this.buttonSettings.TabIndex = 8;
@@ -425,33 +475,46 @@
             this.checkBoxHotKey.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             this.checkBoxHotKey.UseVisualStyleBackColor = true;
             // 
-            // timer1
+            // timerTest
             // 
-            this.timer1.Interval = 1000;
-            this.timer1.Tick += new System.EventHandler(this.timer1_Tick);
+            this.timerTest.Interval = 10;
+            this.timerTest.Tick += new System.EventHandler(this.timerTest_Tick);
             // 
-            // labelCurrentAircraft
+            // buttonSave
             // 
-            this.labelCurrentAircraft.DataBindings.Add(new System.Windows.Forms.Binding("Enabled", global::JoystickCurves.Properties.Settings.Default, "warThunderTrackAircraft", true, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged));
-            this.labelCurrentAircraft.Enabled = global::JoystickCurves.Properties.Settings.Default.warThunderTrackAircraft;
-            this.labelCurrentAircraft.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.labelCurrentAircraft.Location = new System.Drawing.Point(627, 9);
-            this.labelCurrentAircraft.Name = "labelCurrentAircraft";
-            this.labelCurrentAircraft.Size = new System.Drawing.Size(155, 13);
-            this.labelCurrentAircraft.TabIndex = 15;
+            this.buttonSave.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.buttonSave.Enabled = false;
+            this.buttonSave.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.buttonSave.Location = new System.Drawing.Point(791, 2);
+            this.buttonSave.Name = "buttonSave";
+            this.buttonSave.Size = new System.Drawing.Size(105, 23);
+            this.buttonSave.TabIndex = 8;
+            this.buttonSave.Text = "Save settings";
+            this.buttonSave.UseVisualStyleBackColor = true;
+            this.buttonSave.Visible = false;
+            this.buttonSave.Click += new System.EventHandler(this.buttonSave_Click);
             // 
-            // checkBoxBindAircraft
+            // contextMenuAddTab
             // 
-            this.checkBoxBindAircraft.AutoSize = true;
-            this.checkBoxBindAircraft.DataBindings.Add(new System.Windows.Forms.Binding("Enabled", global::JoystickCurves.Properties.Settings.Default, "warThunderTrackAircraft", true, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged));
-            this.checkBoxBindAircraft.Enabled = global::JoystickCurves.Properties.Settings.Default.warThunderTrackAircraft;
-            this.checkBoxBindAircraft.Location = new System.Drawing.Point(464, 8);
-            this.checkBoxBindAircraft.Name = "checkBoxBindAircraft";
-            this.checkBoxBindAircraft.Size = new System.Drawing.Size(165, 17);
-            this.checkBoxBindAircraft.TabIndex = 16;
-            this.checkBoxBindAircraft.Text = "Bind this profile to the aircraft:";
-            this.checkBoxBindAircraft.UseVisualStyleBackColor = true;
-            this.checkBoxBindAircraft.CheckedChanged += new System.EventHandler(this.checkBoxBindAircraft_CheckedChanged);
+            this.contextMenuAddTab.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.newAxisTab,
+            this.newMacroTab});
+            this.contextMenuAddTab.Name = "contextMenuAddTab";
+            this.contextMenuAddTab.Size = new System.Drawing.Size(125, 48);
+            this.contextMenuAddTab.Closing += new System.Windows.Forms.ToolStripDropDownClosingEventHandler(this.contextMenuAddTab_Closing);
+            this.contextMenuAddTab.ItemClicked += new System.Windows.Forms.ToolStripItemClickedEventHandler(this.contextMenuAddTab_ItemClicked);
+            // 
+            // newAxisTab
+            // 
+            this.newAxisTab.Name = "newAxisTab";
+            this.newAxisTab.Size = new System.Drawing.Size(124, 22);
+            this.newAxisTab.Text = "Axis Tab";
+            // 
+            // newMacroTab
+            // 
+            this.newMacroTab.Name = "newMacroTab";
+            this.newMacroTab.Size = new System.Drawing.Size(124, 22);
+            this.newMacroTab.Text = "Macro Tab";
             // 
             // joystickTester
             // 
@@ -553,6 +616,29 @@
             this.labelPitchPercent.Text = "0%";
             this.labelPitchPercent.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
+            // checkBoxBindAircraft
+            // 
+            this.checkBoxBindAircraft.AutoSize = true;
+            this.checkBoxBindAircraft.DataBindings.Add(new System.Windows.Forms.Binding("Enabled", global::JoystickCurves.Properties.Settings.Default, "warThunderTrackAircraft", true, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged));
+            this.checkBoxBindAircraft.Enabled = global::JoystickCurves.Properties.Settings.Default.warThunderTrackAircraft;
+            this.checkBoxBindAircraft.Location = new System.Drawing.Point(464, 8);
+            this.checkBoxBindAircraft.Name = "checkBoxBindAircraft";
+            this.checkBoxBindAircraft.Size = new System.Drawing.Size(165, 17);
+            this.checkBoxBindAircraft.TabIndex = 16;
+            this.checkBoxBindAircraft.Text = "Bind this profile to the aircraft:";
+            this.checkBoxBindAircraft.UseVisualStyleBackColor = true;
+            this.checkBoxBindAircraft.CheckedChanged += new System.EventHandler(this.checkBoxBindAircraft_CheckedChanged);
+            // 
+            // labelCurrentAircraft
+            // 
+            this.labelCurrentAircraft.DataBindings.Add(new System.Windows.Forms.Binding("Enabled", global::JoystickCurves.Properties.Settings.Default, "warThunderTrackAircraft", true, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged));
+            this.labelCurrentAircraft.Enabled = global::JoystickCurves.Properties.Settings.Default.warThunderTrackAircraft;
+            this.labelCurrentAircraft.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.labelCurrentAircraft.Location = new System.Drawing.Point(627, 9);
+            this.labelCurrentAircraft.Name = "labelCurrentAircraft";
+            this.labelCurrentAircraft.Size = new System.Drawing.Size(155, 13);
+            this.labelCurrentAircraft.TabIndex = 15;
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -566,6 +652,7 @@
             this.Controls.Add(this.tabAxis);
             this.Controls.Add(this.comboProfiles);
             this.Controls.Add(this.joystickTester);
+            this.Controls.Add(this.buttonSave);
             this.Controls.Add(this.buttonSettings);
             this.DoubleBuffered = true;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
@@ -580,6 +667,7 @@
             this.contextMenuTabPage.ResumeLayout(false);
             this.contextMenuTester.ResumeLayout(false);
             this.contextMenuTray.ResumeLayout(false);
+            this.contextMenuAddTab.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.joystickTester)).EndInit();
             this.joystickTester.ResumeLayout(false);
             this.joystickTester.PerformLayout();
@@ -632,12 +720,21 @@
         private System.Windows.Forms.Button buttonSettings;
         private System.Windows.Forms.ToolStripMenuItem deleteCurrentProfileToolStripMenuItem;
         private System.Windows.Forms.CheckBox checkBoxHotKey;
-        private System.Windows.Forms.Timer timer1;
+        private System.Windows.Forms.Timer timerTest;
         private System.Windows.Forms.ToolStripMenuItem responseModifierToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem multiplier;
         private System.Windows.Forms.ToolStripMenuItem value;
         private System.Windows.Forms.Label labelCurrentAircraft;
         private System.Windows.Forms.CheckBox checkBoxBindAircraft;
+        private System.Windows.Forms.Button buttonSave;
+        private System.Windows.Forms.ContextMenuStrip contextMenuAddTab;
+        private System.Windows.Forms.ToolStripMenuItem newAxisTab;
+        private System.Windows.Forms.ToolStripMenuItem newMacroTab;
+        private System.Windows.Forms.ToolStripMenuItem importExportToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem exportToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem exportProfileToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem exportAxisToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem importToolStripMenuItem;
     }
 }
 

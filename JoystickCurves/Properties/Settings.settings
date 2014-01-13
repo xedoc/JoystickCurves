@@ -71,5 +71,11 @@
     <Setting Name="joystickServerPort" Type="System.String" Scope="User">
       <Value Profile="(Default)">54545</Value>
     </Setting>
+    <Setting Name="globalSaveOnExit" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
+    <Setting Name="globalAskSave" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
   </Settings>
 </SettingsFile>

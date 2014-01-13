@@ -14,6 +14,7 @@ namespace JoystickCurves
         private const String debugFolder = "_debuginfo";
         private const String processName = "aces";
         private const int POLL_PERIOD = 30 * 1000;
+        private object lockPoll = new object();
         public event EventHandler<EventArgs> OnFolderChange;
         public event EventHandler<EventArgsString> OnError;
 
@@ -38,19 +39,22 @@ namespace JoystickCurves
         {
             try
             {
-                var processes = Process.GetProcessesByName(processName);
-                foreach (var proc in processes)
+                lock (lockPoll)
                 {
-                    var folder = Path.GetDirectoryName( ExecutablePath.GetExecutablePath(proc));
-                    if (isWTFolder(folder))
+                    var processes = Process.GetProcessesByName(processName);
+                    foreach (var proc in processes)
                     {
-                        if (BaseFolder != folder)
+                        var folder = Path.GetDirectoryName(ExecutablePath.GetExecutablePath(proc));
+                        if (isWTFolder(folder))
                         {
-                            BaseFolder = folder;
-                            if (OnFolderChange != null)
-                                OnFolderChange(this, EventArgs.Empty);
+                            if (BaseFolder != folder)
+                            {
+                                BaseFolder = folder;
+                                if (OnFolderChange != null)
+                                    OnFolderChange(this, EventArgs.Empty);
+                            }
+                            break;
                         }
-                        break;
                     }
                 }
             }

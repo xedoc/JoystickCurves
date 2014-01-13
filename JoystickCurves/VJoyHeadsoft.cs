@@ -166,7 +166,7 @@ namespace JoystickCurves
 
         public override Int32 RY
         {
-            set { _joystick.SetXRotation(_deviceid, (short)value); _joystick.Update(_deviceid); }
+            set { _joystick.SetYRotation(_deviceid, (short)value); _joystick.Update(_deviceid); }
         }
         public override int MaxRY
         {
@@ -204,20 +204,7 @@ namespace JoystickCurves
             get { return AxisMinValue(HID_USAGES.HID_USAGE_SL0); }
         }
 
-        public override Int32 SL1
-        {
-            set { _joystick.SetSlider(_deviceid, (short)value); _joystick.Update(_deviceid); }
-        }
-        public override int MaxSL1
-        {
-            get { return AxisMaxValue(HID_USAGES.HID_USAGE_SL1); }
-        }
-        public override int MinSL1
-        {
-            get { return AxisMinValue(HID_USAGES.HID_USAGE_SL1); }
-        }
-
-
+        //Doesn't support second slider
 
         public override Int32 WHL
         {
@@ -483,7 +470,7 @@ namespace JoystickCurves
 
         public void SetSlider(int index, short value)
         {
-            m_joyState[index].Slider = value;
+            m_joyState[index].Slider = value;            
         }
 
         public short GetDial(int index)
