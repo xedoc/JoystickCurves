@@ -151,7 +151,7 @@ namespace JoystickCurves
                 d.Click += new EventHandler(clickHandler);
                 d.MouseDown += new MouseEventHandler(mouseDownHandler);
                 d.Name = itemName;
-                if (currentOffset == DIUtils.ID(d.Text) && DIUtils.AxisNames.Contains(d.Text))
+                if (currentOffset == DIUtils.JoyID(d.Text) && DIUtils.AxisNames.Contains(d.Text))
                     d.Checked = true;
                 else
                     d.Checked = false;

@@ -5,6 +5,7 @@ using System.Text;
 using System.Drawing;
 using System.Xml;
 using System.Xml.Serialization;
+using System.Diagnostics;
 namespace JoystickCurves
 {
     public class BezierCurvePoints
@@ -60,9 +61,12 @@ namespace JoystickCurves
         {
             get { return _drawWidth; }
             set 
-            { 
-                _drawWidth = value; 
-                ScaleDrawPoints(); 
+            {
+                if (value != _drawWidth)
+                {
+                    _drawWidth = value;
+                    ScaleDrawPoints();
+                }
             }
         }
         [XmlAttribute]
@@ -71,8 +75,11 @@ namespace JoystickCurves
             get { return _drawHeight; }
             set
             {
-                _drawHeight = value;
-                ScaleDrawPoints();
+                if (value != _drawHeight)
+                {
+                    _drawHeight = value;
+                    ScaleDrawPoints();
+                }
             }
         }
 
@@ -91,7 +98,7 @@ namespace JoystickCurves
                     return;
 
                 _drawPoints = value;
-                ScaleRawPoints();
+                //ScaleRawPoints();
             }
 
         }
@@ -130,19 +137,22 @@ namespace JoystickCurves
             {
                 if (_drawPoints.Count == 0)
                     return;
-
                 if (index == -1)
                 {
-                    _rawPoints = new List<PointF>();
+                    if( _rawPoints == null )
+                        _rawPoints = new List<PointF>();
+
                     for (var i = 0; i < _pointsCount; i++)
                     {
                         Point p = _drawPoints[i];
                         PointF pf = new PointF(Utils.PTop(1, p.X, DrawWidth), Utils.PTop(1, p.Y, DrawHeight));
-                        _rawPoints.Add(pf);
+                        var before = _rawPoints[i];
+                        _rawPoints[i] = pf;
                     }
                 }
                 else
                 {
+                    var before = _rawPoints[index];
                     _rawPoints[index] = new PointF(Utils.PTop(1, _drawPoints[index].X, DrawWidth), Utils.PTop(1, _drawPoints[index].Y, DrawHeight));
                 }
             }
@@ -218,23 +228,26 @@ namespace JoystickCurves
         {
             if (_rawPoints.Count == 0)
                 return;
-
             if (index == -1)
             {
-                _drawPoints = new List<Point>();
-
+                if (_drawPoints == null || _drawPoints.Count < _pointsCount)
+                {
+                    _drawPoints = Enumerable.Range(0, _pointsCount).AsEnumerable().Select((dp, i) => new Point(0,0)).ToList();
+                }
                 for (var i = 0; i < _pointsCount; i++)
                 {
                     PointF pf = _rawPoints[i];
+                    var before = _drawPoints[i];
                     Point p = new Point((int)Utils.PTop(DrawWidth, pf.X, 1), (int)Utils.PTop(DrawHeight, pf.Y, 1));
-                    _drawPoints.Add(p);
+                    _drawPoints[i] = p;
+
                 }
             }
             else
             {
+                var before = _drawPoints[index];
                 _drawPoints[index] = new Point((int)Utils.PTop(DrawWidth, _rawPoints[index].X, 1), (int)Utils.PTop(DrawHeight, _rawPoints[index].Y, 1));
             }
-            
             if (OnChange != null)
                 OnChange(this,EventArgs.Empty);
         }

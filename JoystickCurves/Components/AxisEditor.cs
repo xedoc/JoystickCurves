@@ -126,8 +126,8 @@ namespace JoystickCurves
             {
                 if (value == null)
                     return;
-                value.Insert(0, new DirectInputJoystick(NOTSET));
-                if (_sourceContrBSource == null)
+                value.Insert(0, NOTSET ); //new DirectInputJoystick(NOTSET));
+                if (_sourceContrBSource == null || _sourceContrBSource.Count != value.Count)
                 {
                     _sourceContrBSource = new BindingSource();
                     _sourceContrBSource.DataSource = value;
@@ -302,7 +302,7 @@ namespace JoystickCurves
         }
         public static implicit operator ProfileTab(AxisEditor axisEditor)
         {            
-            axisEditor.CurrentCurve.ScaleRawPoints();
+            //axisEditor.CurrentCurve.ScaleRawPoints();
             var profileTab = new ProfileTab()
             {
                 CurvePoints = axisEditor.CurrentCurve,

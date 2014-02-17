@@ -87,7 +87,7 @@ namespace JoystickCurves
         {
             get{ return _name; }
             set{
-                _joystickOffset = DIUtils.ID(value);
+                _joystickOffset = DIUtils.JoyID(value);
                 _virtualID = DIUtils.VirtualID(value);
                 _name = value;
  
@@ -100,7 +100,7 @@ namespace JoystickCurves
             set {
                 _name = DIUtils.VirtualName(value);
                 _virtualID = value;
-                _joystickOffset = DIUtils.ID(_name);
+                _joystickOffset = DIUtils.JoyID(_name);
             }
         }
         [XmlIgnore]

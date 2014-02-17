@@ -81,15 +81,26 @@ namespace JoystickCurves
         {
             lock (lockRefreshMouses)
             {
-                List<DeviceInstance> mouseInstances;
-                mouseInstances = Utils.DevList(Manager.GetDevices(DeviceClass.Pointer, EnumDevicesFlags.AttachedOnly));
+                List<DeviceInstance> mouseInstances = null;
 
                 if (Mouses == null)
                     Mouses = new List<DirectInputMouse>();
+                try
+                {
+                    mouseInstances = Utils.DevList(Manager.GetDevices(DeviceClass.Pointer, EnumDevicesFlags.AttachedOnly));
+                }
+                catch (Exception e)
+                {
+                    Debug.Print("RefreshMouseList error {0}", e.Message);
+                }
+
+                if (mouseInstances == null)
+                    return;
 
                 Mouses.Where(dev => !mouseInstances.Exists(d => dev.Guid == d.InstanceGuid)).ToList().ForEach(
                     gc => { gc.Unacquire(); Mouses.Remove(gc); }
                 );
+
 
                 var addList = mouseInstances.Where(d => !Mouses.Exists(dev => dev.Guid == d.InstanceGuid));
 
@@ -148,11 +159,21 @@ namespace JoystickCurves
         {
             lock (lockRefreshKeyboards)
             {
-                List<DeviceInstance> keyboardInstances;
-                keyboardInstances = Utils.DevList(Manager.GetDevices(DeviceClass.Keyboard, EnumDevicesFlags.AttachedOnly));
-
+                List<DeviceInstance> keyboardInstances = null;
                 if (Keyboards == null)
                     Keyboards = new List<DirectInputKeyboard>();
+
+                try
+                {
+                    keyboardInstances = Utils.DevList(Manager.GetDevices(DeviceClass.Keyboard, EnumDevicesFlags.AttachedOnly));
+                }
+                catch (Exception e)
+                {
+                    Debug.Print("RefreshKeyboardList {0}", e.Message);
+                }
+
+                if (keyboardInstances == null)
+                    return;
 
                 Keyboards.Where(dev => !keyboardInstances.Exists(d => dev.Guid == d.InstanceGuid)).ToList().ForEach(
                     gc => { gc.Unacquire(); Keyboards.Remove(gc); }
@@ -189,12 +210,27 @@ namespace JoystickCurves
             lock (lockRefreshJoysticks)
             {
                 List<DeviceInstance> joystickInstances;
-                var devices = Manager.GetDevices(DeviceClass.GameControl, EnumDevicesFlags.AttachedOnly);
+                DeviceList devices = null;
+                if (Joysticks == null)
+                    Joysticks = new List<DirectInputJoystick>();
+
+                try
+                {
+                    devices = Manager.GetDevices(DeviceClass.GameControl, EnumDevicesFlags.AttachedOnly);
+                }
+                catch( Exception e) {
+                    Debug.Print("RefreshJoystickList: error getting device list {0}", e.Message);
+                }
+                if (devices == null)
+                {
+                    if (OnJoystickList != null)
+                        OnJoystickList(this, EventArgs.Empty);
+
+                    return;
+                }
 
                 joystickInstances = Utils.DevList(devices);
 
-                if (Joysticks == null)
-                    Joysticks = new List<DirectInputJoystick>();
 
                 Joysticks.Where(dev => !joystickInstances.Exists(d => dev.Guid == d.InstanceGuid)).ToList().ForEach(
                     gc => { gc.Unacquire(); Joysticks.Remove(gc); }

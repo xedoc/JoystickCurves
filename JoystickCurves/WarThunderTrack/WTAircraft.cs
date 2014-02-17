@@ -13,7 +13,7 @@ namespace JoystickCurves
     public class WTAircraft : CurrentAircraft
     {
         private const int POLL_LASTLOG = 30 * 1000;
-        private const String debugSubFolder = "_debuginfo";
+        private const String debugSubFolder = ".game_logs";
         private const String logExtension = ".clog";
         private const String trackString = "^.*?try to select aircraft (.*)$";
         private BGWorker bwReader;
@@ -112,8 +112,7 @@ namespace JoystickCurves
                         return;
 
                     if (newestLog.FullName != CurrentFile || 
-                        (bwReader != null && bwReader.IsComplete)
-                        )
+                        (bwReader != null && bwReader.IsComplete))
                     {
                         CurrentFile = newestLog.FullName;
                         if (bwReader != null)

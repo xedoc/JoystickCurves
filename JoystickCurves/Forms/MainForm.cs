@@ -10,22 +10,33 @@ using System.Windows.Forms;
 using System.Reflection;
 using System.Diagnostics;
 using System.Threading;
+using Microsoft.DirectX;
 using Microsoft.DirectX.DirectInput;
 using System.IO;
 using System.Xml;
 using System.Runtime.ExceptionServices;
 using JoystickCurves.Components;
+using System.Net;
+using System.Web;
+using IronRuby;
+using Microsoft.Scripting.Hosting;
+using Microsoft.Scripting;
+using System.Threading.Tasks;
+using System.Runtime.Remoting.Lifetime;
+
 
 namespace JoystickCurves
 {
 
     public partial class MainForm : Form, INotifyPropertyChanged
     {
+       
         private DeviceManager _deviceManager;
         private Properties.Settings _settings;
         private ProfileManager _profileManager;
         private BindingSource _axisNamesPhysPitch, _axisNamesVirtPitch, _axisNamesPhysYaw, _axisNamesVirtYaw, _virtualDeviceNames, _physicalDeviceNames;
         private Dictionary<String, Dictionary<JoystickOffset, DirectInputData>> _axisBinding;
+        CancellationTokenSource tokenSource = new CancellationTokenSource();
         private List<VirtualJoystick> _virtualJoysticks;
         private Profile _currentProfile;
         private bool settingsUnsaved = false;
@@ -48,8 +59,6 @@ namespace JoystickCurves
         private const string JCPROFILEEXT = ".jcprofile"; 
         private const string JCAXISEXT = ".jcaxis";
         private bool isExit = false;
-        private Mutex appMutex;
-        private const string INSTANCENAME = "JoystickCurvesInstance";
         private Form debugForm;
         private bool lastEnableSaitek = false, lastEnableSteam = false;
         private object lockSetProfile = new object();
@@ -59,6 +68,7 @@ namespace JoystickCurves
         private object lockWarThunder = new object();
         private object lockSaitek = new object();
         private object lockNetwork = new object();
+        private object lockMouses = new object();
         private object lockExclusiveSwitch = new object();
         private TabPage lastSelectedTab;
         private TabControl clickedTab;
@@ -72,17 +82,17 @@ namespace JoystickCurves
         SettingsForm settingsForm;
 
         public MainForm()
-        {         
-
-            if (CheckRunningInstances())
+        {
+            try
             {
-                this.Close();
-                return;
+                InitializeComponent();
             }
-            _settings = Properties.Settings.Default;           
-            _settings.PropertyChanged += new PropertyChangedEventHandler(_settings_PropertyChanged);
+            catch
+            {                 
+            }
 
-            InitializeComponent();
+            _settings = Properties.Settings.Default;
+            _settings.PropertyChanged += new PropertyChangedEventHandler(_settings_PropertyChanged);
 
             errorToolTip = new ToolTip();
             errorToolTip.SetToolTip(labelCurrentAircraft, WAITSPAWN);
@@ -219,27 +229,7 @@ namespace JoystickCurves
                 }
             }
         }
-        private bool CheckRunningInstances()
-        {
-            try
-            {
-                appMutex = Mutex.OpenExisting(INSTANCENAME);
-                if (appMutex != null)
-                {
-                    return true;
-                }
-                return false;
-            }
-            catch 
-            {
-                Debug.Print("CheckRunningInstances() Exception");
-                appMutex = new Mutex(true, INSTANCENAME);
-                GC.KeepAlive(appMutex);
-                return false;
-            }
 
-
-        }
         private void emptyAction(DirectInputData d) { }
 
         private void ActionSetVJoy(DirectInputData data)
@@ -249,9 +239,24 @@ namespace JoystickCurves
             if (data == null)
                 return;
 
-            var sourceDeviceName = data.DeviceName;
-            var sourceAxisName = DIUtils.Name(data.JoystickOffset);
-            var pTab = _currentProfile.Tabs.ToList().Where(t => t.SourceDevice == sourceDeviceName && t.SourceAxis == sourceAxisName).FirstOrDefault();
+            String sourceDeviceName = data.DeviceName;
+            String sourceAxisName = String.Empty;
+            ProfileTab pTab = null;
+
+            switch (data.Type)
+            {
+                case DIDataType.Joystick:
+                        sourceAxisName = DIUtils.Name(data.JoystickOffset);
+                    break;
+                case DIDataType.Mouse:
+                        sourceAxisName = DIUtils.Name(data.MouseOffset);
+                    break;
+
+            }
+            if (String.IsNullOrEmpty(sourceAxisName))
+                return;
+
+            pTab = _currentProfile.Tabs.ToList().Where(t => t.SourceDevice == sourceDeviceName && t.SourceAxis == sourceAxisName).FirstOrDefault();
 
             if (pTab == null)
                 return;
@@ -262,7 +267,9 @@ namespace JoystickCurves
             if (virtualDevice == null)
                 return;
 
-            var destAxis = DIUtils.ID(pTab.DestinationAxis);
+            //Debug.Print("{0}", data.Value);
+
+            var destAxis = DIUtils.JoyID(pTab.DestinationAxis);
 
 
             BezierCurvePoints curvePoints = pTab.CurvePoints;
@@ -322,15 +329,31 @@ namespace JoystickCurves
 
             foreach (var srcDevName in srcDeviceNames)
             {
-                var actionMap = _currentProfile.Tabs.Where(
-                    t => t.SourceAxis != NOTSET && t.DestinationAxis != NOTSET && t.SourceDevice == srcDevName).Select(
-                    t => new KeyValuePair<JoystickOffset, Action<DirectInputData>>(DIUtils.ID(t.SourceAxis), ActionSetVJoy)).GroupBy(t => t.Key).ToDictionary(
-                    t => t.Key, t => t.FirstOrDefault().Value);
-
-                var srcDevice = _deviceManager.Joysticks.Where(d => d.Name == srcDevName).FirstOrDefault();
-                if (srcDevice != null)
+                if (_deviceManager.Joysticks.Any(d => d.Name.Equals(srcDevName, StringComparison.CurrentCultureIgnoreCase)))
                 {
-                    srcDevice.SetActions(actionMap);
+                    var actionMap = _currentProfile.Tabs.Where(
+                        t => t.SourceAxis != NOTSET && t.DestinationAxis != NOTSET && t.SourceDevice == srcDevName).Select(
+                        t => new KeyValuePair<JoystickOffset, Action<DirectInputData>>(DIUtils.JoyID(t.SourceAxis), ActionSetVJoy)).GroupBy(t => t.Key).ToDictionary(
+                        t => t.Key, t => t.FirstOrDefault().Value);
+
+                    var srcDevice = _deviceManager.Joysticks.Where(d => d.Name.Equals(srcDevName, StringComparison.CurrentCultureIgnoreCase)).FirstOrDefault();
+                    if (srcDevice != null)
+                    {
+                        srcDevice.SetActions(actionMap);
+                    }
+                }
+                else if (_deviceManager.Mouses.Any(d => d.Name.Equals(srcDevName, StringComparison.CurrentCultureIgnoreCase)))
+                {
+                    var actionMap = _currentProfile.Tabs.Where(
+                        t => t.SourceAxis != NOTSET && t.DestinationAxis != NOTSET && t.SourceDevice == srcDevName).Select(
+                        t => new KeyValuePair<MouseOffset, Action<DirectInputData>>(DIUtils.MouseID(t.SourceAxis), ActionSetVJoy)).GroupBy(t => t.Key).ToDictionary(
+                        t => t.Key, t => t.FirstOrDefault().Value);
+
+                    var srcDevice = _deviceManager.Mouses.Where(d => d.Name.Equals(srcDevName, StringComparison.CurrentCultureIgnoreCase)).FirstOrDefault();
+                    if (srcDevice != null)
+                    {
+                        srcDevice.SetActions(actionMap);
+                    }
                 }
             }
 
@@ -409,31 +432,51 @@ namespace JoystickCurves
             var virtualDev = _deviceManager.Joysticks.Where(d => d.Name == joystickTester.CurrentVirtualDevice && d.Type == DeviceType.Virtual).FirstOrDefault();
             if (virtualDev != null)
             {
-                var virtualActionMap = new Dictionary<JoystickOffset, Action<DirectInputData>>()
+                var virtualActionMap = new Dictionary<JoystickOffset, Action<DirectInputData>>();
+                JoystickOffset[] offsets = {
+                                                joystickTester.CurrentVirtualRZ,
+                                                joystickTester.CurrentVirtualX,
+                                                joystickTester.CurrentVirtualY};
+
+                Action<DirectInputData>[] actions = { 
+                    _settings.TesterVirtualJoystickRZ != NOTSET?new Action<DirectInputData>( ActionSetTesterVirtualRZ):emptyAction,
+                    _settings.TesterVirtualJoystickX != NOTSET?new Action<DirectInputData>( ActionSetTesterVirtualX):emptyAction,
+                    _settings.TesterVirtualJoystickY != NOTSET?new Action<DirectInputData>( ActionSetTesterVirtualY):emptyAction
+                                                    };
+
+                for( int i = 0; i < offsets.Length; i++ )
                 {
-                    { joystickTester.CurrentVirtualRZ, 
-                      _settings.TesterVirtualJoystickRZ != NOTSET?new Action<DirectInputData>( ActionSetTesterVirtualRZ):emptyAction },
-                    { joystickTester.CurrentVirtualX, 
-                      _settings.TesterVirtualJoystickX != NOTSET?new Action<DirectInputData>( ActionSetTesterVirtualX):emptyAction },
-                    { joystickTester.CurrentVirtualY, 
-                      _settings.TesterVirtualJoystickY != NOTSET?new Action<DirectInputData>( ActionSetTesterVirtualY):emptyAction }
-                };
+                    if( !virtualActionMap.ContainsKey( offsets[i] ) )
+                    {
+                        virtualActionMap.Add(offsets[i], actions[i] );
+                    }
+                }
+
                 virtualDev.SetActions(virtualActionMap);
             }
 
             var physicalDev = _deviceManager.Joysticks.Where(d => d.Name == joystickTester.CurrentPhysicalDevice && d.Type == DeviceType.Physical ).FirstOrDefault();
             if (physicalDev != null)
             {
+                var physicalActionMap = new Dictionary<JoystickOffset, Action<DirectInputData>>();
+                JoystickOffset[] offsets = {
+                                                joystickTester.CurrentPhysicalRZ,
+                                                joystickTester.CurrentPhysicalX,
+                                                joystickTester.CurrentPhysicalY
+                                           };
+                Action<DirectInputData>[] actions = {
+                    _settings.TesterPhysicalJoystickRZ != NOTSET?new Action<DirectInputData>( ActionSetTesterPhysicalRZ):emptyAction,
+                    _settings.TesterPhysicalJoystickX != NOTSET?new Action<DirectInputData>( ActionSetTesterPhysicalX):emptyAction,
+                    _settings.TesterPhysicalJoystickY != NOTSET?new Action<DirectInputData>( ActionSetTesterPhysicalY):emptyAction
+                                                    };
 
-                var physicalActionMap = new Dictionary<JoystickOffset, Action<DirectInputData>>()
+                for( int i = 0; i < offsets.Length; i++ )
                 {
-                    { joystickTester.CurrentPhysicalRZ, 
-                      _settings.TesterPhysicalJoystickRZ != NOTSET?new Action<DirectInputData>( ActionSetTesterPhysicalRZ):emptyAction },
-                    { joystickTester.CurrentPhysicalX, 
-                      _settings.TesterPhysicalJoystickX != NOTSET?new Action<DirectInputData>( ActionSetTesterPhysicalX):emptyAction },
-                    { joystickTester.CurrentPhysicalY, 
-                      _settings.TesterPhysicalJoystickY != NOTSET?new Action<DirectInputData>( ActionSetTesterPhysicalY):emptyAction }
-                };
+                    if( !physicalActionMap.ContainsKey( offsets[i] ) )
+                    {
+                        physicalActionMap.Add(offsets[i], actions[i] );
+                    }
+                }
                 physicalDev.SetActions(physicalActionMap);
             }
             
@@ -444,7 +487,7 @@ namespace JoystickCurves
         private void LoadSettings()
         {
             
-            _settings.PropertyChanged += new PropertyChangedEventHandler(_settings_PropertyChanged);
+            //_settings.PropertyChanged += new PropertyChangedEventHandler(_settings_PropertyChanged);
             if (!_settings.generalStartMinimized)
             {
                 this.WindowState = FormWindowState.Normal;
@@ -517,23 +560,25 @@ namespace JoystickCurves
 
             joystickTester.CurrentPhysicalDevice = _settings.TesterPhysicalJoystick;
             joystickTester.CurrentVirtualDevice = _settings.TesterVirtualJoystick;
-            joystickTester.CurrentPhysicalX = DIUtils.ID(_settings.TesterPhysicalJoystickX);
-            joystickTester.CurrentPhysicalY = DIUtils.ID(_settings.TesterPhysicalJoystickY);
-            joystickTester.CurrentPhysicalRZ = DIUtils.ID(_settings.TesterPhysicalJoystickRZ);
-            joystickTester.CurrentVirtualX = DIUtils.ID(_settings.TesterVirtualJoystickX);
-            joystickTester.CurrentVirtualY = DIUtils.ID(_settings.TesterVirtualJoystickY);
-            joystickTester.CurrentVirtualRZ = DIUtils.ID(_settings.TesterVirtualJoystickRZ);
+            joystickTester.CurrentPhysicalX = DIUtils.JoyID(_settings.TesterPhysicalJoystickX);
+            joystickTester.CurrentPhysicalY = DIUtils.JoyID(_settings.TesterPhysicalJoystickY);
+            joystickTester.CurrentPhysicalRZ = DIUtils.JoyID(_settings.TesterPhysicalJoystickRZ);
+            joystickTester.CurrentVirtualX = DIUtils.JoyID(_settings.TesterVirtualJoystickX);
+            joystickTester.CurrentVirtualY = DIUtils.JoyID(_settings.TesterVirtualJoystickY);
+            joystickTester.CurrentVirtualRZ = DIUtils.JoyID(_settings.TesterVirtualJoystickRZ);
 
         }
 
         void _settings_PropertyChanged(object sender, PropertyChangedEventArgs e)
-        {
+        {            
+            
             switch (e.PropertyName)
             {
                 case "exclusiveDirectInput":
                     lock (lockExclusiveSwitch)
                     {
-                        _deviceManager.SwitchExclusiveDirectInput(_settings.exclusiveDirectInput);
+                        if( _deviceManager != null )
+                            _deviceManager.SwitchExclusiveDirectInput(_settings.exclusiveDirectInput);
                     }
                     break;
                 case "generalAutoStart":
@@ -586,10 +631,32 @@ namespace JoystickCurves
                         ThreadPool.QueueUserWorkItem(t => DisconnectNetworkServer());
                     }
                     break;
+                case "mouseSensScroll":
+                    UpdateMouseSensitivity(MouseOffset.Z, _settings.mouseSensScroll);
+                    break;
+                case "mouseSensX":
+                    UpdateMouseSensitivity(MouseOffset.X, _settings.mouseSensX);
+                    break;
+                case "mouseSensY":
+                    UpdateMouseSensitivity(MouseOffset.Y, _settings.mouseSensY);
+                    break;
             }
 
         }
+        private void UpdateMouseSensitivity(MouseOffset offset, int value)
+        {
+            if (_deviceManager == null || _deviceManager.Mouses == null )
+                return;
 
+            lock (lockMouses)
+            {
+                foreach (var mouse in _deviceManager.Mouses)
+                {
+                    if (value >= 1)
+                        mouse.Sensitivity[offset] = value;
+                }
+            }
+        }
         public void ConnectWarThunder()
         {
             lock (lockWarThunder)
@@ -671,7 +738,13 @@ namespace JoystickCurves
             }
         }
         void ShowSettings()
-        {            
+        {
+            if (settingsForm == null || settingsForm.IsDisposed)
+            {
+                settingsForm = new SettingsForm(ref _settings);
+
+                settingsForm.OnReset += new EventHandler<EventArgs>(settingsForm_OnReset);
+            }
             settingsForm.Show();
         }
 
@@ -685,7 +758,7 @@ namespace JoystickCurves
                     if (p.Controls[0].GetType() == typeof(AxisEditor))
                     {
                         var axisEditor = p.Controls[0] as AxisEditor;
-                        axisEditor.CurrentCurve.ScaleRawPoints();
+                        //axisEditor.CurrentCurve.ScaleRawPoints();
                         profile.Tabs.Add(new ProfileTab()
                         {
                             CurvePoints = axisEditor.CurrentCurve,
@@ -743,6 +816,7 @@ namespace JoystickCurves
                 this.WindowState = FormWindowState.Minimized;
                 MinimizeToTray();
                 e.Cancel = true;
+                return;
             }
 
             if (!Exit())
@@ -778,6 +852,29 @@ namespace JoystickCurves
             _deviceManager.OnMouseList += new EventHandler<EventArgs>(deviceManager_OnMouseList);
 
 
+            //var task = new Task(new System.Action( () => TestRuby()), tokenSource.Token,TaskCreationOptions.LongRunning);
+            //task.Start();
+            //tokenSource.Cancel();                        
+        }
+
+        public void TestRuby()
+        {
+            Microsoft.Scripting.Hosting.ScriptEngine rubyEngine;
+            ScriptScope rubyScope;
+
+            rubyEngine = Ruby.CreateEngine();
+            rubyScope = rubyEngine.CreateScope();
+            
+            rubyScope.SetVariable("MainForm", this);
+        
+            ScriptSource scriptSource = rubyEngine.CreateScriptSourceFromString(
+                @"self.MainForm.LocationChanged do |sender, args|" + '\n' +
+                "puts \"Location: #{self.MainForm.Location.ToString()}\"" + '\n' +
+                "" + '\n' +
+                @"end", SourceCodeKind.AutoDetect);
+            
+            var compiledCode = scriptSource.Compile(); 
+            compiledCode.Execute(rubyScope);
         }
         private void DisconnectNetworkServer()
         {
@@ -821,7 +918,13 @@ namespace JoystickCurves
         {
             _deviceManager.Mouses.ForEach(m => m.Acquire());
             Utils.SetProperty<CheckBox,bool>(checkBoxHotKey, "Enabled", true);
+            UpdateDevices();
+            UpdateMouseSensitivity(MouseOffset.X, _settings.mouseSensX);
+            UpdateMouseSensitivity(MouseOffset.Y, _settings.mouseSensY);
+            UpdateMouseSensitivity(MouseOffset.Z, _settings.mouseSensScroll);
             SetupHotKeyActions();
+
+            
         }
 
         void deviceManager_OnKeyboardList(object sender, EventArgs e)
@@ -905,7 +1008,7 @@ namespace JoystickCurves
 
             var selName = currentItem.Name.ToLower();
             var selText = currentItem.Text;
-            var selOffset = DIUtils.ID(selText);
+            var selOffset = DIUtils.JoyID(selText);
 
             switch (selName)
             {
@@ -988,7 +1091,8 @@ namespace JoystickCurves
                             AxisEditor axisEditor = childControl as AxisEditor;
 
                             //
-                            axisEditor.SourceControllers = _deviceManager.Joysticks.Where(d => d.Type == DeviceType.Physical).Select(d => d.Name).ToList();
+                            axisEditor.SourceControllers = _deviceManager.Joysticks.Where(d => d.Type == DeviceType.Physical).Select(d => d.Name).Union(
+                                _deviceManager.Mouses.Select(m => m.Name)).ToList();
                             axisEditor.DestinationControllers = _deviceManager.Joysticks.Where(d => d.Type == DeviceType.Virtual).Select(d => d.Name).ToList();
                             axisEditor.SourceAxis = DIUtils.AxisNames.ToList();
                             axisEditor.DestinationAxis = DIUtils.AxisNames.ToList();
@@ -1031,7 +1135,7 @@ namespace JoystickCurves
             if (srcDevice == null)
                 return;
 
-            var srcAxis = DIUtils.ID(currentAxisEditor.CurrentSourceAxis);
+            var srcAxis = DIUtils.JoyID(currentAxisEditor.CurrentSourceAxis);
 
             srcDevice.SetAxisFilter(srcAxis, currentAxisEditor.FilterLevel);
         }
@@ -1050,7 +1154,7 @@ namespace JoystickCurves
                 if (srcDevice == null)
                     return;
 
-                var srcAxis = DIUtils.ID(currentAxisEditor.CurrentSourceAxis);
+                var srcAxis = DIUtils.JoyID(currentAxisEditor.CurrentSourceAxis);
 
                 ActionSetVJoy(new DirectInputData()
                 {
@@ -1084,11 +1188,11 @@ namespace JoystickCurves
                             {
                                 if (_axisBinding.ContainsKey(axisEditor.CurrentSourceDevice))
                                 {
-                                    if (!_axisBinding[axisEditor.CurrentSourceDevice].ContainsKey(DIUtils.ID(axisEditor.CurrentSourceAxis)))
+                                    if (!_axisBinding[axisEditor.CurrentSourceDevice].ContainsKey(DIUtils.JoyID(axisEditor.CurrentSourceAxis)))
                                     {
-                                        _axisBinding[axisEditor.CurrentSourceDevice].Add(DIUtils.ID(axisEditor.CurrentSourceAxis), new DirectInputData()
+                                        _axisBinding[axisEditor.CurrentSourceDevice].Add(DIUtils.JoyID(axisEditor.CurrentSourceAxis), new DirectInputData()
                                         {
-                                            JoystickOffset = DIUtils.ID(axisEditor.CurrentDestAxis),
+                                            JoystickOffset = DIUtils.JoyID(axisEditor.CurrentDestAxis),
                                             DeviceName = axisEditor.CurrentDestDevice,
                                             Type = DIDataType.Joystick,
                                             Min = -32767,
@@ -1103,9 +1207,9 @@ namespace JoystickCurves
 
                                     _axisBinding.Add(axisEditor.CurrentSourceDevice, new Dictionary<JoystickOffset, DirectInputData>{
                                 {
-                                    DIUtils.ID(axisEditor.CurrentSourceAxis),
+                                    DIUtils.JoyID(axisEditor.CurrentSourceAxis),
                                     new DirectInputData() { 
-                                        JoystickOffset = DIUtils.ID(axisEditor.CurrentDestAxis),
+                                        JoystickOffset = DIUtils.JoyID(axisEditor.CurrentDestAxis),
                                         Type = DIDataType.Joystick,
                                         DeviceName = axisEditor.CurrentDestDevice,
                                         Min = -32767,
@@ -1164,11 +1268,18 @@ namespace JoystickCurves
         {
             SettingsChanged = true;
             var axisEditor = sender as AxisEditor;
+            if (axisEditor == null)
+                return;
+
             var curText = Utils.GetProperty<TabPage>((TabPage)axisEditor.Parent, "Text").ToString();
             if( curText != axisEditor.CurrentSourceAxis )
                 Utils.SetProperty<TabPage,String>( (TabPage)axisEditor.Parent, "Text",axisEditor.CurrentSourceAxis );
 
             var currentProfileName = _currentProfile.Title;
+
+            if (axisEditor.Index < 0 || axisEditor.Index >= _currentProfile.Tabs.Count)
+                return;
+
             _currentProfile.Tabs[axisEditor.Index] = axisEditor;
 
             UpdateAxisBindings();
@@ -1262,7 +1373,7 @@ namespace JoystickCurves
 
         private void contextMenuTabPage_ItemClicked(object sender, ToolStripItemClickedEventArgs e)
         {
-            if (e.ClickedItem.Name == "deleteAxis" && tabAxis.SelectedTab != null)
+            if (e.ClickedItem.Name == "deleteAxis" && tabAxis.SelectedTab != null && tabAxis.TabCount > 2)
             {
                 tabAxis.TabPages.Remove(tabAxis.SelectedTab);
                 _currentProfile = GetCurrentProfile();
@@ -1272,6 +1383,10 @@ namespace JoystickCurves
         private void copyCurveToToolStripMenuItem_DropDownItemClicked(object sender, ToolStripItemClickedEventArgs e)
         {
             var title = e.ClickedItem.Text;
+
+            if (tabAxis.SelectedTab.Controls.Count <= 0)
+                AddNewProfileTab(tabAxis, true);
+
             var axisEditor = tabAxis.SelectedTab.Controls[0] as AxisEditor;
             var tab = _currentProfile.Tabs.Where(t => t.TabTitle == title || t.SourceAxis == title ).FirstOrDefault();
             if (tab != null)
@@ -1514,8 +1629,8 @@ namespace JoystickCurves
         public static void ThreadException(object sender, System.Threading.ThreadExceptionEventArgs e)
         {
             var errorMsg = e.Exception.Message + "\n\nStack Trace:\n" + e.Exception.StackTrace;
-            System.IO.File.WriteAllText(@"C:\JoystickCurvesCrash.txt", errorMsg);
-            Debug.Print(errorMsg);
+            SendLog(errorMsg);            
+
         }
 
         private void streightenUpCurveToolStripMenuItem_Click(object sender, EventArgs e)
@@ -1526,6 +1641,10 @@ namespace JoystickCurves
 
         private void trayIcon_DoubleClick(object sender, EventArgs e)
         {
+            if (this == null || this.IsDisposed)
+            {
+                Application.Exit();
+            }
             this.Show();
             this.WindowState = FormWindowState.Normal;
             this.Activate();
@@ -1566,6 +1685,10 @@ namespace JoystickCurves
 
         private void showToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            if (this == null || this.IsDisposed)
+            {
+                Application.Exit();
+            }
             this.Show();
             this.WindowState = FormWindowState.Normal;
         }
@@ -1598,7 +1721,7 @@ namespace JoystickCurves
 
         private void buttonSettings_Click(object sender, EventArgs e)
         {
-            if( settingsForm == null )
+            if( settingsForm == null || settingsForm.IsDisposed )
             {
                 settingsForm = new SettingsForm(ref _settings);
 
@@ -1873,6 +1996,9 @@ namespace JoystickCurves
         private int curX = 32767;
         private void timerTest_Tick(object sender, EventArgs e)
         {
+            if (currentAxisEditor.Index < 0 || currentAxisEditor.Index >= _currentProfile.Tabs.Count)
+                return;
+
             _currentProfile.Tabs[currentAxisEditor.Index] = currentAxisEditor;
             var dstDevName = currentAxisEditor.CurrentDestDevice;
             if (String.IsNullOrEmpty(dstDevName))
@@ -1882,7 +2008,7 @@ namespace JoystickCurves
             if (dstDevice == null)
                 return;
 
-            var dstAxis = DIUtils.ID(currentAxisEditor.CurrentDestAxis);
+            var dstAxis = DIUtils.JoyID(currentAxisEditor.CurrentDestAxis);
             var curValue = dstDevice.Get(dstAxis) + 200;
             if( curValue + 200 > dstDevice.MaxAxisValue )
                 curValue = dstDevice.MinAxisValue;
@@ -2041,7 +2167,13 @@ namespace JoystickCurves
 
         private void contextMenuAddTab_Closing(object sender, ToolStripDropDownClosingEventArgs e)
         {
-            tabAxis.SelectTab(lastSelectedTab);
+            try
+            {
+                tabAxis.SelectTab(lastSelectedTab);
+            }
+            catch 
+            { 
+            }
         }
 
 
@@ -2143,7 +2275,27 @@ namespace JoystickCurves
             }
         }
 
+        static void SendLog(String msg)
+        {
+            try
+            {
+                var wc = new WebClient();
 
+                wc.Headers["Content-Type"] = "application/x-www-form-urlencoded; charset=UTF-8";
+                wc.UploadString("http://xedocproject.com/crashlog/index.php", String.Format(
+                    "p={0}&e={1}", "JoystickCurves", HttpUtility.UrlEncode(msg)));
+
+                System.IO.File.WriteAllText(@"C:\JoystickCurvesCrash.txt", msg);
+                Debug.Print(msg);
+            }
+            catch { }
+
+        }
+
+        private void joystickTester_Click(object sender, EventArgs e)
+        {
+
+        }
     }
 
 }

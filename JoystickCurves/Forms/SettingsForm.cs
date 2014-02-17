@@ -31,8 +31,8 @@ namespace JoystickCurves
             oldLogin = textBox1.Text;
             oldPassword = textBox2.Text;
             oldToken = _settings.steamToken;
-            SetupHotkeyList();
-            checkBoxHotKey.DataBindings.Add(new Binding("Checked", this, "WaitingHotKey", false, DataSourceUpdateMode.OnPropertyChanged, null));
+            //SetupHotkeyList();
+            //checkBoxHotKey.DataBindings.Add(new Binding("Checked", this, "WaitingHotKey", false, DataSourceUpdateMode.OnPropertyChanged, null));
             if( settingsTree1.Nodes.Count > 0) 
                 settingsTree1.TreeView.SelectedNode = settingsTree1.Nodes[0];
         }
@@ -121,13 +121,16 @@ namespace JoystickCurves
         {
             if (MessageBox.Show("This will reset all settings including curves, hot-keys etc. Continue ?", "Reset settings", MessageBoxButtons.YesNo) == System.Windows.Forms.DialogResult.Yes)
             {
+                if (_settings == null)
+                    return;
+
                 _settings.Reset();
-                _settings.hotKeys = new HotKeys();
-                _hotkeyBindingSrc.DataSource = _settings.hotKeys.Keys;
-                Utils.SetDataSource<ListBox>(listHotKeys, _hotkeyBindingSrc, "Title", "Title");
+                //_settings.hotKeys = new HotKeys();
+                //_hotkeyBindingSrc.DataSource = _settings.hotKeys.Keys;
+                //Utils.SetDataSource<ListBox>(listHotKeys, _hotkeyBindingSrc, "Title", "Title");
                 _settings.Save();
                 
-                SetupHotkeyList();
+                //SetupHotkeyList();
                 if (OnReset != null)
                     OnReset(this, EventArgs.Empty);
 
@@ -197,6 +200,11 @@ namespace JoystickCurves
         private void settingsTree1_KeyDown(object sender, KeyEventArgs e)
         {
             e.Handled = true;
+        }
+
+        private void groupBox1_Enter(object sender, EventArgs e)
+        {
+
         }
     }
 }

@@ -8,7 +8,7 @@ namespace JoystickCurves
 {
     public static class DIUtils
     {
-        public static JoystickOffset ID( String name )
+        public static JoystickOffset JoyID( String name )
         {
             if (String.IsNullOrEmpty(name) )
                 return 0;
@@ -19,7 +19,7 @@ namespace JoystickCurves
             else
                 return pair.Key;
         }
-        public static MouseOffset MID(String name)
+        public static MouseOffset MouseID(String name)
         {
             if (String.IsNullOrEmpty(name))
                 return 0;
@@ -36,7 +36,7 @@ namespace JoystickCurves
                 return 0;
 
             if (AllNames.ContainsValue(name))
-                return VirtualIDs[ID(name)];
+                return VirtualIDs[JoyID(name)];
             else
                 return 0;
         }
@@ -45,11 +45,19 @@ namespace JoystickCurves
             JoystickOffset offset = VirtualIDs.Where(vid => vid.Value == id).FirstOrDefault().Key;
             return AllNames[offset];
         }
-         
+
         public static String Name(JoystickOffset id)
         {
             var pair = AllNames.FirstOrDefault(n => n.Key == id);
-            if( pair.Equals(new KeyValuePair<JoystickOffset,String>()) )
+            if (pair.Equals(new KeyValuePair<JoystickOffset, String>()))
+                return "Unknown";
+            else
+                return pair.Value;
+        }
+        public static String Name(MouseOffset id)
+        {
+            var pair = AllNamesMouse.FirstOrDefault(n => n.Key == id);
+            if (pair.Equals(new KeyValuePair<MouseOffset, String>()))
                 return "Unknown";
             else
                 return pair.Value;
@@ -240,17 +248,17 @@ namespace JoystickCurves
             };
         public static readonly System.Collections.Generic.Dictionary<MouseOffset, String> AllNamesMouse =
             new Dictionary<MouseOffset, string>() {
-                {MouseOffset.X, "Mouse X"},
-                {MouseOffset.Y, "Mouse Y"},
-                {MouseOffset.Z, "Mouse Z"},
-                {MouseOffset.Button0, "MButton 0"},
-                {MouseOffset.Button1, "MButton 1"},
-                {MouseOffset.Button2, "MButton 2"},
-                {MouseOffset.Button3, "MButton 3"},
-                {MouseOffset.Button4, "MButton 4"},
-                {MouseOffset.Button5, "MButton 5"},
-                {MouseOffset.Button6, "MButton 6"},
-                {MouseOffset.Button7, "MButton 7"}
+                {MouseOffset.X, "Roll"},
+                {MouseOffset.Y, "Pitch"},
+                {MouseOffset.Z, "Throttle"},
+                {MouseOffset.Button0, "Button 0"},
+                {MouseOffset.Button1, "Button 1"},
+                {MouseOffset.Button2, "Button 2"},
+                {MouseOffset.Button3, "Button 3"},
+                {MouseOffset.Button4, "Button 4"},
+                {MouseOffset.Button5, "Button 5"},
+                {MouseOffset.Button6, "Button 6"},
+                {MouseOffset.Button7, "Button 7"}
             };
 
 

@@ -28,15 +28,24 @@
         /// </summary>
         private void InitializeComponent()
         {
-            System.Windows.Forms.TreeNode treeNode1 = new System.Windows.Forms.TreeNode("Network");
-            System.Windows.Forms.TreeNode treeNode2 = new System.Windows.Forms.TreeNode("General");
-            System.Windows.Forms.TreeNode treeNode3 = new System.Windows.Forms.TreeNode("Steam overlay");
-            System.Windows.Forms.TreeNode treeNode4 = new System.Windows.Forms.TreeNode("Saitek X52 Pro display");
+            System.Windows.Forms.TreeNode treeNode1 = new System.Windows.Forms.TreeNode("General");
+            System.Windows.Forms.TreeNode treeNode7 = new System.Windows.Forms.TreeNode("Mouse");
+            System.Windows.Forms.TreeNode treeNode2 = new System.Windows.Forms.TreeNode("Steam overlay");
+            System.Windows.Forms.TreeNode treeNode3 = new System.Windows.Forms.TreeNode("Saitek X52 Pro display");
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(SettingsForm));
-            System.Windows.Forms.TreeNode treeNode5 = new System.Windows.Forms.TreeNode("Hot keys");
-            System.Windows.Forms.TreeNode treeNode6 = new System.Windows.Forms.TreeNode("War Thunder");
+            System.Windows.Forms.TreeNode treeNode4 = new System.Windows.Forms.TreeNode("Hot keys");
+            System.Windows.Forms.TreeNode treeNode5 = new System.Windows.Forms.TreeNode("War Thunder");
+            System.Windows.Forms.TreeNode treeNode6 = new System.Windows.Forms.TreeNode("Network");
             this.directorySearcher1 = new System.DirectoryServices.DirectorySearcher();
             this.settingsTree1 = new mycontrol.SettingsTree();
+            this.settingsPage8 = new mycontrol.SettingsPage();
+            this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.label12 = new System.Windows.Forms.Label();
+            this.trackBarScroll = new System.Windows.Forms.TrackBar();
+            this.label11 = new System.Windows.Forms.Label();
+            this.trackBarMouseY = new System.Windows.Forms.TrackBar();
+            this.label10 = new System.Windows.Forms.Label();
+            this.trackBarMouseX = new System.Windows.Forms.TrackBar();
             this.settingsPage2 = new mycontrol.SettingsPage();
             this.checkAskSave = new System.Windows.Forms.CheckBox();
             this.checkSaveOnExit = new System.Windows.Forms.CheckBox();
@@ -63,17 +72,22 @@
             this.checkBoxHotKey = new System.Windows.Forms.CheckBox();
             this.label5 = new System.Windows.Forms.Label();
             this.checkBoxHold = new System.Windows.Forms.CheckBox();
+            this.valueInput = new JoystickCurves.ValueInput();
             this.settingsPage6 = new mycontrol.SettingsPage();
             this.label6 = new System.Windows.Forms.Label();
             this.checkBox6 = new System.Windows.Forms.CheckBox();
-            this.settingsPage1 = new mycontrol.SettingsPage();
             this.settingsPage7 = new mycontrol.SettingsPage();
             this.label9 = new System.Windows.Forms.Label();
             this.textBoxServerIP = new System.Windows.Forms.TextBox();
             this.checkBoxServer = new System.Windows.Forms.CheckBox();
-            this.valueInput = new JoystickCurves.ValueInput();
+            this.settingsPage1 = new mycontrol.SettingsPage();
             ((System.ComponentModel.ISupportInitialize)(this.settingsTree1.SplitContainer)).BeginInit();
             this.settingsTree1.SplitContainer.Panel2.SuspendLayout();
+            this.settingsPage8.SuspendLayout();
+            this.groupBox1.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.trackBarScroll)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.trackBarMouseY)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.trackBarMouseX)).BeginInit();
             this.settingsPage2.SuspendLayout();
             this.settingsPage3.SuspendLayout();
             this.settingsPage4.SuspendLayout();
@@ -92,9 +106,9 @@
             // settingsTree1
             // 
             treeNode1.Name = "";
-            treeNode1.Text = "Network";
+            treeNode1.Text = "General";
             this.settingsTree1.CurrentNode = treeNode1;
-            this.settingsTree1.CurrentPage = this.settingsPage7;
+            this.settingsTree1.CurrentPage = this.settingsPage2;
             this.settingsTree1.Cursor = System.Windows.Forms.Cursors.Arrow;
             this.settingsTree1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.settingsTree1.LabelEdit = false;
@@ -116,8 +130,9 @@
             this.settingsTree1.SplitContainer.Panel2.Controls.Add(this.settingsPage4);
             this.settingsTree1.SplitContainer.Panel2.Controls.Add(this.settingsPage5);
             this.settingsTree1.SplitContainer.Panel2.Controls.Add(this.settingsPage6);
-            this.settingsTree1.SplitContainer.Panel2.Controls.Add(this.settingsPage1);
             this.settingsTree1.SplitContainer.Panel2.Controls.Add(this.settingsPage7);
+            this.settingsTree1.SplitContainer.Panel2.Controls.Add(this.settingsPage1);
+            this.settingsTree1.SplitContainer.Panel2.Controls.Add(this.settingsPage8);
             this.settingsTree1.SplitContainer.Size = new System.Drawing.Size(474, 269);
             this.settingsTree1.SplitContainer.SplitterDistance = 148;
             this.settingsTree1.SplitContainer.TabIndex = 5;
@@ -131,16 +146,112 @@
             this.settingsTree1.TreeView.Location = new System.Drawing.Point(0, 0);
             this.settingsTree1.TreeView.Name = "treeSettings";
             this.settingsTree1.TreeView.Nodes.AddRange(new System.Windows.Forms.TreeNode[] {
-            treeNode2,
-            treeNode5,
             treeNode1,
             treeNode4,
+            treeNode7,
+            treeNode6,
             treeNode3,
-            treeNode6});
+            treeNode2,
+            treeNode5});
             this.settingsTree1.TreeView.Size = new System.Drawing.Size(148, 269);
             this.settingsTree1.TreeView.Sorted = true;
             this.settingsTree1.TreeView.TabIndex = 0;
             this.settingsTree1.KeyDown += new System.Windows.Forms.KeyEventHandler(this.settingsTree1_KeyDown);
+            // 
+            // settingsPage8
+            // 
+            this.settingsPage8.Controls.Add(this.groupBox1);
+            this.settingsPage8.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.settingsPage8.isActive = true;
+            this.settingsPage8.Location = new System.Drawing.Point(0, 0);
+            this.settingsPage8.Name = "settingsPage8";
+            treeNode7.Name = "";
+            treeNode7.Text = "Mouse";
+            this.settingsPage8.ParentNode = treeNode7;
+            this.settingsPage8.Size = new System.Drawing.Size(322, 269);
+            this.settingsPage8.TabIndex = 7;
+            // 
+            // groupBox1
+            // 
+            this.groupBox1.Controls.Add(this.label12);
+            this.groupBox1.Controls.Add(this.trackBarScroll);
+            this.groupBox1.Controls.Add(this.label11);
+            this.groupBox1.Controls.Add(this.trackBarMouseY);
+            this.groupBox1.Controls.Add(this.label10);
+            this.groupBox1.Controls.Add(this.trackBarMouseX);
+            this.groupBox1.Location = new System.Drawing.Point(7, 8);
+            this.groupBox1.Name = "groupBox1";
+            this.groupBox1.Size = new System.Drawing.Size(307, 150);
+            this.groupBox1.TabIndex = 2;
+            this.groupBox1.TabStop = false;
+            this.groupBox1.Text = "Sensitivity";
+            this.groupBox1.Enter += new System.EventHandler(this.groupBox1_Enter);
+            // 
+            // label12
+            // 
+            this.label12.AutoSize = true;
+            this.label12.Location = new System.Drawing.Point(6, 106);
+            this.label12.Name = "label12";
+            this.label12.Size = new System.Drawing.Size(81, 13);
+            this.label12.TabIndex = 7;
+            this.label12.Text = "Throttle (Scroll):";
+            // 
+            // trackBarScroll
+            // 
+            this.trackBarScroll.DataBindings.Add(new System.Windows.Forms.Binding("Value", global::JoystickCurves.Properties.Settings.Default, "mouseSensScroll", true, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged));
+            this.trackBarScroll.Location = new System.Drawing.Point(90, 103);
+            this.trackBarScroll.Maximum = 1000;
+            this.trackBarScroll.Minimum = 1;
+            this.trackBarScroll.Name = "trackBarScroll";
+            this.trackBarScroll.Size = new System.Drawing.Size(211, 45);
+            this.trackBarScroll.SmallChange = 10;
+            this.trackBarScroll.TabIndex = 6;
+            this.trackBarScroll.TickFrequency = 25;
+            this.trackBarScroll.Value = global::JoystickCurves.Properties.Settings.Default.mouseSensScroll;
+            // 
+            // label11
+            // 
+            this.label11.AutoSize = true;
+            this.label11.Location = new System.Drawing.Point(37, 64);
+            this.label11.Name = "label11";
+            this.label11.Size = new System.Drawing.Size(50, 13);
+            this.label11.TabIndex = 5;
+            this.label11.Text = "Pitch (Y):";
+            // 
+            // trackBarMouseY
+            // 
+            this.trackBarMouseY.DataBindings.Add(new System.Windows.Forms.Binding("Value", global::JoystickCurves.Properties.Settings.Default, "mouseSensY", true, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged));
+            this.trackBarMouseY.Location = new System.Drawing.Point(90, 61);
+            this.trackBarMouseY.Maximum = 10000;
+            this.trackBarMouseY.Minimum = 1;
+            this.trackBarMouseY.Name = "trackBarMouseY";
+            this.trackBarMouseY.Size = new System.Drawing.Size(211, 45);
+            this.trackBarMouseY.SmallChange = 10;
+            this.trackBarMouseY.TabIndex = 4;
+            this.trackBarMouseY.TickFrequency = 250;
+            this.trackBarMouseY.Value = global::JoystickCurves.Properties.Settings.Default.mouseSensY;
+            // 
+            // label10
+            // 
+            this.label10.AutoSize = true;
+            this.label10.Location = new System.Drawing.Point(43, 23);
+            this.label10.Name = "label10";
+            this.label10.Size = new System.Drawing.Size(44, 13);
+            this.label10.TabIndex = 3;
+            this.label10.Text = "Roll (X):";
+            // 
+            // trackBarMouseX
+            // 
+            this.trackBarMouseX.DataBindings.Add(new System.Windows.Forms.Binding("Value", global::JoystickCurves.Properties.Settings.Default, "mouseSensX", true, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged));
+            this.trackBarMouseX.Location = new System.Drawing.Point(90, 20);
+            this.trackBarMouseX.Maximum = 10000;
+            this.trackBarMouseX.Minimum = 1;
+            this.trackBarMouseX.Name = "trackBarMouseX";
+            this.trackBarMouseX.Size = new System.Drawing.Size(211, 45);
+            this.trackBarMouseX.SmallChange = 10;
+            this.trackBarMouseX.TabIndex = 2;
+            this.trackBarMouseX.TickFrequency = 250;
+            this.trackBarMouseX.Value = global::JoystickCurves.Properties.Settings.Default.mouseSensX;
             // 
             // settingsPage2
             // 
@@ -157,9 +268,7 @@
             this.settingsPage2.isActive = true;
             this.settingsPage2.Location = new System.Drawing.Point(0, 0);
             this.settingsPage2.Name = "settingsPage2";
-            treeNode2.Name = "";
-            treeNode2.Text = "General";
-            this.settingsPage2.ParentNode = treeNode2;
+            this.settingsPage2.ParentNode = treeNode1;
             this.settingsPage2.Size = new System.Drawing.Size(322, 269);
             this.settingsPage2.TabIndex = 1;
             // 
@@ -287,9 +396,9 @@
             this.settingsPage3.isActive = true;
             this.settingsPage3.Location = new System.Drawing.Point(0, 0);
             this.settingsPage3.Name = "settingsPage3";
-            treeNode3.Name = "";
-            treeNode3.Text = "Steam overlay";
-            this.settingsPage3.ParentNode = treeNode3;
+            treeNode2.Name = "";
+            treeNode2.Text = "Steam overlay";
+            this.settingsPage3.ParentNode = treeNode2;
             this.settingsPage3.Size = new System.Drawing.Size(322, 269);
             this.settingsPage3.TabIndex = 2;
             // 
@@ -366,9 +475,9 @@
             this.settingsPage4.isActive = true;
             this.settingsPage4.Location = new System.Drawing.Point(0, 0);
             this.settingsPage4.Name = "settingsPage4";
-            treeNode4.Name = "";
-            treeNode4.Text = "Saitek X52 Pro display";
-            this.settingsPage4.ParentNode = treeNode4;
+            treeNode3.Name = "";
+            treeNode3.Text = "Saitek X52 Pro display";
+            this.settingsPage4.ParentNode = treeNode3;
             this.settingsPage4.Size = new System.Drawing.Size(322, 269);
             this.settingsPage4.TabIndex = 3;
             // 
@@ -414,9 +523,9 @@
             this.settingsPage5.isActive = true;
             this.settingsPage5.Location = new System.Drawing.Point(0, 0);
             this.settingsPage5.Name = "settingsPage5";
-            treeNode5.Name = "";
-            treeNode5.Text = "Hot keys";
-            this.settingsPage5.ParentNode = treeNode5;
+            treeNode4.Name = "";
+            treeNode4.Text = "Hot keys";
+            this.settingsPage5.ParentNode = treeNode4;
             this.settingsPage5.Size = new System.Drawing.Size(322, 269);
             this.settingsPage5.TabIndex = 4;
             // 
@@ -467,6 +576,26 @@
             this.checkBoxHold.Text = "Hold to activate";
             this.checkBoxHold.UseVisualStyleBackColor = true;
             // 
+            // valueInput
+            // 
+            this.valueInput.BoolValue = false;
+            this.valueInput.Enabled = false;
+            this.valueInput.FloatMax = 1F;
+            this.valueInput.FloatMin = 0F;
+            this.valueInput.FloatStep = 0.01F;
+            this.valueInput.FloatValue = 0F;
+            this.valueInput.IntMax = 0;
+            this.valueInput.IntMin = 0;
+            this.valueInput.IntStep = 0;
+            this.valueInput.IntValue = 0;
+            this.valueInput.Label = "Value";
+            this.valueInput.Location = new System.Drawing.Point(91, 207);
+            this.valueInput.Name = "valueInput";
+            this.valueInput.Size = new System.Drawing.Size(219, 25);
+            this.valueInput.StringValue = "";
+            this.valueInput.TabIndex = 6;
+            this.valueInput.Type = JoystickCurves.ValueInput.ValueType.Float;
+            // 
             // settingsPage6
             // 
             this.settingsPage6.Controls.Add(this.label6);
@@ -475,9 +604,9 @@
             this.settingsPage6.isActive = true;
             this.settingsPage6.Location = new System.Drawing.Point(0, 0);
             this.settingsPage6.Name = "settingsPage6";
-            treeNode6.Name = "";
-            treeNode6.Text = "War Thunder";
-            this.settingsPage6.ParentNode = treeNode6;
+            treeNode5.Name = "";
+            treeNode5.Text = "War Thunder";
+            this.settingsPage6.ParentNode = treeNode5;
             this.settingsPage6.Size = new System.Drawing.Size(322, 269);
             this.settingsPage6.TabIndex = 5;
             // 
@@ -503,16 +632,6 @@
             this.checkBox6.Text = "Track aircraft selection in game";
             this.checkBox6.UseVisualStyleBackColor = true;
             // 
-            // settingsPage1
-            // 
-            this.settingsPage1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.settingsPage1.isActive = true;
-            this.settingsPage1.Location = new System.Drawing.Point(0, 0);
-            this.settingsPage1.Name = "settingsPage1";
-            this.settingsPage1.ParentNode = null;
-            this.settingsPage1.Size = new System.Drawing.Size(267, 191);
-            this.settingsPage1.TabIndex = 0;
-            // 
             // settingsPage7
             // 
             this.settingsPage7.Controls.Add(this.label9);
@@ -522,7 +641,9 @@
             this.settingsPage7.isActive = true;
             this.settingsPage7.Location = new System.Drawing.Point(0, 0);
             this.settingsPage7.Name = "settingsPage7";
-            this.settingsPage7.ParentNode = treeNode1;
+            treeNode6.Name = "";
+            treeNode6.Text = "Network";
+            this.settingsPage7.ParentNode = treeNode6;
             this.settingsPage7.Size = new System.Drawing.Size(322, 269);
             this.settingsPage7.TabIndex = 6;
             // 
@@ -558,25 +679,15 @@
             this.checkBoxServer.Text = "Enable joystick state server";
             this.checkBoxServer.UseVisualStyleBackColor = true;
             // 
-            // valueInput
+            // settingsPage1
             // 
-            this.valueInput.BoolValue = false;
-            this.valueInput.Enabled = false;
-            this.valueInput.FloatMax = 1F;
-            this.valueInput.FloatMin = 0F;
-            this.valueInput.FloatStep = 0.01F;
-            this.valueInput.FloatValue = 0F;
-            this.valueInput.IntMax = 0;
-            this.valueInput.IntMin = 0;
-            this.valueInput.IntStep = 0;
-            this.valueInput.IntValue = 0;
-            this.valueInput.Label = "Value";
-            this.valueInput.Location = new System.Drawing.Point(91, 207);
-            this.valueInput.Name = "valueInput";
-            this.valueInput.Size = new System.Drawing.Size(219, 25);
-            this.valueInput.StringValue = "";
-            this.valueInput.TabIndex = 6;
-            this.valueInput.Type = JoystickCurves.ValueInput.ValueType.Float;
+            this.settingsPage1.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.settingsPage1.isActive = true;
+            this.settingsPage1.Location = new System.Drawing.Point(0, 0);
+            this.settingsPage1.Name = "settingsPage1";
+            this.settingsPage1.ParentNode = null;
+            this.settingsPage1.Size = new System.Drawing.Size(267, 191);
+            this.settingsPage1.TabIndex = 0;
             // 
             // SettingsForm
             // 
@@ -590,6 +701,12 @@
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.SettingsForm_FormClosing);
             this.settingsTree1.SplitContainer.Panel2.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.settingsTree1.SplitContainer)).EndInit();
+            this.settingsPage8.ResumeLayout(false);
+            this.groupBox1.ResumeLayout(false);
+            this.groupBox1.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.trackBarScroll)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.trackBarMouseY)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.trackBarMouseX)).EndInit();
             this.settingsPage2.ResumeLayout(false);
             this.settingsPage2.PerformLayout();
             this.settingsPage3.ResumeLayout(false);
@@ -646,5 +763,13 @@
         private System.Windows.Forms.Label label9;
         private System.Windows.Forms.CheckBox checkSaveOnExit;
         private System.Windows.Forms.CheckBox checkAskSave;
+        private mycontrol.SettingsPage settingsPage8;
+        private System.Windows.Forms.GroupBox groupBox1;
+        private System.Windows.Forms.Label label12;
+        private System.Windows.Forms.TrackBar trackBarScroll;
+        private System.Windows.Forms.Label label11;
+        private System.Windows.Forms.TrackBar trackBarMouseY;
+        private System.Windows.Forms.Label label10;
+        private System.Windows.Forms.TrackBar trackBarMouseX;
     }
 }

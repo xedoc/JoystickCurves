@@ -11,7 +11,7 @@ namespace JoystickCurves
     public class WTFolders
     {
         private Timer pollWTProcess;
-        private const String debugFolder = "_debuginfo";
+        private const String debugFolder = ".game_logs";
         private const String processName = "aces";
         private const int POLL_PERIOD = 30 * 1000;
         private object lockPoll = new object();

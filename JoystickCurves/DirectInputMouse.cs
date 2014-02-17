@@ -18,6 +18,7 @@ namespace JoystickCurves
         public event EventHandler<EventArgs> OnUnacquire;
 
         private const int POLL_INTERVAL = 10;
+        private const int DEFAULT_SENS = 150;
         private object pollLock = new object();
         private Timer _pollTimer;
         private Device _device;
@@ -28,7 +29,15 @@ namespace JoystickCurves
         {
             Acquired = false;
             DeviceInstance = dev;
-
+            CurrentValue = new Dictionary<MouseOffset, int>();
+            Sensitivity = new Dictionary<MouseOffset, int>();
+            
+            foreach (var moff in DIUtils.AllNamesMouse)
+            {
+                CurrentValue.Add(moff.Key, 0);
+                if (moff.Key < MouseOffset.Button0)
+                    Sensitivity.Add(moff.Key, DEFAULT_SENS);
+            }            
             _pollTimer = new Timer(new TimerCallback(poll_Tick), null, Timeout.Infinite, Timeout.Infinite);
             OnAcquire += new EventHandler<EventArgs>(Mouse_OnAcquire);
         }
@@ -60,9 +69,24 @@ namespace JoystickCurves
                     {
                         MouseOffset dataType = (MouseOffset)data.Offset;
 
+                        var curValue = data.Data;
+
+                        if (dataType < MouseOffset.Button0)
+                        {
+                            curValue = CurrentValue.FirstOrDefault(m => m.Key == dataType).Value;
+                            var delta = (int)((float)data.Data * (float)Sensitivity[dataType] / 10.0f);
+                            if (curValue + delta > 32767)
+                                curValue = 32767;
+                            else if (curValue + delta < -32767)
+                                curValue = -32767;
+                            else
+                                curValue += delta;
+
+                            CurrentValue[dataType] = curValue;
+                        }
                         DirectInputData mouseData = new DirectInputData()
                         {
-                            Value = data.Data,
+                            Value = curValue,
                             MouseOffset = dataType,
                             Type = DIDataType.Mouse,
                             DeviceName = Name
@@ -73,7 +97,7 @@ namespace JoystickCurves
                         _actionMap.TryGetValue(dataType, out action);
 
                         if (action != null)
-                            action.ToList().ForEach(a => a(mouseData));
+                            action.ToList().ForEach(a => { if (a != null) a(mouseData); });
 
                         if (dataType >= MouseOffset.Button0)
                         {
@@ -103,7 +127,16 @@ namespace JoystickCurves
         {
             Acquired = true;
         }
-
+        public Dictionary<MouseOffset, int> Sensitivity
+        {
+            get;
+            set;
+        }
+        private Dictionary<MouseOffset, int> CurrentValue
+        {
+            get;
+            set;
+        }
         public void Unacquire()
         {
             _pollTimer.Change(Timeout.Infinite, Timeout.Infinite);
