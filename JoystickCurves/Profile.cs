@@ -130,13 +130,13 @@ namespace JoystickCurves
         public Profile GetCopy()
         {
             Profile profile = new Profile(this.Title);
-            foreach (ProfileTab p in this.Tabs)
+            foreach (ProfileTab p in this.Tabs.ToList())
             {
                 profile.Tabs.Add(new ProfileTab()
                 {
                     CurvePoints = new BezierCurvePoints(p.CurvePoints.PointsCount)
                     {
-                        RawPoints = p.CurvePoints.RawPoints,                        
+                        RawPoints = p.CurvePoints.RawPoints.ToList(),                        
                         DrawHeight = p.CurvePoints.DrawHeight,
                         CurveResponseType = p.CurvePoints.CurveResponseType,
                         DrawWidth = p.CurvePoints.DrawWidth
@@ -163,13 +163,13 @@ namespace JoystickCurves
         public void CopyTo( ref Profile profile)
         {
             profile.Tabs.Clear();
-            foreach (ProfileTab p in this.Tabs)
+            foreach (ProfileTab p in this.Tabs.ToList())
             {
                 profile.Tabs.Add(new ProfileTab()
                 {
                     CurvePoints = new BezierCurvePoints(p.CurvePoints.PointsCount)
                     {
-                        RawPoints = p.CurvePoints.RawPoints,
+                        RawPoints = p.CurvePoints.RawPoints.ToList(),
                         DrawHeight = p.CurvePoints.DrawHeight,
                         CurveResponseType = p.CurvePoints.CurveResponseType,
                         DrawWidth = p.CurvePoints.DrawWidth
