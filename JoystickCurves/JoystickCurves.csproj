@@ -32,7 +32,7 @@
     <CreateWebPageOnPublish>true</CreateWebPageOnPublish>
     <WebPage>publish.htm</WebPage>
     <OpenBrowserOnPublish>false</OpenBrowserOnPublish>
-    <ApplicationRevision>11</ApplicationRevision>
+    <ApplicationRevision>12</ApplicationRevision>
     <ApplicationVersion>0.0.6.%2a</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
     <PublishWizardCompleted>true</PublishWizardCompleted>
@@ -60,10 +60,10 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup>
-    <ManifestCertificateThumbprint>D4EF0F79430F5632629D524D9A96A293FFB7E905</ManifestCertificateThumbprint>
+    <ManifestCertificateThumbprint>B9A973AE024CB2B5F23B537332902767C6B43F08</ManifestCertificateThumbprint>
   </PropertyGroup>
   <PropertyGroup>
-    <ManifestKeyFile>JoystickCurves_TemporaryKey.pfx</ManifestKeyFile>
+    <ManifestKeyFile>JoystickCurves_TemporaryKey_1507.pfx</ManifestKeyFile>
   </PropertyGroup>
   <PropertyGroup>
     <GenerateManifests>true</GenerateManifests>
@@ -164,7 +164,7 @@
     <Reference Include="WindowsFormsIntegration" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\..\..\Users\meshkov\Documents\GitHub\Ubiquitous\dotUtilities\Re.cs">
+    <Compile Include="..\..\Ubiquitous\dotUtilities\Re.cs">
       <Link>Re.cs</Link>
     </Compile>
     <Compile Include="AxisFilterKalman.cs" />
@@ -295,7 +295,9 @@
       <DependentUpon>ValueInput.cs</DependentUpon>
     </EmbeddedResource>
     <None Include="app.config" />
+    <None Include="JoystickCurves_1_TemporaryKey.pfx" />
     <None Include="JoystickCurves_TemporaryKey.pfx" />
+    <None Include="JoystickCurves_TemporaryKey_1507.pfx" />
     <None Include="Properties\Settings.settings">
       <Generator>PublicSettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
