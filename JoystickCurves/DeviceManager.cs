@@ -244,14 +244,16 @@ namespace JoystickCurves
                 foreach (DeviceInstance dev in addList)
                 {
                     var joystick = new DirectInputJoystick(dev, GetDeviceType(dev.ProductName));
+
                     if (joystick.Type == DeviceType.Physical)
                         joystick.ExclusiveMode = _settings.exclusiveDirectInput;
 
                     joystick.OnError += new EventHandler<EventArgs>(OnNoNeed);
                     joystick.OnUnacquire += new EventHandler<EventArgs>(OnNoNeed);
 
-
                     Joysticks.Add(joystick);
+
+
                     if (Joysticks.Where(d => d.Name.StartsWith(joystick.Name)).Count() > 1)
                     {
                         Joysticks.Where(d => d.Name.StartsWith(joystick.Name) && d.Index == 0).ToList().ForEach(
@@ -268,7 +270,7 @@ namespace JoystickCurves
                     }
                     if (Joysticks.Exists(j => j.Name.Contains("vJoy") == true))
                     {
-                        for (uint i = 1; i <= 16; i++)
+                        for (uint i = 1; i <= (_settings.generalMaxVjoyNum==0?16:_settings.generalMaxVjoyNum); i++)
                         {
                             if (!Joysticks.Exists(j => j.VirtualJoystick != null && j.VirtualJoystick.DeviceID == i))
                             {
@@ -286,7 +288,7 @@ namespace JoystickCurves
                     }
                     else if (Joysticks.Exists(j => j.Name.Contains("VJoy") == true))
                     {
-                        for (uint i = 0; i <= 1; i++)
+                        for (uint i = 0; i <= (_settings.generalMaxVjoyNum == 0 ? 16 : _settings.generalMaxVjoyNum); i++)
                         {
                             try
                             {

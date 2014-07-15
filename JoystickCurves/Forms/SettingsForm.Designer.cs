@@ -29,23 +29,15 @@
         private void InitializeComponent()
         {
             System.Windows.Forms.TreeNode treeNode1 = new System.Windows.Forms.TreeNode("General");
-            System.Windows.Forms.TreeNode treeNode7 = new System.Windows.Forms.TreeNode("Mouse");
             System.Windows.Forms.TreeNode treeNode2 = new System.Windows.Forms.TreeNode("Steam overlay");
             System.Windows.Forms.TreeNode treeNode3 = new System.Windows.Forms.TreeNode("Saitek X52 Pro display");
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(SettingsForm));
             System.Windows.Forms.TreeNode treeNode4 = new System.Windows.Forms.TreeNode("Hot keys");
             System.Windows.Forms.TreeNode treeNode5 = new System.Windows.Forms.TreeNode("War Thunder");
             System.Windows.Forms.TreeNode treeNode6 = new System.Windows.Forms.TreeNode("Network");
+            System.Windows.Forms.TreeNode treeNode7 = new System.Windows.Forms.TreeNode("Mouse");
             this.directorySearcher1 = new System.DirectoryServices.DirectorySearcher();
             this.settingsTree1 = new mycontrol.SettingsTree();
-            this.settingsPage8 = new mycontrol.SettingsPage();
-            this.groupBox1 = new System.Windows.Forms.GroupBox();
-            this.label12 = new System.Windows.Forms.Label();
-            this.trackBarScroll = new System.Windows.Forms.TrackBar();
-            this.label11 = new System.Windows.Forms.Label();
-            this.trackBarMouseY = new System.Windows.Forms.TrackBar();
-            this.label10 = new System.Windows.Forms.Label();
-            this.trackBarMouseX = new System.Windows.Forms.TrackBar();
             this.settingsPage2 = new mycontrol.SettingsPage();
             this.checkAskSave = new System.Windows.Forms.CheckBox();
             this.checkSaveOnExit = new System.Windows.Forms.CheckBox();
@@ -81,13 +73,19 @@
             this.textBoxServerIP = new System.Windows.Forms.TextBox();
             this.checkBoxServer = new System.Windows.Forms.CheckBox();
             this.settingsPage1 = new mycontrol.SettingsPage();
+            this.settingsPage8 = new mycontrol.SettingsPage();
+            this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.label12 = new System.Windows.Forms.Label();
+            this.trackBarScroll = new System.Windows.Forms.TrackBar();
+            this.label11 = new System.Windows.Forms.Label();
+            this.trackBarMouseY = new System.Windows.Forms.TrackBar();
+            this.label10 = new System.Windows.Forms.Label();
+            this.trackBarMouseX = new System.Windows.Forms.TrackBar();
+            this.labelVjoyNumber = new System.Windows.Forms.Label();
+            this.textBox3 = new System.Windows.Forms.TextBox();
+            this.label13 = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.settingsTree1.SplitContainer)).BeginInit();
             this.settingsTree1.SplitContainer.Panel2.SuspendLayout();
-            this.settingsPage8.SuspendLayout();
-            this.groupBox1.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.trackBarScroll)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.trackBarMouseY)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.trackBarMouseX)).BeginInit();
             this.settingsPage2.SuspendLayout();
             this.settingsPage3.SuspendLayout();
             this.settingsPage4.SuspendLayout();
@@ -95,6 +93,11 @@
             this.settingsPage5.SuspendLayout();
             this.settingsPage6.SuspendLayout();
             this.settingsPage7.SuspendLayout();
+            this.settingsPage8.SuspendLayout();
+            this.groupBox1.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.trackBarScroll)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.trackBarMouseY)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.trackBarMouseX)).BeginInit();
             this.SuspendLayout();
             // 
             // directorySearcher1
@@ -158,103 +161,11 @@
             this.settingsTree1.TreeView.TabIndex = 0;
             this.settingsTree1.KeyDown += new System.Windows.Forms.KeyEventHandler(this.settingsTree1_KeyDown);
             // 
-            // settingsPage8
-            // 
-            this.settingsPage8.Controls.Add(this.groupBox1);
-            this.settingsPage8.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.settingsPage8.isActive = true;
-            this.settingsPage8.Location = new System.Drawing.Point(0, 0);
-            this.settingsPage8.Name = "settingsPage8";
-            treeNode7.Name = "";
-            treeNode7.Text = "Mouse";
-            this.settingsPage8.ParentNode = treeNode7;
-            this.settingsPage8.Size = new System.Drawing.Size(322, 269);
-            this.settingsPage8.TabIndex = 7;
-            // 
-            // groupBox1
-            // 
-            this.groupBox1.Controls.Add(this.label12);
-            this.groupBox1.Controls.Add(this.trackBarScroll);
-            this.groupBox1.Controls.Add(this.label11);
-            this.groupBox1.Controls.Add(this.trackBarMouseY);
-            this.groupBox1.Controls.Add(this.label10);
-            this.groupBox1.Controls.Add(this.trackBarMouseX);
-            this.groupBox1.Location = new System.Drawing.Point(7, 8);
-            this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(307, 150);
-            this.groupBox1.TabIndex = 2;
-            this.groupBox1.TabStop = false;
-            this.groupBox1.Text = "Sensitivity";
-            this.groupBox1.Enter += new System.EventHandler(this.groupBox1_Enter);
-            // 
-            // label12
-            // 
-            this.label12.AutoSize = true;
-            this.label12.Location = new System.Drawing.Point(6, 106);
-            this.label12.Name = "label12";
-            this.label12.Size = new System.Drawing.Size(81, 13);
-            this.label12.TabIndex = 7;
-            this.label12.Text = "Throttle (Scroll):";
-            // 
-            // trackBarScroll
-            // 
-            this.trackBarScroll.DataBindings.Add(new System.Windows.Forms.Binding("Value", global::JoystickCurves.Properties.Settings.Default, "mouseSensScroll", true, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged));
-            this.trackBarScroll.Location = new System.Drawing.Point(90, 103);
-            this.trackBarScroll.Maximum = 1000;
-            this.trackBarScroll.Minimum = 1;
-            this.trackBarScroll.Name = "trackBarScroll";
-            this.trackBarScroll.Size = new System.Drawing.Size(211, 45);
-            this.trackBarScroll.SmallChange = 10;
-            this.trackBarScroll.TabIndex = 6;
-            this.trackBarScroll.TickFrequency = 25;
-            this.trackBarScroll.Value = global::JoystickCurves.Properties.Settings.Default.mouseSensScroll;
-            // 
-            // label11
-            // 
-            this.label11.AutoSize = true;
-            this.label11.Location = new System.Drawing.Point(37, 64);
-            this.label11.Name = "label11";
-            this.label11.Size = new System.Drawing.Size(50, 13);
-            this.label11.TabIndex = 5;
-            this.label11.Text = "Pitch (Y):";
-            // 
-            // trackBarMouseY
-            // 
-            this.trackBarMouseY.DataBindings.Add(new System.Windows.Forms.Binding("Value", global::JoystickCurves.Properties.Settings.Default, "mouseSensY", true, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged));
-            this.trackBarMouseY.Location = new System.Drawing.Point(90, 61);
-            this.trackBarMouseY.Maximum = 10000;
-            this.trackBarMouseY.Minimum = 1;
-            this.trackBarMouseY.Name = "trackBarMouseY";
-            this.trackBarMouseY.Size = new System.Drawing.Size(211, 45);
-            this.trackBarMouseY.SmallChange = 10;
-            this.trackBarMouseY.TabIndex = 4;
-            this.trackBarMouseY.TickFrequency = 250;
-            this.trackBarMouseY.Value = global::JoystickCurves.Properties.Settings.Default.mouseSensY;
-            // 
-            // label10
-            // 
-            this.label10.AutoSize = true;
-            this.label10.Location = new System.Drawing.Point(43, 23);
-            this.label10.Name = "label10";
-            this.label10.Size = new System.Drawing.Size(44, 13);
-            this.label10.TabIndex = 3;
-            this.label10.Text = "Roll (X):";
-            // 
-            // trackBarMouseX
-            // 
-            this.trackBarMouseX.DataBindings.Add(new System.Windows.Forms.Binding("Value", global::JoystickCurves.Properties.Settings.Default, "mouseSensX", true, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged));
-            this.trackBarMouseX.Location = new System.Drawing.Point(90, 20);
-            this.trackBarMouseX.Maximum = 10000;
-            this.trackBarMouseX.Minimum = 1;
-            this.trackBarMouseX.Name = "trackBarMouseX";
-            this.trackBarMouseX.Size = new System.Drawing.Size(211, 45);
-            this.trackBarMouseX.SmallChange = 10;
-            this.trackBarMouseX.TabIndex = 2;
-            this.trackBarMouseX.TickFrequency = 250;
-            this.trackBarMouseX.Value = global::JoystickCurves.Properties.Settings.Default.mouseSensX;
-            // 
             // settingsPage2
             // 
+            this.settingsPage2.Controls.Add(this.label13);
+            this.settingsPage2.Controls.Add(this.textBox3);
+            this.settingsPage2.Controls.Add(this.labelVjoyNumber);
             this.settingsPage2.Controls.Add(this.checkAskSave);
             this.settingsPage2.Controls.Add(this.checkSaveOnExit);
             this.settingsPage2.Controls.Add(this.label8);
@@ -409,7 +320,7 @@
             this.label3.Size = new System.Drawing.Size(339, 37);
             this.label3.TabIndex = 5;
             this.label3.Text = "* Add bot to the friend list of your main Steam account. Bot must have single fri" +
-                "end only!";
+    "end only!";
             // 
             // label2
             // 
@@ -531,9 +442,9 @@
             // 
             // listHotKeys
             // 
-            this.listHotKeys.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-                        | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.listHotKeys.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.listHotKeys.Enabled = false;
             this.listHotKeys.FormattingEnabled = true;
             this.listHotKeys.Location = new System.Drawing.Point(13, 25);
@@ -689,6 +600,131 @@
             this.settingsPage1.Size = new System.Drawing.Size(267, 191);
             this.settingsPage1.TabIndex = 0;
             // 
+            // settingsPage8
+            // 
+            this.settingsPage8.Controls.Add(this.groupBox1);
+            this.settingsPage8.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.settingsPage8.isActive = true;
+            this.settingsPage8.Location = new System.Drawing.Point(0, 0);
+            this.settingsPage8.Name = "settingsPage8";
+            treeNode7.Name = "";
+            treeNode7.Text = "Mouse";
+            this.settingsPage8.ParentNode = treeNode7;
+            this.settingsPage8.Size = new System.Drawing.Size(322, 269);
+            this.settingsPage8.TabIndex = 7;
+            // 
+            // groupBox1
+            // 
+            this.groupBox1.Controls.Add(this.label12);
+            this.groupBox1.Controls.Add(this.trackBarScroll);
+            this.groupBox1.Controls.Add(this.label11);
+            this.groupBox1.Controls.Add(this.trackBarMouseY);
+            this.groupBox1.Controls.Add(this.label10);
+            this.groupBox1.Controls.Add(this.trackBarMouseX);
+            this.groupBox1.Location = new System.Drawing.Point(7, 8);
+            this.groupBox1.Name = "groupBox1";
+            this.groupBox1.Size = new System.Drawing.Size(307, 150);
+            this.groupBox1.TabIndex = 2;
+            this.groupBox1.TabStop = false;
+            this.groupBox1.Text = "Sensitivity";
+            this.groupBox1.Enter += new System.EventHandler(this.groupBox1_Enter);
+            // 
+            // label12
+            // 
+            this.label12.AutoSize = true;
+            this.label12.Location = new System.Drawing.Point(6, 106);
+            this.label12.Name = "label12";
+            this.label12.Size = new System.Drawing.Size(81, 13);
+            this.label12.TabIndex = 7;
+            this.label12.Text = "Throttle (Scroll):";
+            // 
+            // trackBarScroll
+            // 
+            this.trackBarScroll.DataBindings.Add(new System.Windows.Forms.Binding("Value", global::JoystickCurves.Properties.Settings.Default, "mouseSensScroll", true, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged));
+            this.trackBarScroll.Location = new System.Drawing.Point(90, 103);
+            this.trackBarScroll.Maximum = 1000;
+            this.trackBarScroll.Minimum = 1;
+            this.trackBarScroll.Name = "trackBarScroll";
+            this.trackBarScroll.Size = new System.Drawing.Size(211, 45);
+            this.trackBarScroll.SmallChange = 10;
+            this.trackBarScroll.TabIndex = 6;
+            this.trackBarScroll.TickFrequency = 25;
+            this.trackBarScroll.Value = global::JoystickCurves.Properties.Settings.Default.mouseSensScroll;
+            // 
+            // label11
+            // 
+            this.label11.AutoSize = true;
+            this.label11.Location = new System.Drawing.Point(37, 64);
+            this.label11.Name = "label11";
+            this.label11.Size = new System.Drawing.Size(50, 13);
+            this.label11.TabIndex = 5;
+            this.label11.Text = "Pitch (Y):";
+            // 
+            // trackBarMouseY
+            // 
+            this.trackBarMouseY.DataBindings.Add(new System.Windows.Forms.Binding("Value", global::JoystickCurves.Properties.Settings.Default, "mouseSensY", true, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged));
+            this.trackBarMouseY.Location = new System.Drawing.Point(90, 61);
+            this.trackBarMouseY.Maximum = 10000;
+            this.trackBarMouseY.Minimum = 1;
+            this.trackBarMouseY.Name = "trackBarMouseY";
+            this.trackBarMouseY.Size = new System.Drawing.Size(211, 45);
+            this.trackBarMouseY.SmallChange = 10;
+            this.trackBarMouseY.TabIndex = 4;
+            this.trackBarMouseY.TickFrequency = 250;
+            this.trackBarMouseY.Value = global::JoystickCurves.Properties.Settings.Default.mouseSensY;
+            // 
+            // label10
+            // 
+            this.label10.AutoSize = true;
+            this.label10.Location = new System.Drawing.Point(43, 23);
+            this.label10.Name = "label10";
+            this.label10.Size = new System.Drawing.Size(44, 13);
+            this.label10.TabIndex = 3;
+            this.label10.Text = "Roll (X):";
+            // 
+            // trackBarMouseX
+            // 
+            this.trackBarMouseX.DataBindings.Add(new System.Windows.Forms.Binding("Value", global::JoystickCurves.Properties.Settings.Default, "mouseSensX", true, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged));
+            this.trackBarMouseX.Location = new System.Drawing.Point(90, 20);
+            this.trackBarMouseX.Maximum = 10000;
+            this.trackBarMouseX.Minimum = 1;
+            this.trackBarMouseX.Name = "trackBarMouseX";
+            this.trackBarMouseX.Size = new System.Drawing.Size(211, 45);
+            this.trackBarMouseX.SmallChange = 10;
+            this.trackBarMouseX.TabIndex = 2;
+            this.trackBarMouseX.TickFrequency = 250;
+            this.trackBarMouseX.Value = global::JoystickCurves.Properties.Settings.Default.mouseSensX;
+            // 
+            // labelVjoyNumber
+            // 
+            this.labelVjoyNumber.AutoSize = true;
+            this.labelVjoyNumber.Location = new System.Drawing.Point(10, 139);
+            this.labelVjoyNumber.Name = "labelVjoyNumber";
+            this.labelVjoyNumber.Size = new System.Drawing.Size(108, 13);
+            this.labelVjoyNumber.TabIndex = 10;
+            this.labelVjoyNumber.Text = "Virtual joysticks max#";
+            // 
+            // textBox3
+            // 
+            this.textBox3.DataBindings.Add(new System.Windows.Forms.Binding("Text", global::JoystickCurves.Properties.Settings.Default, "generalMaxVjoyNum", true, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged));
+            this.textBox3.Location = new System.Drawing.Point(124, 136);
+            this.textBox3.Name = "textBox3";
+            this.textBox3.Size = new System.Drawing.Size(43, 20);
+            this.textBox3.TabIndex = 11;
+            this.textBox3.Text = global::JoystickCurves.Properties.Settings.Default.generalMaxVjoyNum.ToString();
+            // 
+            // label13
+            // 
+            this.label13.AutoSize = true;
+            this.label13.Enabled = false;
+            this.label13.Font = new System.Drawing.Font("Microsoft Sans Serif", 6.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.label13.Location = new System.Drawing.Point(173, 140);
+            this.label13.Name = "label13";
+            this.label13.Size = new System.Drawing.Size(54, 12);
+            this.label13.TabIndex = 12;
+            this.label13.Text = "0 - unlimited";
+            this.label13.Visible = false;
+            // 
             // SettingsForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -701,12 +737,6 @@
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.SettingsForm_FormClosing);
             this.settingsTree1.SplitContainer.Panel2.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.settingsTree1.SplitContainer)).EndInit();
-            this.settingsPage8.ResumeLayout(false);
-            this.groupBox1.ResumeLayout(false);
-            this.groupBox1.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.trackBarScroll)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.trackBarMouseY)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.trackBarMouseX)).EndInit();
             this.settingsPage2.ResumeLayout(false);
             this.settingsPage2.PerformLayout();
             this.settingsPage3.ResumeLayout(false);
@@ -720,6 +750,12 @@
             this.settingsPage6.PerformLayout();
             this.settingsPage7.ResumeLayout(false);
             this.settingsPage7.PerformLayout();
+            this.settingsPage8.ResumeLayout(false);
+            this.groupBox1.ResumeLayout(false);
+            this.groupBox1.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.trackBarScroll)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.trackBarMouseY)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.trackBarMouseX)).EndInit();
             this.ResumeLayout(false);
 
         }
@@ -771,5 +807,8 @@
         private System.Windows.Forms.TrackBar trackBarMouseY;
         private System.Windows.Forms.Label label10;
         private System.Windows.Forms.TrackBar trackBarMouseX;
+        private System.Windows.Forms.Label label13;
+        private System.Windows.Forms.TextBox textBox3;
+        private System.Windows.Forms.Label labelVjoyNumber;
     }
 }
