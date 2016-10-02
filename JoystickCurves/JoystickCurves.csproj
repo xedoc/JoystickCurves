@@ -112,6 +112,10 @@
       <HintPath>IronRuby\IronRuby.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="log4net, Version=1.2.13.0, Culture=neutral, PublicKeyToken=669e0ddf0bb1aa2a, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\log4net.2.0.3\lib\net40-full\log4net.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.DirectX, Version=1.0.2902.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\Windows\Microsoft.NET\DirectX for Managed Code\1.0.2902.0\Microsoft.DirectX.dll</HintPath>
@@ -295,9 +299,9 @@
       <DependentUpon>ValueInput.cs</DependentUpon>
     </EmbeddedResource>
     <None Include="app.config" />
-    <None Include="JoystickCurves_1_TemporaryKey.pfx" />
     <None Include="JoystickCurves_TemporaryKey.pfx" />
     <None Include="JoystickCurves_TemporaryKey_1507.pfx" />
+    <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
       <Generator>PublicSettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
