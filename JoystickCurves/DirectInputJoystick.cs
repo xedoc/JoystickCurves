@@ -6,6 +6,7 @@ using Microsoft.DirectX;
 using Microsoft.DirectX.DirectInput;
 using System.Threading;
 using System.Diagnostics;
+using System.Runtime.ExceptionServices;
 namespace JoystickCurves
 {
     public class DirectInputJoystick : DirectInputDevice
@@ -63,6 +64,7 @@ namespace JoystickCurves
             get { return _virtualJoystick; }
             set { _virtualJoystick = value; }
         }
+        [HandleProcessCorruptedStateExceptions]
         private void poll_Tick(object o)
         {
             if (!Acquired)

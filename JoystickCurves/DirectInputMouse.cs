@@ -5,6 +5,7 @@ using System.Text;
 using Microsoft.DirectX.DirectInput;
 using System.Threading;
 using System.Diagnostics;
+using System.Runtime.ExceptionServices;
 
 namespace JoystickCurves
 {
@@ -41,6 +42,7 @@ namespace JoystickCurves
             _pollTimer = new Timer(new TimerCallback(poll_Tick), null, Timeout.Infinite, Timeout.Infinite);
             OnAcquire += new EventHandler<EventArgs>(Mouse_OnAcquire);
         }
+        [HandleProcessCorruptedStateExceptions]
         private void poll_Tick(object o)
         {
             lock (pollLock)
