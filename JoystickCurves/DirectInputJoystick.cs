@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Microsoft.DirectX;
-using Microsoft.DirectX.DirectInput;
+using SharpDX;
+using SharpDX.DirectInput;
 using System.Threading;
 using System.Diagnostics;
 using System.Runtime.ExceptionServices;
@@ -26,15 +26,15 @@ namespace JoystickCurves
         private JoystickOffset[] JoystickAxis = new JoystickOffset[] { JoystickOffset.X, 
                                                      JoystickOffset.Y, 
                                                      JoystickOffset.Z, 
-                                                     JoystickOffset.RX, 
-                                                     JoystickOffset.RY, 
-                                                     JoystickOffset.RZ, 
-                                                     JoystickOffset.Slider0, 
-                                                     JoystickOffset.Slider1};
+                                                     JoystickOffset.RotationX, 
+                                                     JoystickOffset.RotationY, 
+                                                     JoystickOffset.RotationZ, 
+                                                     JoystickOffset.Sliders0, 
+                                                     JoystickOffset.Sliders1};
 
         private bool _exclusive;
         private Timer _pollTimer;
-        private Device _device;
+        private Joystick _device;
         private Dictionary<JoystickOffset, AxisFilterMedian> _axisFilters = new Dictionary<JoystickOffset, AxisFilterMedian>();
         private Dictionary<JoystickOffset, HashSet<Action<DirectInputData>>> _actionMap = new Dictionary<JoystickOffset, HashSet<Action<DirectInputData>>>();
         private VirtualJoystick _virtualJoystick;
@@ -74,7 +74,7 @@ namespace JoystickCurves
             {
                 HashSet<Action<DirectInputData>> action;
                 AxisFilterMedian filter;
-                BufferedDataCollection queue = null;
+                JoystickUpdate[] queue = null;
 
                 try
                 {
@@ -83,13 +83,13 @@ namespace JoystickCurves
 
                     if (queue != null)
                     {
-                        foreach (BufferedData data in queue)
+                        foreach (JoystickUpdate data in queue)
                         {
                             JoystickOffset dataType = (JoystickOffset)data.Offset;
 
                             DirectInputData joyData = new DirectInputData()
                             {
-                                Value = data.Data,
+                                Value = data.Value,
                                 JoystickOffset = dataType,
                                 Type = DIDataType.Joystick,
                                 DeviceName = Name
@@ -100,7 +100,7 @@ namespace JoystickCurves
                             _actionMap.TryGetValue(dataType, out action);
 
                             //Axis
-                            if (dataType <= JoystickOffset.PointOfView3)
+                            if (dataType <= JoystickOffset.PointOfViewControllers3)
                             {
                                 _axisFilters.TryGetValue(dataType, out filter);
 
@@ -174,15 +174,15 @@ namespace JoystickCurves
         }
         public int NumberAxes
         {
-            get { return _device.Caps.NumberAxes; }
+            get { return _device.Capabilities.AxeCount; }
         }
         public int NumberButtons
         {
-            get { return _device.Caps.NumberButtons; }
+            get { return _device.Capabilities.ButtonCount; }
         }
         public int NumberPOVs
         {
-            get { return _device.Caps.NumberPointOfViews;}
+            get { return _device.Capabilities.PovCount;}
         }
         public bool ExclusiveMode
         {
@@ -235,20 +235,21 @@ namespace JoystickCurves
         {
             try
             {
-                _device = new Device(Guid);
-                _device.SetDataFormat(DeviceDataFormat.Joystick);
+                var directInput = new DirectInput();
+                _device = new Joystick(directInput, Guid);
+                // _device.SetDataFormat(DeviceDataFormat.Joystick);
                 _device.Properties.BufferSize = 16;
                 Debug.Print("Exclusive: {0} {1}", Name, _exclusive);
                 _device.SetCooperativeLevel(Process.GetCurrentProcess().MainWindowHandle,
-                   CooperativeLevelFlags.NonExclusive|CooperativeLevelFlags.Background);
+                   CooperativeLevel.NonExclusive |CooperativeLevel.Background);
 
 
-                foreach (DeviceObjectInstance d in _device.Objects)
+                foreach (DeviceObjectInstance d in _device.GetObjects())
                 {
-                    if ((d.ObjectId & (int)DeviceObjectTypeFlags.Axis) != 0)
-                        _device.Properties.SetRange(ParameterHow.ById, d.ObjectId, new InputRange(MinAxisValue, MaxAxisValue));
+                    if ((d.ObjectId.Flags & DeviceObjectTypeFlags.Axis) != 0)
+                        _device.GetObjectPropertiesById(d.ObjectId).Range = new InputRange(MinAxisValue, MaxAxisValue);
                 }
-                _device.Properties.AxisModeAbsolute = true;
+                _device.Properties.AxisMode = DeviceAxisMode.Absolute;
                 _device.Acquire();
 
                 _pollTimer.Change(0, POLL_INTERVAL);
@@ -256,7 +257,7 @@ namespace JoystickCurves
                 if (OnAcquire != null)
                     OnAcquire(this, EventArgs.Empty);
             }
-            catch (OtherApplicationHasPriorityException)
+            catch (SharpDXException)
             {
                 Acquired = false;
                 LastErrorMessage = Name + " couldn't be used in exclusive mode!";
@@ -341,7 +342,7 @@ namespace JoystickCurves
         {
             try
             {
-                var state = _device.CurrentJoystickState;
+                var state = _device.GetCurrentState();
                 switch (offset)
                 {
                     case JoystickOffset.X:
@@ -350,16 +351,16 @@ namespace JoystickCurves
                         return state.Y;
                     case JoystickOffset.Z:
                         return state.Z;
-                    case JoystickOffset.RX:
-                        return state.Rx;
-                    case JoystickOffset.RY:
-                        return state.Ry;
-                    case JoystickOffset.RZ:
-                        return state.Rz;
-                    case JoystickOffset.Slider0:
-                        return state.GetSlider()[0];
-                    case JoystickOffset.Slider1:
-                        return state.GetSlider()[1];
+                    case JoystickOffset.RotationX:
+                        return state.RotationX;
+                    case JoystickOffset.RotationY:
+                        return state.RotationY;
+                    case JoystickOffset.RotationZ:
+                        return state.RotationZ;
+                    case JoystickOffset.Sliders0:
+                        return state.Sliders[0];
+                    case JoystickOffset.Sliders1:
+                        return state.Sliders[1];
                 }
             }
             catch {
@@ -378,9 +379,9 @@ namespace JoystickCurves
 
             lock (lockSet)
             {
-                if (offset >= JoystickOffset.Button0 && offset <= JoystickOffset.Button128)
+                if (offset >= JoystickOffset.Buttons0 && offset <= JoystickOffset.Buttons127)
                 {
-                    _virtualJoystick.SetButton((uint)(offset - JoystickOffset.Button0), value == 128 ? true : false);
+                    _virtualJoystick.SetButton((uint)(offset - JoystickOffset.Buttons0), value == 128 ? true : false);
                     return;
                 }
 
@@ -395,19 +396,19 @@ namespace JoystickCurves
                     case JoystickOffset.Z:
                         _virtualJoystick.Z = value;
                         break;
-                    case JoystickOffset.RX:
+                    case JoystickOffset.RotationX:
                         _virtualJoystick.RX = value;
                         break;
-                    case JoystickOffset.RY:
+                    case JoystickOffset.RotationY:
                         _virtualJoystick.RY = value;
                         break;
-                    case JoystickOffset.RZ:
+                    case JoystickOffset.RotationZ:
                         _virtualJoystick.RZ = value;
                         break;
-                    case JoystickOffset.Slider0:
+                    case JoystickOffset.Sliders0:
                         _virtualJoystick.SL0 = value;
                         break;
-                    case JoystickOffset.Slider1:
+                    case JoystickOffset.Sliders1:
                         _virtualJoystick.SL1 = value;
                         break;
                 }

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Microsoft.DirectX.DirectInput;
+using SharpDX.DirectInput;
 using System.Threading;
 using System.Diagnostics;
 using System.Runtime.ExceptionServices;
@@ -22,7 +22,7 @@ namespace JoystickCurves
         private const int POLL_INTERVAL = 10;
         private object pollLock = new object();
         private Timer _pollTimer;
-        private Device _device;
+        private Keyboard _device;
         private Dictionary<Key, HashSet<Action<DirectInputData>>> _actionMap = new Dictionary<Key,HashSet<Action<DirectInputData>>>();
         private void emptyAction(DirectInputData joyData) {}
 
@@ -40,7 +40,7 @@ namespace JoystickCurves
             lock (pollLock)
             {
                 HashSet<Action<DirectInputData>> action;
-                BufferedDataCollection queue = null;
+                KeyboardUpdate[] queue = null;
 
                 try
                 {
@@ -59,14 +59,14 @@ namespace JoystickCurves
 
                 if (queue != null)
                 {
-                    foreach (BufferedData data in queue)
+                    foreach (KeyboardUpdate data in queue)
                     {
-                        Key dataType = (Key)data.Offset;
-                        KeyState state = (KeyState)data.Data;
+                        Key dataType = (Key)data.RawOffset;
+                        KeyState state = (KeyState)data.Value;
 
                         DirectInputData keyData = new DirectInputData()
                         {
-                            Value = data.Data,
+                            Value = data.Value,
                             KeyboardKey = dataType,
                             Type = DIDataType.Keyboard,
                             DeviceName = Name
@@ -119,11 +119,12 @@ namespace JoystickCurves
         {
             try
             {
-                _device = new Device(Guid);
-                _device.SetDataFormat(DeviceDataFormat.Keyboard);
+                var directInput = new DirectInput();
+                _device = new Keyboard(directInput);
+                // _device.SetDataFormat(DeviceDataFormat.Keyboard);
                 _device.Properties.BufferSize = 16;
                 _device.SetCooperativeLevel(Process.GetCurrentProcess().MainWindowHandle,
-                    CooperativeLevelFlags.NonExclusive | CooperativeLevelFlags.Background);
+                    CooperativeLevel.NonExclusive | CooperativeLevel.Background);
 
                 _device.Acquire();
             }

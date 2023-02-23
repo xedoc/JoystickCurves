@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Microsoft.DirectX.DirectInput;
+using SharpDX.DirectInput;
 using System.Threading;
 using System.Diagnostics;
 
@@ -87,7 +87,8 @@ namespace JoystickCurves
                     Mouses = new List<DirectInputMouse>();
                 try
                 {
-                    mouseInstances = Utils.DevList(Manager.GetDevices(DeviceClass.Pointer, EnumDevicesFlags.AttachedOnly));
+                    var dI = new DirectInput();
+                    mouseInstances = Utils.DevList(dI.GetDevices(DeviceClass.Pointer, DeviceEnumerationFlags.AttachedOnly));
                 }
                 catch (Exception e)
                 {
@@ -165,7 +166,8 @@ namespace JoystickCurves
 
                 try
                 {
-                    keyboardInstances = Utils.DevList(Manager.GetDevices(DeviceClass.Keyboard, EnumDevicesFlags.AttachedOnly));
+                    var dI = new DirectInput();
+                    keyboardInstances = Utils.DevList(dI.GetDevices(DeviceClass.Keyboard, DeviceEnumerationFlags.AttachedOnly));
                 }
                 catch (Exception e)
                 {
@@ -210,13 +212,14 @@ namespace JoystickCurves
             lock (lockRefreshJoysticks)
             {
                 List<DeviceInstance> joystickInstances;
-                DeviceList devices = null;
+                IList<DeviceInstance> devices = null;
                 if (Joysticks == null)
                     Joysticks = new List<DirectInputJoystick>();
 
                 try
                 {
-                    devices = Manager.GetDevices(DeviceClass.GameControl, EnumDevicesFlags.AttachedOnly);
+                    var dI = new DirectInput();
+                    devices = dI.GetDevices(DeviceClass.GameControl, DeviceEnumerationFlags.AttachedOnly);
                 }
                 catch( Exception e) {
                     Debug.Print("RefreshJoystickList: error getting device list {0}", e.Message);
@@ -320,7 +323,7 @@ namespace JoystickCurves
 
                 var i = Joysticks.IndexOf(device);
                 var devName = device.Name;
-                var deviceId = (uint)e.Data.JoystickOffset - (uint)JoystickOffset.Button0 + 1;
+                var deviceId = (uint)e.Data.JoystickOffset - (uint)JoystickOffset.Buttons0 + 1;
 
                 switch (devName.Substring(0, 4))
                 {

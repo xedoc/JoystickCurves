@@ -1,19 +1,9 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
     <ProductVersion>8.0.30703</ProductVersion>
-    <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{2A7DE555-193C-46B4-8E0E-3E5F120C2943}</ProjectGuid>
     <OutputType>WinExe</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>JoystickCurves</RootNamespace>
-    <AssemblyName>JoystickCurves</AssemblyName>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
-    <TargetFrameworkProfile>
-    </TargetFrameworkProfile>
-    <FileAlignment>512</FileAlignment>
+    <TargetFramework>net48</TargetFramework>
     <IsWebBootstrapper>true</IsWebBootstrapper>
     <PublishUrl>ftp://173.254.28.24/public_html/joystickcurves/</PublishUrl>
     <Install>true</Install>
@@ -37,131 +27,94 @@
     <UseApplicationTrust>false</UseApplicationTrust>
     <PublishWizardCompleted>true</PublishWizardCompleted>
     <BootstrapperEnabled>true</BootstrapperEnabled>
+    <AssemblyTitle>JoystickCurves</AssemblyTitle>
+    <Company>Microsoft</Company>
+    <Product>JoystickCurves</Product>
+    <Copyright>Copyright © Microsoft 2013</Copyright>
+    <AssemblyVersion>1.0.0.1</AssemblyVersion>
+    <FileVersion>1.0.0.1</FileVersion>
+    <OutputPath>bin\$(Configuration)\</OutputPath>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
-    <PlatformTarget>x86</PlatformTarget>
-    <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
-    <PlatformTarget>x86</PlatformTarget>
     <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-  </PropertyGroup>
-  <PropertyGroup>
-    <ManifestCertificateThumbprint>B9A973AE024CB2B5F23B537332902767C6B43F08</ManifestCertificateThumbprint>
-  </PropertyGroup>
-  <PropertyGroup>
-    <ManifestKeyFile>JoystickCurves_TemporaryKey_1507.pfx</ManifestKeyFile>
-  </PropertyGroup>
-  <PropertyGroup>
-    <GenerateManifests>true</GenerateManifests>
-  </PropertyGroup>
-  <PropertyGroup>
-    <SignManifests>true</SignManifests>
   </PropertyGroup>
   <PropertyGroup>
     <ApplicationIcon>Resources\joystickcurve.ico</ApplicationIcon>
+    <PlatformTarget>x86</PlatformTarget>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
-    <DebugSymbols>true</DebugSymbols>
-    <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <DebugType>full</DebugType>
-    <PlatformTarget>AnyCPU</PlatformTarget>
     <CodeAnalysisLogFile>bin\Debug\JoystickCurves.exe.CodeAnalysisLog.xml</CodeAnalysisLogFile>
     <CodeAnalysisUseTypeNameInSuppression>true</CodeAnalysisUseTypeNameInSuppression>
     <CodeAnalysisModuleSuppressionsFile>GlobalSuppressions.cs</CodeAnalysisModuleSuppressionsFile>
-    <ErrorReport>prompt</ErrorReport>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
     <CodeAnalysisRuleSetDirectories>;C:\Program Files (x86)\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\\Rule Sets</CodeAnalysisRuleSetDirectories>
     <CodeAnalysisIgnoreBuiltInRuleSets>false</CodeAnalysisIgnoreBuiltInRuleSets>
     <CodeAnalysisRuleDirectories>;C:\Program Files (x86)\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\FxCop\\Rules</CodeAnalysisRuleDirectories>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|AnyCPU'">
-    <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <Optimize>true</Optimize>
     <DebugType>pdbonly</DebugType>
-    <PlatformTarget>AnyCPU</PlatformTarget>
     <CodeAnalysisLogFile>bin\Release\JoystickCurves.exe.CodeAnalysisLog.xml</CodeAnalysisLogFile>
     <CodeAnalysisUseTypeNameInSuppression>true</CodeAnalysisUseTypeNameInSuppression>
     <CodeAnalysisModuleSuppressionsFile>GlobalSuppressions.cs</CodeAnalysisModuleSuppressionsFile>
-    <ErrorReport>prompt</ErrorReport>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
     <CodeAnalysisRuleSetDirectories>;C:\Program Files (x86)\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\\Rule Sets</CodeAnalysisRuleSetDirectories>
     <CodeAnalysisIgnoreBuiltInRuleSets>false</CodeAnalysisIgnoreBuiltInRuleSets>
     <CodeAnalysisRuleDirectories>;C:\Program Files (x86)\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\FxCop\\Rules</CodeAnalysisRuleDirectories>
   </PropertyGroup>
   <ItemGroup>
+    <PackageReference Include="log4net" Version="2.0.3" />
+    <PackageReference Include="SharpDX.DirectInput" Version="4.2.0" />
+  </ItemGroup>
+  <ItemGroup>
     <Reference Include="IronRuby, Version=1.1.3.0, Culture=neutral, PublicKeyToken=7f709c5b713576e1, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
       <HintPath>IronRuby\IronRuby.dll</HintPath>
       <Private>True</Private>
-    </Reference>
-    <Reference Include="log4net, Version=1.2.13.0, Culture=neutral, PublicKeyToken=669e0ddf0bb1aa2a, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\log4net.2.0.3\lib\net40-full\log4net.dll</HintPath>
     </Reference>
-    <Reference Include="Microsoft.DirectX, Version=1.0.2902.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35">
-      <SpecificVersion>False</SpecificVersion>
+    <!--<Reference Include="Microsoft.DirectX, Version=1.0.2902.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35">
       <HintPath>..\..\..\Windows\Microsoft.NET\DirectX for Managed Code\1.0.2902.0\Microsoft.DirectX.dll</HintPath>
       <Private>True</Private>
-    </Reference>
-    <Reference Include="Microsoft.DirectX.DirectInput, Version=1.0.2902.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35">
       <SpecificVersion>False</SpecificVersion>
+    </Reference> 
+    <Reference Include="Microsoft.DirectX.DirectInput, Version=1.0.2902.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35">
       <HintPath>..\..\..\Windows\Microsoft.NET\DirectX for Managed Code\1.0.2902.0\Microsoft.DirectX.DirectInput.dll</HintPath>
       <Private>True</Private>
-    </Reference>
-    <Reference Include="Microsoft.Dynamic, Version=1.1.0.20, Culture=neutral, PublicKeyToken=7f709c5b713576e1, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
+    </Reference> -->
+    <Reference Include="Microsoft.Dynamic, Version=1.1.0.20, Culture=neutral, PublicKeyToken=7f709c5b713576e1, processorArchitecture=MSIL">
       <HintPath>IronRuby\Microsoft.Dynamic.dll</HintPath>
       <Private>True</Private>
+      <SpecificVersion>False</SpecificVersion>
     </Reference>
     <Reference Include="Microsoft.Scripting, Version=1.1.0.20, Culture=neutral, PublicKeyToken=7f709c5b713576e1, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
       <HintPath>IronRuby\Microsoft.Scripting.dll</HintPath>
       <Private>True</Private>
+      <SpecificVersion>False</SpecificVersion>
     </Reference>
     <Reference Include="Microsoft.Scripting.Metadata, Version=1.1.0.20, Culture=neutral, PublicKeyToken=7f709c5b713576e1, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
       <HintPath>IronRuby\Microsoft.Scripting.Metadata.dll</HintPath>
       <Private>True</Private>
+      <SpecificVersion>False</SpecificVersion>
     </Reference>
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
-    <Reference Include="System" />
     <Reference Include="System.configuration" />
-    <Reference Include="System.Core" />
     <Reference Include="System.Design" />
     <Reference Include="System.DirectoryServices" />
     <Reference Include="System.Net" />
-    <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.Web" />
     <Reference Include="System.Xaml" />
-    <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp">
       <Private>False</Private>
     </Reference>
-    <Reference Include="System.Data" />
     <Reference Include="System.Deployment" />
-    <Reference Include="System.Drawing" />
     <Reference Include="System.Windows.Forms" />
-    <Reference Include="System.Xml" />
     <Reference Include="UIAutomationProvider" />
     <Reference Include="vJoyInterfaceWrap">
       <HintPath>.\vJoyInterfaceWrap.dll</HintPath>
@@ -170,145 +123,110 @@
     <Reference Include="WindowsFormsIntegration" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\..\Ubiquitous\dotUtilities\Re.cs">
-      <Link>Re.cs</Link>
-    </Compile>
-    <Compile Include="AxisFilterKalman.cs" />
-    <Compile Include="AxisFilterMedian.cs" />
-    <Compile Include="CircularBuffer.cs" />
-    <Compile Include="Components\MacroEditor.cs">
+    <Compile Include="..\dotUtilities\Re.cs" Link="Re.cs" />
+    <Compile Update="Components\MacroEditor.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="Components\MacroEditor.Designer.cs">
+    <Compile Update="Components\MacroEditor.Designer.cs">
       <DependentUpon>MacroEditor.cs</DependentUpon>
     </Compile>
-    <Compile Include="DirectInputData.cs" />
-    <Compile Include="Button.cs" />
-    <Compile Include="Forms\DebugForm.cs">
+    <Compile Update="Forms\DebugForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Forms\DebugForm.Designer.cs">
+    <Compile Update="Forms\DebugForm.Designer.cs">
       <DependentUpon>DebugForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="DirectInputDevice.cs" />
-    <Compile Include="DirectInputMouse.cs" />
-    <Compile Include="DIUtils.cs" />
-    <Compile Include="DirectInputKeyboard.cs" />
-    <Compile Include="ExecutablePath.cs" />
-    <Compile Include="HotKeys.cs" />
-    <Compile Include="Forms\InputBox.cs">
+    <Compile Update="Forms\InputBox.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Forms\InputBox.Designer.cs">
+    <Compile Update="Forms\InputBox.Designer.cs">
       <DependentUpon>InputBox.cs</DependentUpon>
     </Compile>
-    <Compile Include="NetworkServer.cs" />
-    <Compile Include="SaitekMFD.cs" />
-    <Compile Include="Settings.cs" />
-    <Compile Include="Forms\SettingsForm.cs">
+    <Compile Update="Forms\SettingsForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Forms\SettingsForm.Designer.cs">
+    <Compile Update="Forms\SettingsForm.Designer.cs">
       <DependentUpon>SettingsForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="SteamAPI.cs" />
-    <Compile Include="Components\TrimmerTrackBar.cs">
+    <Compile Update="Components\TrimmerTrackBar.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="Components\TrimmerTrackBar.Designer.cs">
+    <Compile Update="Components\TrimmerTrackBar.Designer.cs">
       <DependentUpon>TrimmerTrackBar.cs</DependentUpon>
     </Compile>
-    <Compile Include="Utils.cs" />
-    <Compile Include="Components\AxisEditor.cs">
+    <Compile Update="Components\AxisEditor.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="Components\AxisEditor.Designer.cs">
+    <Compile Update="Components\AxisEditor.Designer.cs">
       <DependentUpon>AxisEditor.cs</DependentUpon>
     </Compile>
-    <Compile Include="BezierCurve.cs">
+    <Compile Update="BezierCurve.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="BezierCurvePoints.cs" />
-    <Compile Include="DeviceManager.cs" />
-    <Compile Include="DragRectangle.cs">
+    <Compile Update="DragRectangle.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="Events.cs" />
-    <Compile Include="DirectInputJoystick.cs" />
-    <Compile Include="JoystickTester.cs">
+    <Compile Update="JoystickTester.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="JoystickTester.Designer.cs">
+    <Compile Update="JoystickTester.Designer.cs">
       <DependentUpon>JoystickTester.cs</DependentUpon>
     </Compile>
-    <Compile Include="Forms\MainForm.cs">
+    <Compile Update="Forms\MainForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Forms\MainForm.Designer.cs">
+    <Compile Update="Forms\MainForm.Designer.cs">
       <DependentUpon>MainForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="Profile.cs" />
-    <Compile Include="ProfileManager.cs" />
-    <Compile Include="Program.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Components\ValueInput.cs">
+    <Compile Update="Components\ValueInput.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="Components\ValueInput.Designer.cs">
+    <Compile Update="Components\ValueInput.Designer.cs">
       <DependentUpon>ValueInput.cs</DependentUpon>
     </Compile>
-    <Compile Include="VirtualJoystick.cs" />
-    <Compile Include="VJoyEizikovich.cs" />
-    <Compile Include="VJoyHeadsoft.cs" />
-    <Compile Include="BGWorker.cs" />
-    <Compile Include="CurrentAircraft.cs" />
-    <Compile Include="WarThunderTrack\WTAircraft.cs" />
-    <Compile Include="WarThunderTrack\WTFolder.cs" />
-    <EmbeddedResource Include="Components\AxisEditor.resx">
+    <EmbeddedResource Update="Components\AxisEditor.resx">
       <DependentUpon>AxisEditor.cs</DependentUpon>
       <SubType>Designer</SubType>
     </EmbeddedResource>
-    <EmbeddedResource Include="Components\MacroEditor.resx">
+    <EmbeddedResource Update="Components\MacroEditor.resx">
       <DependentUpon>MacroEditor.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Forms\DebugForm.resx">
+    <EmbeddedResource Update="Forms\DebugForm.resx">
       <DependentUpon>DebugForm.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Forms\InputBox.resx">
+    <EmbeddedResource Update="Forms\InputBox.resx">
       <DependentUpon>InputBox.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Forms\MainForm.resx">
+    <EmbeddedResource Update="Forms\MainForm.resx">
       <DependentUpon>MainForm.cs</DependentUpon>
       <SubType>Designer</SubType>
     </EmbeddedResource>
-    <EmbeddedResource Include="Properties\Resources.resx">
+    <EmbeddedResource Update="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
       <SubType>Designer</SubType>
     </EmbeddedResource>
-    <Compile Include="Properties\Resources.Designer.cs">
+    <Compile Update="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DependentUpon>Resources.resx</DependentUpon>
       <DesignTime>True</DesignTime>
     </Compile>
-    <EmbeddedResource Include="Forms\SettingsForm.resx">
+    <EmbeddedResource Update="Forms\SettingsForm.resx">
       <DependentUpon>SettingsForm.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Components\TrimmerTrackBar.resx">
+    <EmbeddedResource Update="Components\TrimmerTrackBar.resx">
       <DependentUpon>TrimmerTrackBar.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Components\ValueInput.resx">
+    <EmbeddedResource Update="Components\ValueInput.resx">
       <DependentUpon>ValueInput.cs</DependentUpon>
     </EmbeddedResource>
-    <None Include="app.config" />
     <None Include="JoystickCurves_TemporaryKey.pfx" />
     <None Include="JoystickCurves_TemporaryKey_1507.pfx" />
-    <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
       <Generator>PublicSettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
     </None>
-    <Compile Include="Properties\Settings.Designer.cs">
+    <Compile Update="Properties\Settings.Designer.cs">
       <AutoGen>True</AutoGen>
       <DependentUpon>Settings.settings</DependentUpon>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
@@ -316,28 +234,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\plus.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <BootstrapperPackage Include=".NETFramework,Version=v4.0">
-      <Visible>False</Visible>
-      <ProductName>Microsoft .NET Framework 4 %28x86 and x64%29</ProductName>
-      <Install>true</Install>
-    </BootstrapperPackage>
-    <BootstrapperPackage Include="Microsoft.Net.Client.3.5">
-      <Visible>False</Visible>
-      <ProductName>.NET Framework 3.5 SP1 Client Profile</ProductName>
-      <Install>false</Install>
-    </BootstrapperPackage>
-    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">
-      <Visible>False</Visible>
-      <ProductName>.NET Framework 3.5 SP1</ProductName>
-      <Install>false</Install>
-    </BootstrapperPackage>
-    <BootstrapperPackage Include="Microsoft.Windows.Installer.3.1">
-      <Visible>False</Visible>
-      <ProductName>Windows Installer 3.1</ProductName>
-      <Install>true</Install>
-    </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\appicon.ico" />
@@ -351,195 +247,13 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <PublishFile Include="dotJson">
-      <Visible>False</Visible>
-      <Group>
-      </Group>
-      <TargetPath>
-      </TargetPath>
-      <PublishState>Include</PublishState>
-      <IncludeHash>True</IncludeHash>
-      <FileType>Assembly</FileType>
-    </PublishFile>
-    <PublishFile Include="IronRuby">
-      <Visible>False</Visible>
-      <Group>
-      </Group>
-      <TargetPath>
-      </TargetPath>
-      <PublishState>Include</PublishState>
-      <IncludeHash>True</IncludeHash>
-      <FileType>Assembly</FileType>
-    </PublishFile>
-    <PublishFile Include="Microsoft.DirectX">
-      <Visible>False</Visible>
-      <Group>
-      </Group>
-      <TargetPath>
-      </TargetPath>
-      <PublishState>Include</PublishState>
-      <IncludeHash>True</IncludeHash>
-      <FileType>Assembly</FileType>
-    </PublishFile>
-    <PublishFile Include="Microsoft.DirectX.DirectInput">
-      <Visible>False</Visible>
-      <Group>
-      </Group>
-      <TargetPath>
-      </TargetPath>
-      <PublishState>Include</PublishState>
-      <IncludeHash>True</IncludeHash>
-      <FileType>Assembly</FileType>
-    </PublishFile>
-    <PublishFile Include="Microsoft.Dynamic">
-      <Visible>False</Visible>
-      <Group>
-      </Group>
-      <TargetPath>
-      </TargetPath>
-      <PublishState>Include</PublishState>
-      <IncludeHash>True</IncludeHash>
-      <FileType>Assembly</FileType>
-    </PublishFile>
-    <PublishFile Include="Microsoft.Scripting">
-      <Visible>False</Visible>
-      <Group>
-      </Group>
-      <TargetPath>
-      </TargetPath>
-      <PublishState>Include</PublishState>
-      <IncludeHash>True</IncludeHash>
-      <FileType>Assembly</FileType>
-    </PublishFile>
-    <PublishFile Include="Microsoft.Scripting.Metadata">
-      <Visible>False</Visible>
-      <Group>
-      </Group>
-      <TargetPath>
-      </TargetPath>
-      <PublishState>Include</PublishState>
-      <IncludeHash>True</IncludeHash>
-      <FileType>Assembly</FileType>
-    </PublishFile>
-    <PublishFile Include="mycontrol">
-      <Visible>False</Visible>
-      <Group>
-      </Group>
-      <TargetPath>
-      </TargetPath>
-      <PublishState>Include</PublishState>
-      <IncludeHash>True</IncludeHash>
-      <FileType>Assembly</FileType>
-    </PublishFile>
-    <PublishFile Include="Newtonsoft.Json">
-      <Visible>False</Visible>
-      <Group>
-      </Group>
-      <TargetPath>
-      </TargetPath>
-      <PublishState>Include</PublishState>
-      <IncludeHash>True</IncludeHash>
-      <FileType>Assembly</FileType>
-    </PublishFile>
-    <PublishFile Include="SuperSocket.Common">
-      <Visible>False</Visible>
-      <Group>
-      </Group>
-      <TargetPath>
-      </TargetPath>
-      <PublishState>Include</PublishState>
-      <IncludeHash>True</IncludeHash>
-      <FileType>Assembly</FileType>
-    </PublishFile>
-    <PublishFile Include="SuperSocket.SocketBase">
-      <Visible>False</Visible>
-      <Group>
-      </Group>
-      <TargetPath>
-      </TargetPath>
-      <PublishState>Include</PublishState>
-      <IncludeHash>True</IncludeHash>
-      <FileType>Assembly</FileType>
-    </PublishFile>
-    <PublishFile Include="SuperSocket.SocketEngine">
-      <Visible>False</Visible>
-      <Group>
-      </Group>
-      <TargetPath>
-      </TargetPath>
-      <PublishState>Include</PublishState>
-      <IncludeHash>True</IncludeHash>
-      <FileType>Assembly</FileType>
-    </PublishFile>
-    <PublishFile Include="SuperWebSocket">
-      <Visible>False</Visible>
-      <Group>
-      </Group>
-      <TargetPath>
-      </TargetPath>
-      <PublishState>Include</PublishState>
-      <IncludeHash>True</IncludeHash>
-      <FileType>Assembly</FileType>
-    </PublishFile>
-    <PublishFile Include="VJoy.dll">
-      <Visible>False</Visible>
-      <Group>
-      </Group>
-      <TargetPath>
-      </TargetPath>
-      <PublishState>Include</PublishState>
-      <IncludeHash>True</IncludeHash>
-      <FileType>File</FileType>
-    </PublishFile>
-    <PublishFile Include="vJoyInterface.dll">
-      <Visible>False</Visible>
-      <Group>
-      </Group>
-      <TargetPath>
-      </TargetPath>
-      <PublishState>Include</PublishState>
-      <IncludeHash>True</IncludeHash>
-      <FileType>File</FileType>
-    </PublishFile>
-    <PublishFile Include="vJoyInterfaceWrap">
-      <Visible>False</Visible>
-      <Group>
-      </Group>
-      <TargetPath>
-      </TargetPath>
-      <PublishState>Include</PublishState>
-      <IncludeHash>True</IncludeHash>
-      <FileType>Assembly</FileType>
-    </PublishFile>
+    <ProjectReference Include="..\dotJson\Src\Newtonsoft.Json\dotJSON.csproj" />
+    <ProjectReference Include="..\mycontrol\mycontrol.csproj" />
+    <ProjectReference Include="..\WebSocket\SuperSocket\SocketBase\SuperSocket.SocketBase.Net40.csproj" />
+    <ProjectReference Include="..\WebSocket\SuperSocket\SocketEngine\SuperSocket.SocketEngine.Net40.csproj" />
+    <ProjectReference Include="..\WebSocket\SuperWebSocket\SuperWebSocket.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\dotJson\Src\Newtonsoft.Json\dotJSON.csproj">
-      <Project>{A9AE40FF-1A21-414A-9FE7-3BE13644CC6D}</Project>
-      <Name>dotJSON</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\mycontrol\mycontrol.csproj">
-      <Project>{3E26D5F2-9EFF-4F76-9711-79E611F61ACB}</Project>
-      <Name>mycontrol</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\WebSocket\SuperSocket\SocketBase\SuperSocket.SocketBase.Net40.csproj">
-      <Project>{40B77789-EA11-4C05-8F52-86711D7BCAAF}</Project>
-      <Name>SuperSocket.SocketBase.Net40</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\WebSocket\SuperSocket\SocketEngine\SuperSocket.SocketEngine.Net40.csproj">
-      <Project>{153FEF72-191C-43D9-BE71-2B351C7AC760}</Project>
-      <Name>SuperSocket.SocketEngine.Net40</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\WebSocket\SuperWebSocket\SuperWebSocket.csproj">
-      <Project>{2DC79E40-BB70-4F6A-B378-905F2FBC6E97}</Project>
-      <Name>SuperWebSocket</Name>
-    </ProjectReference>
+    <Compile Remove="obj\x86\Debug\.NETFramework,Version=v4.8.AssemblyAttributes.cs" />
   </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
-       Other similar extension points exist, see Microsoft.Common.targets.
-  <Target Name="BeforeBuild">
-  </Target>
-  <Target Name="AfterBuild">
-  </Target>
-  -->
 </Project>

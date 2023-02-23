@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Microsoft.DirectX.DirectInput;
+using SharpDX.DirectInput;
 using System.Threading;
 using System.Diagnostics;
 

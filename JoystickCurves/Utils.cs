@@ -7,7 +7,7 @@ using System.Windows.Forms;
 using System.Xml.Serialization;
 using System.Xml;
 using System.IO;
-using Microsoft.DirectX.DirectInput;
+using SharpDX.DirectInput;
 using Microsoft.Win32;
 using System.Diagnostics;
 
@@ -214,7 +214,7 @@ namespace JoystickCurves
             }
         }
 
-        public static List<DeviceInstance> DevList(DeviceList devList)
+        public static List<DeviceInstance> DevList(IList<DeviceInstance> devList)
         {
             var result = new List<DeviceInstance>();
             foreach (DeviceInstance dev in devList)

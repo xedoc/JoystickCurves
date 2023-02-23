@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading;
-using Microsoft.DirectX.DirectInput;
+using SharpDX.DirectInput;
 using System.Xml.Serialization;
 using System.Collections.ObjectModel;
 
