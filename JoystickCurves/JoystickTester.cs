@@ -8,7 +8,7 @@ using System.Drawing;
 using System.Windows.Forms;
 using System.Threading;
 using System.Drawing.Drawing2D;
-using Microsoft.DirectX.DirectInput;
+using SharpDX.DirectInput;
 
 namespace JoystickCurves
 {

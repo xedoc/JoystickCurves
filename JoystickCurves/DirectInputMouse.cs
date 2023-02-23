@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Microsoft.DirectX.DirectInput;
+using SharpDX.DirectInput;
 using System.Threading;
 using System.Diagnostics;
 using System.Runtime.ExceptionServices;
@@ -22,7 +22,7 @@ namespace JoystickCurves
         private const int DEFAULT_SENS = 150;
         private object pollLock = new object();
         private Timer _pollTimer;
-        private Device _device;
+        private Mouse _device;
         private Dictionary<MouseOffset, HashSet<Action<DirectInputData>>> _actionMap = new Dictionary<MouseOffset,HashSet<Action<DirectInputData>>>();
         private void emptyAction(DirectInputData joyData) {}
 
@@ -36,7 +36,7 @@ namespace JoystickCurves
             foreach (var moff in DIUtils.AllNamesMouse)
             {
                 CurrentValue.Add(moff.Key, 0);
-                if (moff.Key < MouseOffset.Button0)
+                if (moff.Key < MouseOffset.Buttons0)
                     Sensitivity.Add(moff.Key, DEFAULT_SENS);
             }            
             _pollTimer = new Timer(new TimerCallback(poll_Tick), null, Timeout.Infinite, Timeout.Infinite);
@@ -48,7 +48,7 @@ namespace JoystickCurves
             lock (pollLock)
             {
                 HashSet<Action<DirectInputData>> action;
-                BufferedDataCollection queue = null;
+                MouseUpdate[] queue = null;
 
                 try
                 {
@@ -67,16 +67,16 @@ namespace JoystickCurves
 
                 if (queue != null)
                 {
-                    foreach (BufferedData data in queue)
+                    foreach (MouseUpdate data in queue)
                     {
                         MouseOffset dataType = (MouseOffset)data.Offset;
 
-                        var curValue = data.Data;
+                        var curValue = data.Value;
 
-                        if (dataType < MouseOffset.Button0)
+                        if (dataType < MouseOffset.Buttons0)
                         {
                             curValue = CurrentValue.FirstOrDefault(m => m.Key == dataType).Value;
-                            var delta = (int)((float)data.Data * (float)Sensitivity[dataType] / 10.0f);
+                            var delta = (int)((float)data.Value * (float)Sensitivity[dataType] / 10.0f);
                             if (curValue + delta > 32767)
                                 curValue = 32767;
                             else if (curValue + delta < -32767)
@@ -101,12 +101,12 @@ namespace JoystickCurves
                         if (action != null)
                             action.ToList().ForEach(a => { if (a != null) a(mouseData); });
 
-                        if (dataType >= MouseOffset.Button0)
+                        if (dataType >= MouseOffset.Buttons0)
                         {
-                            if ((KeyState)data.Data == KeyState.Down && OnButtonDown != null)
+                            if ((KeyState)data.Value == KeyState.Down && OnButtonDown != null)
                                 OnButtonDown(this, eventArg);
 
-                            if ((KeyState)data.Data == KeyState.Up)
+                            if ((KeyState)data.Value == KeyState.Up)
                             {
                                 if (OnButtonUp != null)
                                     OnButtonUp(this, eventArg);
@@ -159,11 +159,12 @@ namespace JoystickCurves
             try
             {
 
-                _device = new Device(Guid);
-                _device.SetDataFormat(DeviceDataFormat.Mouse);
+                var directInput = new DirectInput();
+                _device = new Mouse(directInput);
+                // _device.SetDataFormat(DeviceDataFormat.Mouse);
                 _device.Properties.BufferSize = 16;
                 _device.SetCooperativeLevel(Process.GetCurrentProcess().MainWindowHandle,
-                    CooperativeLevelFlags.NonExclusive | CooperativeLevelFlags.Background);
+                    CooperativeLevel.NonExclusive | CooperativeLevel.Background);
 
                 _device.Acquire();
             }

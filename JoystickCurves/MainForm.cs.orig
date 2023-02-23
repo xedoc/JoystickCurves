@@ -9,7 +9,7 @@ using System.Windows.Forms;
 using System.Reflection;
 using System.Diagnostics;
 using System.Threading;
-using Microsoft.DirectX.DirectInput;
+using SharpDX.DirectInput;
 using System.IO;
 using System.Xml;
 
